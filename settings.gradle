@@ -1,0 +1,22 @@
+
+
+pluginManagement {
+    // (1)
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+    }
+
+    // (2)
+    plugins {
+        id 'net.corda.plugins.cordapp-cpk' version cordaPluginsVersion
+        id 'net.corda.plugins.cordapp-cpb' version cordaPluginsVersion
+        id 'net.corda.cordapp.cordapp-configuration' version cordaApiVersion
+        id 'org.jetbrains.kotlin.jvm' version kotlinVersion
+        id 'org.jetbrains.kotlin.plugin.jpa' version kotlinVersion
+        id 'org.jetbrains.kotlin.plugin.allopen' version kotlinVersion
+    }
+}
+
+rootProject.name = 'chrisb-c5-cordapp-exprs'
+
