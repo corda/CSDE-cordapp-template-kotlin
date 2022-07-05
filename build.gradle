@@ -41,6 +41,10 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 
 // (4)
 repositories {
+
+    /*
+    // Version for using a local build.
+
     mavenLocal()
     mavenCentral()
 
@@ -48,10 +52,12 @@ repositories {
     maven {
         url = "$artifactoryContextUrl/corda-dependencies"
     }
+     */
+
+
     // TODO: you really need to use the cache, otherwise no complaining when upstream repos throttle us!
     // It would make sense to follow the template!
 
-    /*
     // For Quasar SNAPSHOT
     maven {
         url = "$artifactoryContextUrl/corda-dependencies-dev"
@@ -110,7 +116,7 @@ repositories {
         }
     }
 
-     */
+
 }
 
 // (5)
