@@ -43,7 +43,6 @@ class ArraySumRPCFlowOnly : RPCStartableFlow {
     }
 }
 
-
 class ArraySumNFlows : RPCStartableFlow {
 
     @CordaInject
@@ -57,15 +56,25 @@ class ArraySumNFlows : RPCStartableFlow {
         // val inputs = requestBody.getRequestBodyAs<InputMessage>(jsonMarshallingService)
         val args = requestBody.getRequestBodyAs<ArraySumArgs>(jsonMarshallingService)
 
-        // Partition the array
-        var partSize = args.data.size / PARTITION_COUNT
-        if (partSize < MIN_ARRAY_LEN) {
-
-        }
         var retVal = 0
         if (args.data != null) {
-
-            retVal = flowEngine.subFlow(ArraySumSubFlow(IntArrayAndRange(args.data, 0, args.data.size - 1)))
+            // Partition the array
+            var partSize = args.data.size / PARTITION_COUNT
+            if (partSize < MIN_ARRAY_LEN) {
+                partSize = MIN_ARRAY_LEN
+            }
+            var start: Int
+            var end = 0
+            do {
+                start = end
+                end = start + partSize - 1
+                if(end >= args.data.size) {
+                    end = args.data.size - 1
+                }
+                // Start a flow
+                retVal = flowEngine.subFlow(ArraySumSubFlow(IntArrayAndRange(args.data, start, end)))
+            }
+            while(end < args.data.size - 1)
         }
         return jsonMarshallingService.format(ResultMessage(retVal))
     }
@@ -75,7 +84,6 @@ class ArraySumNFlows : RPCStartableFlow {
         val MIN_ARRAY_LEN = 2
     }
 }
-
 
 class ArraySumSubFlow(val todo: IntArrayAndRange) : SubFlow<Int> {
     @CordaInject
@@ -92,7 +100,7 @@ class ArraySumSubFlow(val todo: IntArrayAndRange) : SubFlow<Int> {
         } else {
             val mid = todo.end - todo.start / 2 + todo.start
             sum = flowEngine.subFlow(ArraySumSubFlow(IntArrayAndRange(values, todo.start, mid))) +
-                    flowEngine.subFlow(ArraySumSubFlow(IntArrayAndRange(values, mid, todo.end)))
+                flowEngine.subFlow(ArraySumSubFlow(IntArrayAndRange(values, mid, todo.end)))
         }
         return sum
     }
