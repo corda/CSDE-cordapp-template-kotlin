@@ -17,9 +17,9 @@ cordapp {
     targetPlatformVersion platformVersion as Integer
     minimumPlatformVersion platformVersion as Integer
     workflow {
-        name "Calculator"
+        name "ModuleNameHere"
         versionId 1
-        vendor "R3"
+        vendor "VendorNameHere"
     }
 }
 
