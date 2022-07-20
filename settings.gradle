@@ -18,5 +18,5 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'chrisb-c5-cordapp-exprs'
+rootProject.name = 'cordapp-hello-cordapp'
 
