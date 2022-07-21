@@ -47,7 +47,7 @@ class Foof : RPCStartableFlow {
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
         val args = requestBody.getRequestBodyAs<InputMessage>(jsonMarshallingService)
-        log.info("Started Foof ${InputMessage}")
+        log.info("Started Foof ${args}")
         val recipient = MemberX500Name.parse(args.recipient)
 
         // Create FlowSession object
@@ -77,6 +77,7 @@ class Foof2 : ResponderFlow {
     @Suspendable
     override fun call(session: FlowSession) {
         val msg = session.receive<InputMessage>()
+        log.info("Rececived: ${msg}")
 
     }
 }
