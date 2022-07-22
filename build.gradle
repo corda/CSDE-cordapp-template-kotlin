@@ -7,6 +7,17 @@ plugins {
     id 'net.corda.plugins.cordapp-cpb'
 }
 
+configurations {
+    combinedWorker{
+        canBeConsumed = false
+        canBeResolved= true
+    }
+}
+
+dependencies {
+    combinedWorker "net.corda:corda-combined-worker:5.0.0.0-beta+"
+}
+
 group 'org.example'
 version '1.0-SNAPSHOT'
 
@@ -59,6 +70,14 @@ repositories {
             password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
         }
     }
+    
+    maven {
+        url = "$artifactoryContextUrl/corda-ent-maven-unstable-local"
+        credentials {
+            username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
+            password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+        }
+    }
 
     // C5 Binaries should go here.
     mavenCentral()
@@ -75,4 +94,9 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+tasks.register("downloadCombinedWorkerLatest", Copy) {
+    from configurations.combinedWorker
+    into "$buildDir/downloadedDependencies"
 }
