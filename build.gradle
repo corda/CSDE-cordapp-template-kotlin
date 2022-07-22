@@ -28,9 +28,17 @@ cordapp {
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
         allWarningsAsErrors = true
+
+        // Specify the version of Kotlin that we are using
         languageVersion = '1.6'
+
+        // 
         apiVersion = '1.6'
+
+        // Specify the version of Java to target
         jvmTarget = javaVersion
+
+        // 
         freeCompilerArgs += [
                 "-java-parameters",
                 "-Xjvm-default=all"
@@ -66,7 +74,23 @@ dependencies {
     // We need to use kotlin stdlib built as an OSGi Bundle
     cordaProvided 'net.corda.kotlin:kotlin-stdlib-jdk8-osgi'
     cordaProvided platform("net.corda:corda-api:$cordaApiVersion")
+
+    // If using transistive dependencies this will provide most of Corda-API: 
+    // cordaProvided 'net.corda:corda-application'
+
+    // Alternatively we can explicitly specify all our Corda-API dependencies:
+    cordaProvided 'net.corda:corda-base'
     cordaProvided 'net.corda:corda-application'
+    cordaProvided 'net.corda:corda-crypto'
+    cordaProvided 'net.corda:corda-membership'
+    cordaProvided 'net.corda:corda-persistence'
+    cordaProvided 'net.corda:corda-serialization'
+
+    // Not yet implemented
+    // cordaProvided 'net.corda:corda-ledger'
+
+    // If Corda-API uses a dependency it will provide it to the CorDapp.
+    // The build will not work if define the same dependency as regular dependency instead.
     cordaProvided 'org.slf4j:slf4j-api'
 }
 
