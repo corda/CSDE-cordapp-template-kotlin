@@ -125,7 +125,8 @@ configurations {
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:5.0.0.0-beta+"
 }
-tasks.register("downloadCombinedWorkerLatest", Copy) {
+// tasks.register("downloadCombinedWorkerLatest", Copy) {
+tasks.register("getMiniCorda", Copy) {
     from configurations.combinedWorker
     into "$buildDir/downloadedDependencies"
 }

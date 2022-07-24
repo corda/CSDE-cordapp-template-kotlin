@@ -1,10 +1,10 @@
 package com.cbarratt.cordapp.exprs
-//package com.mattb.cordapp.helloworld
 
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.messaging.FlowMessaging
 import net.corda.v5.application.messaging.FlowSession
+import net.corda.v5.application.messaging.UntrustworthyData
 import net.corda.v5.application.messaging.unwrap
 import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
@@ -30,15 +30,19 @@ class PassAMessageFlow: RPCStartableFlow {
         log.info("MB: PassAMessageFlow.call() called")
 
 
-        val myMessageDTO = requestBody.getRequestBodyAs(jsonMarshallingService, MyMessageDTO::class.java)
-        val recipient = MemberX500Name.parse(myMessageDTO.recipientX500)
+        val startFlowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, StartFlowArgs::class.java)
+        val recipient = MemberX500Name.parse(startFlowArgs.recipientX500)
 
-        log.info("MB: myMessageDTO in Initiator: $myMessageDTO")
+        log.info("MB: $startFlowArgs")
 
         val session = flowMessaging.initiateFlow(recipient)
         //        session.sendAndReceive(MyMessageDTO::class.java, payload )
-        session.send(myMessageDTO)
-        return "MB: recipient: $recipient"
+        val vNodeResponse : ResponderMsg =
+            session.sendAndReceive(
+                ResponderMsg::class.java,
+                InitiatorMsg(startFlowArgs.message)).unwrap{ it }
+
+        return jsonMarshallingService.format(vNodeResponse)
     }
 }
 
@@ -53,9 +57,18 @@ class PassAMessageResponderFlow: ResponderFlow {
     override fun call(session: FlowSession) {
         log.info("MB: PassAMessageResponderFlow.call() called")
 
-        val myMessageDTO = session.receive(MyMessageDTO::class.java).unwrap { it }
-        log.info("MB: myMessageDTO in Responder: $myMessageDTO")
+        val initiatorData = session.receive(InitiatorMsg::class.java).unwrap { it }
+        log.info("MB: in Responder: $initiatorData")
+        session.send(ResponderMsg("Answers:${initiatorData.message}"))
     }
 }
+
+// These "message" classes need to be serializable.
 @CordaSerializable
-data class MyMessageDTO(val recipientX500: String, val message: String)
+data class StartFlowArgs(val recipientX500: String, val message: String)
+
+@CordaSerializable
+data class InitiatorMsg(val message: String)
+
+@CordaSerializable
+data class ResponderMsg(val message: String)
