@@ -7,16 +7,7 @@ plugins {
     id 'net.corda.plugins.cordapp-cpb'
 }
 
-configurations {
-    combinedWorker{
-        canBeConsumed = false
-        canBeResolved= true
-    }
-}
 
-dependencies {
-    combinedWorker "net.corda:corda-combined-worker:5.0.0.0-beta+"
-}
 
 group 'org.example'
 version '1.0-SNAPSHOT'
@@ -78,7 +69,8 @@ repositories {
             password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
         }
     }
-    
+
+    // Will be able to use MavenCentral when we release.    
     maven {
         url = "$artifactoryContextUrl/corda-ent-maven-unstable-local"
         credentials {
@@ -120,6 +112,19 @@ test {
     useJUnitPlatform()
 }
 
+
+// Support tooling
+
+configurations {
+    combinedWorker{
+        canBeConsumed = false
+        canBeResolved= true
+    }
+}
+
+dependencies {
+    combinedWorker "net.corda:corda-combined-worker:5.0.0.0-beta+"
+}
 tasks.register("downloadCombinedWorkerLatest", Copy) {
     from configurations.combinedWorker
     into "$buildDir/downloadedDependencies"
