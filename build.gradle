@@ -29,18 +29,21 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
         allWarningsAsErrors = true
 
-        // Specify the version of Kotlin that we are using
-        languageVersion = '1.6'
-
-        // 
-        apiVersion = '1.6'
+        // Specify the version of Kotlin that we are that we will be developing. 
+        languageVersion = '1.7'
+        // Specify the Kotlin libraries that code is compatible with
+        apiVersion = '1.7'
+        // Need to use a version of Kotlin that will be compatible with the Corda API. 
+	// Currently that is developed in Kotlin 1.7 so picking the same version ensures compatibility with that.
 
         // Specify the version of Java to target
         jvmTarget = javaVersion
 
+        // Needed for reflection to work correctly.
+        javaParameters = true
+
         // 
         freeCompilerArgs += [
-                "-java-parameters",
                 "-Xjvm-default=all"
         ]
     }
