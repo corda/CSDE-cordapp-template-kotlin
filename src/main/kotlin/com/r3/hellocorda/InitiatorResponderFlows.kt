@@ -1,4 +1,4 @@
-package com.cbarratt.cordapp.exprs
+package com.r3.hellocorda
 
 
 import net.corda.v5.application.flows.CordaInject
@@ -59,7 +59,7 @@ class Foof : RPCStartableFlow {
         session.send(args)
          
 
-        return jsonMarshallingService.format(OutputMessage("${args.msg ?: ""}${Foof.CONCAT_TEXT}"))
+        return jsonMarshallingService.format(OutputMessage("${args.msg ?: ""}$CONCAT_TEXT"))
     }
 }
 
