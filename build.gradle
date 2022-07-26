@@ -5,19 +5,26 @@ plugins {
 
     // (1)
     id 'net.corda.plugins.cordapp-cpb'
+
+
+    // Support tools
+    id "de.undercouch.download" version "5.1.0"
 }
 
-
-
-group 'org.example'
+group 'net.cordapp.hellocorda'
 version '1.0-SNAPSHOT'
 
 def javaVersion = VERSION_11
 
 // (2)
 cordapp {
+    // These are intended to specify the preferred version of Corda platform to run the CorDapp on and the
+    // earliest version that the CorDapp will run on.
+    // Currently mechanisms to enforce versioning have not been implemented so we need to pass in a dummy value for now.
     targetPlatformVersion platformVersion as Integer
     minimumPlatformVersion platformVersion as Integer
+
+    // Declares the type and metadata of the CPK (this CPB has one CPK)
     workflow {
         name "ModuleNameHere"
         versionId 1
@@ -70,7 +77,8 @@ repositories {
         }
     }
 
-    // Will be able to use MavenCentral when we release.    
+    // Will be able to use MavenCentral when we release.
+    // Needed for the combined-worker
     maven {
         url = "$artifactoryContextUrl/corda-ent-maven-unstable-local"
         credentials {
@@ -81,6 +89,9 @@ repositories {
 
     // C5 Binaries should go here.
     mavenCentral()
+
+    // Testing libraries are temporarily published to MavenLocal
+    mavenLocal()
 }
 
 // (5)
@@ -105,7 +116,17 @@ dependencies {
 
     // If Corda-API uses a dependency it will provide it to the CorDapp.
     // The build will not work if define the same dependency as regular dependency instead.
+    // We recommend using a logging library
     cordaProvided 'org.slf4j:slf4j-api'
+
+    // Testing dependencies
+    // Bring in the testing utlities.
+    testImplementation "net.corda:library:$testUtilsVersion"
+    // 3rd party tools
+    testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
+    testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
 }
 
 test {
@@ -115,18 +136,65 @@ test {
 
 // Support tooling
 
+
 configurations {
     combinedWorker{
+        canBeConsumed = false
+        canBeResolved= true
+    }
+
+    cordaCli{
         canBeConsumed = false
         canBeResolved= true
     }
 }
 
 dependencies {
-    combinedWorker "net.corda:corda-combined-worker:5.0.0.0-beta+"
+    combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
+    cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
 }
 // tasks.register("downloadCombinedWorkerLatest", Copy) {
 tasks.register("getMiniCorda", Copy) {
     from configurations.combinedWorker
     into "$buildDir/downloadedDependencies"
 }
+
+/*
+tasks.register("getCordaCli", Copy) {
+    from configurations.cordaCli
+    into "$buildDir/downloadedDependencies"
+}
+*/
+
+// Want to build a CPI
+// --- needs a GroupPolicy
+// --- needs a cert from tsa.org (download)
+// --- needs a keystore (can create with keytool from the JDK)
+// --- 
+
+tasks.register ('thing', Exec) {
+    executable 'ls'
+    args '-l', '-r', '-t'
+}
+
+
+/*
+tasks.registser ('createCPI', Exec) {
+   executable 
+
+}
+*/
+
+tasks.register('showProjName') {
+  println("Proj name=${rootProject.name}")
+  println("rootDir=${rootDir}")
+}
+
+tasks.register('downloadFile', Download) {
+    src 'https://freetsa.org/files/cacert.pem'
+    dest buildDir
+    overwrite false
+}
+
+
+

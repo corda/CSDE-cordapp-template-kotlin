@@ -1,4 +1,4 @@
-package com.cbarratt.cordapp.exprs
+package com.r3.hellocorda
 
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
@@ -40,7 +40,8 @@ class PassAMessageFlow: RPCStartableFlow {
         val vNodeResponse : ResponderMsg =
             session.sendAndReceive(
                 ResponderMsg::class.java,
-                InitiatorMsg(startFlowArgs.message)).unwrap{ it }
+                InitiatorMsg(startFlowArgs.message)
+            ).unwrap{ it }
 
         return jsonMarshallingService.format(vNodeResponse)
     }
