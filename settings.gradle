@@ -1,13 +1,13 @@
 
 
 pluginManagement {
-    // (1)
+    // Declare the repositories where plugins are stored.
     repositories {
-        mavenLocal()
         gradlePluginPortal()
     }
 
-    // (2)
+    //  The plugin dependencies with versions of the plugins congruent with the specified CorDapp plugin version,
+    //  Corda API version, and Kotlin version.
     plugins {
         id 'net.corda.plugins.cordapp-cpk' version cordaPluginsVersion
         id 'net.corda.plugins.cordapp-cpb' version cordaPluginsVersion
@@ -18,5 +18,6 @@ pluginManagement {
     }
 }
 
+// Root project name, used in naming the project as a whole and used in naming objects built by the project.
 rootProject.name = 'cordapp-hello-cordapp'
 
