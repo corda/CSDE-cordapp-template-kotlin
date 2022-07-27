@@ -1,14 +1,12 @@
 
 
 pluginManagement {
-    // WAS (1)
     // Declare the repositories where plugins are stored.
     repositories {
         gradlePluginPortal()
     }
 
-    // (2)
-    //  The plugin dependencies with versions of the plugins congruent with the specified Corda plugin version,
+    //  The plugin dependencies with versions of the plugins congruent with the specified CorDapp plugin version,
     //  Corda API version, and Kotlin version.
     plugins {
         id 'net.corda.plugins.cordapp-cpk' version cordaPluginsVersion
