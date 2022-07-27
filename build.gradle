@@ -169,11 +169,25 @@ dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
     cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
 }
+
 // tasks.register("downloadCombinedWorkerLatest", Copy) {
 tasks.register("getMiniCorda", Copy) {
     from configurations.combinedWorker
+    into "${System.getProperty('user.home')}/.corda/corda5"
+}
+
+
+/*
+// Downloads and unzips the combi-worker jar.
+// Use Java (as this is Groovy to pull out the name
+tasks.register("getMiniCorda", Copy) {
+    configurations.combinedWorker.asFileTree.each {
+        from(zipTree(it))
+    }
     into "$buildDir/downloadedDependencies"
 }
+
+ */
 
 /*
 tasks.register("getCordaCli", Copy) {
@@ -204,6 +218,7 @@ tasks.registser ('createCPI', Exec) {
 tasks.register('showProjName') {
   println("Proj name=${rootProject.name}")
   println("rootDir=${rootDir}")
+    println(System.getProperty("user.home"))
 }
 
 tasks.register('downloadFile', Download) {
