@@ -138,7 +138,6 @@ dependencies {
     // Not yet fully implemented:
     // cordaProvided 'net.corda:corda-ledger'
 
-<<<<<<< HEAD
     // The CorDapp uses the slf4j logging framework. Corda-API provides this so we need a 'cordaProvided' declaration.
     cordaProvided 'org.slf4j:slf4j-api'
 
