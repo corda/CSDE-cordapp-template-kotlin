@@ -2,8 +2,7 @@
 
 
 CPB=$1
-# NAME=$2
-CORDA_CLI_DIR=$2
+CORDA_CLI_DIR=../all-in-one-worker/corda-cli-plugin-host/ 
 
 # CORDA_CLI=../../../corda-cli-plugin-host/build/generatedScripts/corda-cli.sh
 CORDA_CLI=${CORDA_CLI_DIR}/build/generatedScripts/corda-cli.sh
