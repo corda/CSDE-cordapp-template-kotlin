@@ -99,9 +99,6 @@ repositories {
         }
     }
 
-    // Testing libraries are temporarily published to MavenLocal
-    mavenLocal()
-
     // Provides all other dependencies
     mavenCentral()
 
