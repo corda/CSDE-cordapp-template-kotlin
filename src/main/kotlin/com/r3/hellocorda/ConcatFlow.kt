@@ -29,3 +29,4 @@ class ConcatFlow : RPCStartableFlow {
         val CONCAT_TEXT = "FOO"
     }
 }
+

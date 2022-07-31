@@ -1,5 +1,5 @@
 package com.r3.hellocorda
-
+/*
 import net.corda.v5.application.flows.CordaInject
 import net.corda.v5.application.flows.FlowEngine
 import net.corda.v5.application.flows.RPCRequestData
@@ -23,3 +23,5 @@ class GetDateAndTimeFlow : RPCStartableFlow {
         return jsonMarshallingService.format("The current time is:${LocalDateTime.now()}")
     }
 }
+
+ */

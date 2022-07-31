@@ -54,3 +54,4 @@ class RollCallFlowTest {
         """.trimIndent().replace("\n", System.lineSeparator())))
     }
 }
+

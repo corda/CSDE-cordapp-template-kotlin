@@ -11,14 +11,13 @@ import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 
 @InitiatingFlow("roll-call")
-class RollCallFlow: RPCStartableFlow {
+class RollCallFlow : RPCStartableFlow {
 
     private companion object {
         private const val RETRIES: Int = 2
         private val nl = System.lineSeparator()
         val log = contextLogger()
     }
-
 
     @CordaInject
     lateinit var jsonMarshallingService: JsonMarshallingService
@@ -35,7 +34,6 @@ class RollCallFlow: RPCStartableFlow {
 
         val rollCall = requestBody.getRequestBodyAs(jsonMarshallingService, RollCallInitiationRequest::class.java)
 
-
         log.info("Initiating roll call")
         val sessionsAndRecipients = rollCall.recipientsX500.map {
             Pair(flowMessaging.initiateFlow(MemberX500Name.parse(it)), it)
@@ -45,7 +43,8 @@ class RollCallFlow: RPCStartableFlow {
         val teacherPrompt = flowEngine.virtualNodeName.commonName!!.uppercase()
         val responses = sessionsAndRecipients.map {
             Pair(
-                it.first, it.first.sendAndReceive(
+                it.first,
+                it.first.sendAndReceive(
                     RollCallResponse::class.java,
                     RollCallRequest(it.second)
                 ).unwrap { r -> r }.response
@@ -55,11 +54,11 @@ class RollCallFlow: RPCStartableFlow {
             val student = r.first.counterparty.commonName!!
             val response = r.second
             "$teacherPrompt: $student?" +
-                    if (response.isEmpty()) {
-                        retryRollCall(teacherPrompt, student, r)
-                    } else {
-                        nl + "${student.uppercase()}: $response"
-                    }
+                if (response.isEmpty()) {
+                    retryRollCall(teacherPrompt, student, r)
+                } else {
+                    nl + "${student.uppercase()}: $response"
+                }
         }
 
         return absenceResponses.joinToString(nl)
@@ -69,18 +68,17 @@ class RollCallFlow: RPCStartableFlow {
         teacherPrompt: String,
         student: String,
         r: Pair<FlowSession, String>
-    ) : String {
+    ): String {
         var retries = 0
         var response = ""
         var script = ""
-        while(retries < RETRIES && response.isEmpty()) {
+        while (retries < RETRIES && response.isEmpty()) {
             response = flowEngine.subFlow(AbsenceSubFlow(r.first.counterparty))
             script += nl + "$teacherPrompt: $student?" + response
             retries++
         }
         return script
     }
-
 }
 
 @InitiatingFlow("absence-call")
@@ -95,12 +93,12 @@ class AbsenceSubFlow(val counterparty: MemberX500Name) : SubFlow<String> {
     override fun call(): String {
         val session = flowMessaging.initiateFlow(counterparty)
         session.send(RollCallRequest(counterparty.toString()))
-        return session.receive(RollCallResponse::class.java).unwrap {it}.response
+        return session.receive(RollCallResponse::class.java).unwrap { it }.response
     }
 }
 
 @InitiatedBy("roll-call")
-open class RollCallResponderFlow: ResponderFlow {
+open class RollCallResponderFlow : ResponderFlow {
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
@@ -115,11 +113,13 @@ open class RollCallResponderFlow: ResponderFlow {
         session.receive(RollCallRequest::class.java)
 
         log.info("Responder ${flowEngine.virtualNodeName} received request; sending response")
-        val response = RollCallResponse(if(flowEngine.virtualNodeName.commonName == "Bueller") {
-            ""
-        } else {
-            "Here!"
-        })
+        val response = RollCallResponse(
+            if (flowEngine.virtualNodeName.commonName == "Bueller") {
+                ""
+            } else {
+                "Here!"
+            }
+        )
         session.send(response)
 
         log.info("Responder ${flowEngine.virtualNodeName} sent response")
@@ -127,7 +127,34 @@ open class RollCallResponderFlow: ResponderFlow {
 }
 
 @InitiatedBy("absence-call")
-class AbsenceCallResponderFlow: RollCallResponderFlow()
+// class AbsenceCallResponderFlow: RollCallResponderFlow()
+class AbsenceCallResponderFlow : ResponderFlow {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    private companion object {
+        val log = contextLogger()
+    }
+
+    @Suspendable
+    override fun call(session: FlowSession) {
+        log.info("Responder ${flowEngine.virtualNodeName} called")
+        session.receive(RollCallRequest::class.java)
+
+        log.info("Responder ${flowEngine.virtualNodeName} received request; sending response")
+        val response = RollCallResponse(
+            if (flowEngine.virtualNodeName.commonName == "Bueller") {
+                "<PREGNANT SILENCE>"
+            } else {
+                "Here!"
+            }
+        )
+        session.send(response)
+
+        log.info("Responder ${flowEngine.virtualNodeName} sent response")
+    }
+}
 
 @CordaSerializable
 data class RollCallInitiationRequest(val recipientsX500: List<String>)
