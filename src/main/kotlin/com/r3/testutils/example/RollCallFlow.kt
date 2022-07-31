@@ -90,6 +90,7 @@ class AbsenceSubFlow(val counterparty: MemberX500Name) : SubFlow<String> {
     @CordaInject
     lateinit var flowEngine: FlowEngine
 
+    @Suspendable
     override fun call(): String {
         val session = flowMessaging.initiateFlow(counterparty)
         session.send(RollCallRequest(counterparty.toString()))

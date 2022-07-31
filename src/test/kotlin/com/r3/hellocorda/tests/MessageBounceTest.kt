@@ -9,8 +9,6 @@ import net.corda.testutils.CordaMock
 import net.corda.testutils.tools.CordaFlowChecker
 import net.corda.testutils.tools.RPCRequest
 import net.corda.testutils.tools.ResponderMock
-import net.corda.v5.application.flows.ResponderFlow
-import net.corda.v5.application.messaging.FlowSession
 import net.corda.v5.base.types.MemberX500Name
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`

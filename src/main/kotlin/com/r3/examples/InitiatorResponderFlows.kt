@@ -1,4 +1,4 @@
-package com.r3.hellocorda
+package com.r3.examples
 
 /*
 import net.corda.v5.application.flows.CordaInject

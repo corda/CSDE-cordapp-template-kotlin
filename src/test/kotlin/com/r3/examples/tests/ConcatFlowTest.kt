@@ -1,7 +1,7 @@
-package com.r3.hellocorda.tests
+package com.r3.examples.tests
 
-import com.r3.hellocorda.ConcatFlow
-import com.r3.hellocorda.ConcatInputMessage
+import com.r3.examples.ConcatFlow
+import com.r3.examples.ConcatInputMessage
 import net.corda.testutils.CordaMock
 import net.corda.testutils.tools.CordaFlowChecker
 import net.corda.testutils.tools.RPCRequest

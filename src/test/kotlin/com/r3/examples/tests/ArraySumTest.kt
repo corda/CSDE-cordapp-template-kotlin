@@ -1,4 +1,4 @@
-package com.r3.hellocorda.tests
+package com.r3.examples.tests
 
 /*
 // WIP

@@ -1,8 +1,6 @@
 #!/usr/bin/env bash 
 
-# COMBIWORKER_JAR=$1
-# COMBIWORKER_JAR=$(find . -name "corda-comb*.jar" -print)
-COMBIWORKER_JAR=$(find ~/.corda/corda5 "corda-comb*.jar" -print)
+COMBIWORKER_JAR=$(ls ~/.corda/corda5/working/corda-comb*.jar | tail -n 1)
 
 # Run postgres docker command here.
 

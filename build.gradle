@@ -143,8 +143,12 @@ dependencies {
 
     // Dependencies Required By Test Tooling
     testImplementation "net.corda:library:$testUtilsVersion"
-    // 3rd party test libraries
+
+    // 3rd party libraries
+    // Required
     testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+
+    // Optional but used by exmaple tests.
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
     testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
@@ -153,7 +157,6 @@ dependencies {
 test {
     useJUnitPlatform()
 }
-
 
 // Support tooling
 configurations {
@@ -179,19 +182,6 @@ tasks.register("getMiniCorda", Copy) {
     into "${System.getProperty('user.home')}/.corda/corda5"
 }
 
-
-/*
-// Downloads and unzips the combi-worker jar.
-// Use Java (as this is Groovy to pull out the name
-tasks.register("getMiniCorda", Copy) {
-    configurations.combinedWorker.asFileTree.each {
-        from(zipTree(it))
-    }
-    into "$buildDir/downloadedDependencies"
-}
-
- */
-
 /*
 tasks.register("getCordaCli", Copy) {
     from configurations.cordaCli
@@ -199,36 +189,16 @@ tasks.register("getCordaCli", Copy) {
 }
 */
 
-// Want to build a CPI
-// --- needs a GroupPolicy
-// --- needs a cert from tsa.org (download)
-// --- needs a keystore (can create with keytool from the JDK)
-// --- 
-
-tasks.register ('thing', Exec) {
-    executable 'ls'
-    args '-l', '-r', '-t'
-}
-
-
 /*
-tasks.registser ('createCPI', Exec) {
-   executable 
-
+// Doesn't work, corda-cli.sh gets run in the wrong env.
+tasks.register('buildCPI', Exec) {
+    executable "$rootDir/tools/mkcpi.sh"
+    args "-l", "$rootDir/build/libs/${rootProject.name}-1.0-SNAPSHOT-package.cpb"
 }
 */
 
-tasks.register('showProjName') {
-  println("Proj name=${rootProject.name}")
-  println("rootDir=${rootDir}")
-    println(System.getProperty("user.home"))
-}
-
-tasks.register('downloadFile', Download) {
+tasks.register('downloadFreeTsaCert', Download) {
     src 'https://freetsa.org/files/cacert.pem'
     dest buildDir
     overwrite false
 }
-
-
-
