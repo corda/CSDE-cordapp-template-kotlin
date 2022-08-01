@@ -1,8 +1,9 @@
 #!/usr/bin/env bash 
 
-COMBIWORKER_JAR=$(ls ~/.corda/corda5/working/corda-comb*.jar | tail -n 1)
+#COMBIWORKER_JAR=$(ls ~/.corda/corda5/working/corda-comb*.jar | tail -n 1)
+COMBIWORKER_JAR=$(ls ~/.corda/corda5/corda-comb*.jar | tail -n 1)
 
-# Run postgres docker command here.
+echo "Running: $COMBIWORKER_JAR"
 
 java \
    '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005' \

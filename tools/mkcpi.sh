@@ -3,7 +3,7 @@
 
 CPB=${1:-$(find . -name "*.cpb" -print)}
 echo "CPB=$CPB"
-CORDA_CLI_DIR=../all-in-one-worker/corda-cli-plugin-host/ 
+CORDA_CLI_DIR=~/.corda/corda5/corda-cli-plugin-host/ 
 
 # CORDA_CLI=../../../corda-cli-plugin-host/build/generatedScripts/corda-cli.sh
 CORDA_CLI=${CORDA_CLI_DIR}/build/generatedScripts/corda-cli.sh
