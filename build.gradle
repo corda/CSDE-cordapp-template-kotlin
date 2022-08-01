@@ -196,6 +196,6 @@ tasks.register('buildCPI', Exec) {
 
 tasks.register('downloadFreeTsaCert', Download) {
     src 'https://freetsa.org/files/cacert.pem'
-    dest buildDir
+    dest rootDir
     overwrite false
 }
