@@ -12,6 +12,8 @@ plugins {
     // Development Support tools
     // Plugin that provides gradle functions to download files from websites.
     id "de.undercouch.download" version "5.1.0"
+
+    id 'java'
 }
 
 group 'com.r3.hellocorda'
@@ -173,6 +175,8 @@ dependencies {
     cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
 }
 
+
+
 // tasks.register("downloadCombinedWorkerLatest", Copy) {
 tasks.register("getMiniCorda", Copy) {
     from configurations.combinedWorker
@@ -193,6 +197,17 @@ tasks.register('buildCPI', Exec) {
     args "-l", "$rootDir/build/libs/${rootProject.name}-1.0-SNAPSHOT-package.cpb"
 }
 */
+
+tasks.register("createCPI", JavaExec) {
+    def CORDA_CLI_DIR = "${System.getProperty('user.home')}/.corda/corda5/corda-cli-plugin-host"
+    def JAR_DIR = "${CORDA_CLI_DIR}/app/build/libs"
+    def pluginsDir = "${CORDA_CLI_DIR}/build/plugins"
+    classpath = files("$JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar")
+    jvmArgs = ["-Dpf4j.pluginsDir=$pluginsDir"]
+    standardOutput = new FileOutputStream("MyGroupPolicy.json")
+    args "mgm", "groupPolicy"
+}
+
 
 tasks.register('downloadFreeTsaCert', Download) {
     src 'https://freetsa.org/files/cacert.pem'
