@@ -1,5 +1,6 @@
 import static org.gradle.api.JavaVersion.VERSION_11
 
+
 plugins {
     id 'org.jetbrains.kotlin.jvm'
 
@@ -13,7 +14,6 @@ plugins {
     // Plugin that provides gradle functions to download files from websites.
     id "de.undercouch.download" version "5.1.0"
 
-    id 'java'
 }
 
 group 'com.r3.hellocorda'
@@ -101,6 +101,25 @@ repositories {
         }
     }
 
+    maven {
+        url = "$artifactoryContextUrl/engineering-tools-maven-unstable"
+        credentials {
+            username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
+            password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+        }
+    }
+
+    /*
+    maven {
+        url = "$artifactoryContextUrl/conclave-docker"
+        credentials {
+            username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
+            password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+        }
+    }
+
+     */
+
     // Provides all other dependencies
     mavenCentral()
 
@@ -146,12 +165,15 @@ dependencies {
     // 3rd party libraries
     // Required
     testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
     // Optional but used by exmaple tests.
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
     testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
+
 }
+
 
 test {
     useJUnitPlatform()
@@ -168,11 +190,38 @@ configurations {
         canBeConsumed = false
         canBeResolved= true
     }
+
+    cordaCliMgmPlugin {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+
+    cordaCliPackagePlugin {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+
+    myCordaCpb {
+        canBeConsumed = false
+    }
+
+    //keystore {
+    //    canBeConsumed = false
+    //    canBeResolved = true
+    //}
 }
 
+// Dependencies for supporting tools
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
     cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
+    cordaCliMgmPlugin "net.corda.cli:mgm:$cordaCliVersion"
+    cordaCliPackagePlugin "net.corda.cli.deployment:package:$combinedWorkerVersion"
+    //myCordaCpb project(path: ":", configuration: "cordaCPB")
+    //myCordaCpb project(configuration: "cordaCPB")
+    // keystore files('signingkeys.pfx') {
+    //    builtBy('createKeystore')
+    //}
 }
 
 
@@ -183,34 +232,181 @@ tasks.register("getMiniCorda", Copy) {
     into "${System.getProperty('user.home')}/.corda/corda5"
 }
 
-/*
+//def combiWorkerJar = "${System.getProperty('user.home')}/.corda/corda5/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
+def combiWorkerJar = "${System.getProperty('user.home')}/.corda/corda5/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
+
+//def CORDA_CLI_DIR = "${System.getProperty('user.home')}/.corda/corda5/corda-cli-plugin-host"
+def CORDA_CLI_DIR = "${System.getProperty('user.home')}/.corda/corda5/corda-cli"
+// def CORDA_CLI_JAR = "corda-cli-0.0.1-SNAPSHOT.jar"
+def CORDA_CLI_JAR = "corda-cli-0.0.1-beta-1659584654941.jar"
+def CORDA_CLI_JAR_DIR = "${CORDA_CLI_DIR}/app/build/libs"
+//def CORDA_CLI_PLUGINS_DIR = "${CORDA_CLI_DIR}/build/plugins"
+def CORDA_CLI_PLUGINS_DIR = "${CORDA_CLI_DIR}/plugins"
+
+tasks.register('startMiniCorda', JavaExec) {
+   jvmArgs = ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005',
+              '-Dco.paralleluniverse.fibers.verifyInstrumentation=true']
+    classpath = files(combiWorkerJar)
+    args  '--instanceId=0', '-mbus.busType=DATABASE',
+          '-spassphrase=password', '-ssalt=salt', '-spassphrase=password', '-ssalt=salt',
+            '-ddatabase.user=user', '-ddatabase.pass=password',
+            '-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster'
+}
+
 tasks.register("getCordaCli", Copy) {
     from configurations.cordaCli
-    into "$buildDir/downloadedDependencies"
+    into "${System.getProperty('user.home')}/.corda/corda5/corda-cli"
 }
-*/
 
-/*
-// Doesn't work, corda-cli.sh gets run in the wrong env.
-tasks.register('buildCPI', Exec) {
-    executable "$rootDir/tools/mkcpi.sh"
-    args "-l", "$rootDir/build/libs/${rootProject.name}-1.0-SNAPSHOT-package.cpb"
+tasks.register("getCordaCliMgmPlugin", Copy) {
+    from configurations.cordaCliMgmPlugin
+    into "${System.getProperty('user.home')}/.corda/corda5/corda-cli/plugins"
 }
-*/
 
-tasks.register("createCPI", JavaExec) {
-    def CORDA_CLI_DIR = "${System.getProperty('user.home')}/.corda/corda5/corda-cli-plugin-host"
-    def JAR_DIR = "${CORDA_CLI_DIR}/app/build/libs"
-    def pluginsDir = "${CORDA_CLI_DIR}/build/plugins"
-    classpath = files("$JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar")
-    jvmArgs = ["-Dpf4j.pluginsDir=$pluginsDir"]
+
+tasks.register("getCordaCliPackagePlugin", Copy) {
+    from configurations.cordaCliPackagePlugin
+    into "${System.getProperty('user.home')}/.corda/corda5/corda-cli/plugins"
+}
+
+
+tasks.register("createGroupPolicy", JavaExec) {
+    //classpath = files("$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar")
+    println("CORDA_CLI_PLUGINS_DIR=$CORDA_CLI_PLUGINS_DIR")
+    classpath = files("$CORDA_CLI_DIR/$CORDA_CLI_JAR")
+    jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
     standardOutput = new FileOutputStream("MyGroupPolicy.json")
-    args "mgm", "groupPolicy"
+    // List<String> myArgs = ["mgm", 'groupPolicy']
+    LinkedList<String> myArgs = new LinkedList<String>()
+    myArgs.add("mgm")
+    myArgs.add("groupPolicy")
+    def jsonFile = file("$rootDir/config/dev-net.json")
+    def slurper = new groovy.json.JsonSlurper()
+    def parsedJson = slurper.parseText(jsonFile.text)
+    parsedJson.identities.forEach {
+        myArgs.add("--name")
+        myArgs.add(it)
+    }
+
+    myArgs.add("--endpoint-protocol=1")
+    myArgs.add("--endpoint=http://localhost:1080")
+    args myArgs
 }
 
+tasks.register('printCPB' ) {
+    dependsOn('cpb')
+    println("myCordaCpb=${configurations.myCordaCpb.files()}")
+    println("cpb.outputs.files()=${cpb.outputs.files()}")
+    println("assemble.outputs.files()=${assemble.outputs.files()}")
+
+    // println(cpb.get().outputFile)
+    //File cpbFile = file('build/libs/*.cpb')
+    // inputs.files(myCordaCpb).withPropertyName('cpb').withPathSensitivity(PathSensitivity.RELATIVE)
+    //println("${configurations.myCordaCpb.singleFile.absolutePath}")
+    println("$buildDir/libs/")
+
+    //println("cbp={$cpb.toString()}")
+    //println("Cpb file=${cpbFile.absolutePath}")
+}
+
+tasks.register('createKeystore', Exec) {
+    dependsOn('downloadFreeTsaCert')
+    commandLine "keytool", "-genkey",
+            "-alias", "my-signing-key",
+            "-keystore", "signingkeys.pfx",
+            "-storepass", "keystore password",
+            "-dname", "cn=CPI Example - My Signing Key, o=CorpOrgCorp, c=GB",
+            "-keyalg", "RSA",
+            "-storetype", "pkcs12",
+            "-validity", "4000"
+}
+
+tasks.register('addTsaCertToKeystore', Exec) {
+    dependsOn ('createKeystore')
+    commandLine "keytool", "-importcert",
+            "-alias", "freetsa",
+            "-keystore", "signingkeys.pfx",
+            "-storepass", "keystore password",
+            "-file", "cacert.pem",
+            "-noprompt"
+    //outputs.file("signingkeys.pfx")
+}
+
+tasks.register('createCPI', JavaExec) {
+    dependsOn('cpb', 'createGroupPolicy', 'addTsaCertToKeystore')
+    File srcDir
+    srcDir = file('build/libs')
+
+    // Create a file collection using a closure
+    def collection = layout.files { srcDir.listFiles() }
+
+    def cpbs = collection.filter { it.getName().endsWith(".cpb") }.each{ println it }
+    println("single file = ${cpbs.singleFile.absolutePath}")
+    classpath = files("$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar")
+    jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
+    args 'package', 'create',
+         '--cpb', cpbs.singleFile.absolutePath,
+         '--group-policy', 'MyGroupPolicy.json',
+         '--keystore', 'signingkeys.pfx',
+         '--storepass', 'keystore password',
+         '--key', 'my-signing-key',
+         '--tsa', 'https://freetsa.org/tsr',
+         '--file', "${project.archivesBaseName}-${project.version}.cpi"
+}
+
+tasks.register('list') {
+    dependsOn('cpb')
+    File srcDir
+
+    srcDir = file('build/libs')
+    // Create a file collection using a closure
+    def collection = layout.files { srcDir.listFiles() }
+
+    println "Contents of $srcDir.name"
+    def cpbs = collection.filter { it.getName().endsWith(".cpb") }.each{ println it }
+    println("single file = ${cpbs.singleFile.absolutePath}")
+}
 
 tasks.register('downloadFreeTsaCert', Download) {
     src 'https://freetsa.org/files/cacert.pem'
     dest rootDir
     overwrite false
+}
+
+// This does not work
+// Cannot get access to groovy.json
+
+tasks.register('parseJson') {
+     def jsonFile = file("$rootDir/config/dev-net.json")
+     def slurper = new groovy.json.JsonSlurper()
+     doLast {
+         def parsedJson = slurper.parseText(jsonFile.text)
+         println("${parsedJson.identities}")
+     }
+}
+
+tasks.register('nameStuff') {
+    println("${project.archivesBaseName}-${project.version}.cpi")
+}
+
+
+task demo {
+    doLast {
+        Authenticator.setDefault (new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication ("admin", "admin".toCharArray());
+            }
+        })
+        def body = [user: "dummyUser"]
+        def req = new URL('https://localhost:8888/').openConnection()
+
+        req.setRequestMethod("POST")
+        req.setRequestProperty("Content-Type", "application/json; charset=UTF-8")
+        req.setDoOutput(true)
+        req.getOutputStream().write(JsonOutput.toJson(body).getBytes("UTF-8"))
+        logger.quiet "Status code: ${req.getResponseCode()}" // HTTP request done on first read
+        def resp = new groovy.json.JsonSlurper().parseText(req.getInputStream().getText())
+        logger.quiet "Response: ${resp}"
+        println("Response: ${resp}")
+    }
 }

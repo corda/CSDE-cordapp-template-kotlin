@@ -26,7 +26,7 @@ class ConcatFlow : RPCStartableFlow {
         return jsonMarshallingService.format(ConcatOutputMessage("${args.inText ?: ""}$CONCAT_TEXT"))
     }
     companion object {
-        val CONCAT_TEXT = "FOO"
+        val CONCAT_TEXT = "it's a different yet again!"
     }
 }
 

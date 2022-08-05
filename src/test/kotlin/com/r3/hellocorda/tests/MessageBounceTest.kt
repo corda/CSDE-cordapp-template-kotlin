@@ -27,6 +27,7 @@ class MessageSenderTests {
         assertDoesNotThrow { CordaFlowChecker().check(flowClass) }
     }
 
+    // Unit Test
     @Test
     fun `Should get message back with responder prefix `() {
         // Create an instance of the mock cluster
@@ -57,6 +58,7 @@ class MessageSenderTests {
         assertThat(response, `is`("{\"message\":\"Responder returned: here's my message\"}"))
     }
 
+    // Integration Test
     @Test
     fun `Should return the correct message using actual responder flow`() {
         val corda = CordaMock()
