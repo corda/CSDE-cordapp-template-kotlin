@@ -1,3 +1,12 @@
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.nio.charset.Charset
+import java.security.SecureRandom
+
 import static org.gradle.api.JavaVersion.VERSION_11
 
 
@@ -235,13 +244,13 @@ tasks.register("getMiniCorda", Copy) {
 //def combiWorkerJar = "${System.getProperty('user.home')}/.corda/corda5/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
 def combiWorkerJar = "${System.getProperty('user.home')}/.corda/corda5/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
 
-//def CORDA_CLI_DIR = "${System.getProperty('user.home')}/.corda/corda5/corda-cli-plugin-host"
-def CORDA_CLI_DIR = "${System.getProperty('user.home')}/.corda/corda5/corda-cli"
+def CORDA_CLI_DIR = "${System.getProperty('user.home')}/.corda/corda5/corda-cli-plugin-host"
+// def CORDA_CLI_DIR = "${System.getProperty('user.home')}/.corda/corda5/corda-cli"
 // def CORDA_CLI_JAR = "corda-cli-0.0.1-SNAPSHOT.jar"
-def CORDA_CLI_JAR = "corda-cli-0.0.1-beta-1659584654941.jar"
+//def CORDA_CLI_JAR = "corda-cli-0.0.1-beta-1659584654941.jar"
 def CORDA_CLI_JAR_DIR = "${CORDA_CLI_DIR}/app/build/libs"
-//def CORDA_CLI_PLUGINS_DIR = "${CORDA_CLI_DIR}/build/plugins"
-def CORDA_CLI_PLUGINS_DIR = "${CORDA_CLI_DIR}/plugins"
+def CORDA_CLI_PLUGINS_DIR = "${CORDA_CLI_DIR}/build/plugins"
+//def CORDA_CLI_PLUGINS_DIR = "${CORDA_CLI_DIR}/plugins"
 
 tasks.register('startMiniCorda', JavaExec) {
    jvmArgs = ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005',
@@ -271,12 +280,11 @@ tasks.register("getCordaCliPackagePlugin", Copy) {
 
 
 tasks.register("createGroupPolicy", JavaExec) {
-    //classpath = files("$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar")
+    classpath = files("$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar")
     println("CORDA_CLI_PLUGINS_DIR=$CORDA_CLI_PLUGINS_DIR")
-    classpath = files("$CORDA_CLI_DIR/$CORDA_CLI_JAR")
+    //classpath = files("$CORDA_CLI_DIR/$CORDA_CLI_JAR")
     jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
     standardOutput = new FileOutputStream("MyGroupPolicy.json")
-    // List<String> myArgs = ["mgm", 'groupPolicy']
     LinkedList<String> myArgs = new LinkedList<String>()
     myArgs.add("mgm")
     myArgs.add("groupPolicy")
@@ -311,6 +319,7 @@ tasks.register('printCPB' ) {
 
 tasks.register('createKeystore', Exec) {
     dependsOn('downloadFreeTsaCert')
+    commandLine "rm", 'signingkeys.pfx'
     commandLine "keytool", "-genkey",
             "-alias", "my-signing-key",
             "-keystore", "signingkeys.pfx",
@@ -390,7 +399,78 @@ tasks.register('nameStuff') {
 }
 
 
-task demo {
+tasks.register("uploadCPIUnix", Exec) {
+    def CPI = "cordapp-hello-cordapp-1.0-SNAPSHOT-package.cpi"
+    commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
+            "-F", "upload=@$CPI",
+            "https://localhost:8888/api/v1/cpi/"
+
+    doFirst {
+        standardOutput = new FileOutputStream("CPIupload.json")
+    }
+    doLast {
+        def parsedJson = slurper.parseText("CPIupload.json")
+        println("${parsedJson.id}")
+    }
+}
+
+tasks.register("forceUploadUnix", Exec) {
+    // curl --insecure -u admin:admin -s -F upload=@$CPI https://localhost:8888/api/v1/maintenance/virtualnode/forcecpiupload/
+    def CPI = "cordapp-hello-cordapp-1.0-SNAPSHOT-package.cpi"
+    commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
+            "-F", "upload=@$CPI",
+            "https://localhost:8888/api/v1/maintenance/virtualnode/forcecpiupload/"
+
+    doFirst {
+        standardOutput = new FileOutputStream("CPIupload.json")
+    }
+    doLast {
+        def jsonFile = file("CPIupload.json")
+        def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
+        println("${parsedJson.id}")
+    }
+}
+
+tasks.register("deployCPIUnix", Exec) {
+
+    standardOutput = new FileOutputStream("CPIFileStatus.json")
+    def jsonFileA = file("CPIupload.json")
+    def requestId = (new groovy.json.JsonSlurper().parseText(jsonFileA.text)).id
+    //println("${parsedJson.id}")
+    println(requestId)
+
+    commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
+            "https://localhost:8888/api/v1/cpi/status/${requestId}"
+
+    doLast {
+      def jsonFile = file("CPIFileStatus.json")
+      def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
+      println("${parsedJson.cpiFileChecksum}")
+  }
+}
+
+tasks.register("createVNodes") {
+    def jsonFile = file("$rootDir/config/dev-net.json")
+    def slurper = new groovy.json.JsonSlurper()
+    def parsedJson = slurper.parseText(jsonFile.text)
+    def CpiFileStatusFile = file("CPIFileStatus.json")
+    def cpiChkSum = (new groovy.json.JsonSlurper().parseText(CpiFileStatusFile.text)).cpiFileChecksum
+    println(parsedJson.identities)
+    doLast {
+        parsedJson.identities.forEach {
+            println(it)
+            def X500 = it
+            exec {
+                commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+                        "-d", "{ \"request\" : { \"cpiFileChecksum\": \"$cpiChkSum\", \"x500Name\": \"$X500\"  } }",
+                        "https://localhost:8888/api/v1/virtualnode"
+            }
+        }
+    }
+
+}
+
+task urldemo {
     doLast {
         Authenticator.setDefault (new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
