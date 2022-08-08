@@ -4,7 +4,7 @@ import com.r3.examples.ConcatFlow
 import com.r3.examples.ConcatInputMessage
 import net.corda.testutils.CordaMock
 import net.corda.testutils.tools.CordaFlowChecker
-import net.corda.testutils.tools.RPCRequest
+import net.corda.testutils.tools.RPCRequestDataMock
 import net.corda.v5.base.types.MemberX500Name
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
@@ -29,7 +29,7 @@ class ConcatFlowTest {
         // Stongly typed version to recommend.
         val response1 = corda.invoke(
             eric,
-            RPCRequest.fromData(
+            RPCRequestDataMock.fromData(
                 "r1",
                 ConcatFlow::class.java,
                 ConcatInputMessage(messageText)

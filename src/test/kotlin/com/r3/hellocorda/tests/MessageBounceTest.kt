@@ -7,7 +7,7 @@ import com.r3.hellocorda.ResponderMsg
 import com.r3.hellocorda.StartRPCFlowArgs
 import net.corda.testutils.CordaMock
 import net.corda.testutils.tools.CordaFlowChecker
-import net.corda.testutils.tools.RPCRequest
+import net.corda.testutils.tools.RPCRequestDataMock
 import net.corda.testutils.tools.ResponderMock
 import net.corda.v5.base.types.MemberX500Name
 import org.hamcrest.MatcherAssert.assertThat
@@ -44,7 +44,7 @@ class MessageSenderTests {
         // Invoke (start) a flow on NodeA and collect flow response
         val response = corda.invoke(
             nodeA,
-            RPCRequest.fromData(
+            RPCRequestDataMock.fromData(
                 "r1",
                 MessageSender::class.java,
                 StartRPCFlowArgs(
@@ -73,7 +73,7 @@ class MessageSenderTests {
         // Invoke (start) a flow on NodeA and collect flow response
         val response = corda.invoke(
             nodeA,
-            RPCRequest.fromData(
+            RPCRequestDataMock.fromData(
                 "r1",
                 MessageSender::class.java,
                 StartRPCFlowArgs(

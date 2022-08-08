@@ -6,9 +6,11 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.charset.Charset
 import java.security.SecureRandom
+import java.util.HashMap
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.lang.ProcessHandle
+import java.lang.String
 
 import static org.gradle.api.JavaVersion.VERSION_11
 
@@ -140,7 +142,7 @@ repositories {
     mavenCentral()
 
     // Testing libraries are temporarily published to MavenLocal
-    mavenLocal()
+    // mavenLocal()
 }
 
 // Declare dependencies for the modules we will use.
@@ -169,7 +171,6 @@ dependencies {
     cordaProvided 'net.corda:corda-persistence'
     cordaProvided 'net.corda:corda-serialization'
 
-    implementation 'net.corda:cordapp-test-utils'
 
     // Not yet fully implemented:
     // cordaProvided 'net.corda:corda-ledger'
@@ -178,7 +179,8 @@ dependencies {
     cordaProvided 'org.slf4j:slf4j-api'
 
     // Dependencies Required By Test Tooling
-    testImplementation "net.corda:library:$testUtilsVersion"
+    //testImplementation "net.corda:library:$testUtilsVersion"
+    testImplementation "net.corda:cordapp-test-utils:$testUtilsVersion"
 
     // 3rd party libraries
     // Required
@@ -234,29 +236,34 @@ dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
     cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
     cordaCliMgmPlugin "net.corda.cli:mgm:$cordaCliVersion"
-    cordaCliPackagePlugin "net.corda.cli.deployment:package:$combinedWorkerVersion"
-    //myCordaCpb project(path: ":", configuration: "cordaCPB")
-    //myCordaCpb project(configuration: "cordaCPB")
-    // keystore files('signingkeys.pfx') {
-    //    builtBy('createKeystore')
-    //}
+    cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$combinedWorkerVersion"
 }
 
 
 def cordaBinDir="${System.getProperty('user.home')}/.corda/corda5"
 
-// tasks.register("downloadCombinedWorkerLatest", Copy) {
 tasks.register("getMiniCorda", Copy) {
     from configurations.combinedWorker
     into cordaBinDir
 }
 
+tasks.register('listCli'){
+    print("Corda-Cli configuration:")
+    configurations.cordaCli.each { println(it) }
+    print("MGM configuration:")
+    configurations.cordaCliMgmPlugin.each { println(it) }
+    print("Package configuration:")
+    configurations.cordaCliPackagePlugin.each { println(it) }
+
+}
 
 //def combiWorkerJar = "${System.getProperty('user.home')}/.corda/corda5/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
 //def combiWorkerJar = "$cordaBinDir/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
 
 def CORDA_CLI_DIR = "$cordaBinDir/corda-cli-plugin-host"
-// def CORDA_CLI_DIR = "$cordaBinDir/corda-cli"
+
+//def CORDA_CLI_DIR = "$cordaBinDir/corda-cli"
+// def CORDA_CLI_DIR = "$cordaBinDir/corda-cli-plugin"
 // def CORDA_CLI_JAR = "corda-cli-0.0.1-SNAPSHOT.jar"
 //def CORDA_CLI_JAR = "corda-cli-0.0.1-beta-1659584654941.jar"
 def CORDA_CLI_JAR_DIR = "${CORDA_CLI_DIR}/app/build/libs"
@@ -275,11 +282,6 @@ tasks.register('startMiniCorda', JavaExec) {
             '-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster'
 }*/
 
-tasks.register("getCordaCli", Copy) {
-    from configurations.cordaCli
-    into "$cordaBinDir/corda-cli"
-}
-
 tasks.register("getCordaCliMgmPlugin", Copy) {
     from configurations.cordaCliMgmPlugin
     into "$cordaBinDir/corda-cli/plugins"
@@ -291,12 +293,23 @@ tasks.register("getCordaCliPackagePlugin", Copy) {
     into "$cordaBinDir/corda-cli/plugins"
 }
 
+tasks.register("getCordaCli", Copy) {
+    dependsOn('getCordaCliMgmPlugin', 'getCordaCliMgmPlugin', 'getCordaCliPackagePlugin')
+    from configurations.cordaCli
+    into "$cordaBinDir/corda-cli"
+}
+
+
 tasks.register("createGroupPolicy", JavaExec) {
-    classpath = files("$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar")
-    println("CORDA_CLI_PLUGINS_DIR=$CORDA_CLI_PLUGINS_DIR")
+    //println("CORDA_CLI_PLUGINS_DIR=$CORDA_CLI_PLUGINS_DIR")
     //classpath = files("$CORDA_CLI_DIR/$CORDA_CLI_JAR")
+    println("Plugins: $CORDA_CLI_PLUGINS_DIR")
+    // classpath = configurations.cordaCli
+    println( "$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar")
+    // Cannot enclose this in "doLast" section for some reason
+    classpath = files("$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar")
     jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
-    standardOutput = new FileOutputStream("MyGroupPolicy.json")
+    standardOutput = new FileOutputStream("GroupPolicy.json")
     LinkedList<String> myArgs = new LinkedList<String>()
     myArgs.add("mgm")
     myArgs.add("groupPolicy")
@@ -333,6 +346,9 @@ tasks.register('createKeystore') {
     dependsOn('downloadFreeTsaCert')
     doLast {
         exec {
+            commandLine "rm", "signingkeys.pfx"
+        }
+        exec {
             commandLine "keytool", "-genkey",
                     "-alias", "my-signing-key",
                     "-keystore", "signingkeys.pfx",
@@ -345,37 +361,45 @@ tasks.register('createKeystore') {
     }
 }
 
-tasks.register('addTsaCertToKeystore', Exec) {
+tasks.register('addTsaCertToKeystore') {
     dependsOn ('createKeystore')
-    commandLine "keytool", "-importcert",
-            "-alias", "freetsa",
-            "-keystore", "signingkeys.pfx",
-            "-storepass", "keystore password",
-            "-file", "cacert.pem",
-            "-noprompt"
+    doLast {
+        exec {
+            commandLine "keytool", "-importcert",
+                    "-alias", "freetsa",
+                    "-keystore", "signingkeys.pfx",
+                    "-storepass", "keystore password",
+                    "-file", "cacert.pem",
+                    "-noprompt"
+        }
+    }
     //outputs.file("signingkeys.pfx")
 }
 
-tasks.register('createCPI', JavaExec) {
+tasks.register('buildCPI', JavaExec) {
     dependsOn('cpb', 'createGroupPolicy', 'addTsaCertToKeystore')
+    exec {
+        commandLine "rm", "-f", "${project.archivesBaseName}-${project.version}.cpi"
+    }
+    // Cannot enclose this in "doLast" section for some reason
     File srcDir
     srcDir = file('build/libs')
 
     // Create a file collection using a closure
     def collection = layout.files { srcDir.listFiles() }
 
-    def cpbs = collection.filter { it.getName().endsWith(".cpb") }.each{ println it }
+    def cpbs = collection.filter { it.getName().endsWith(".cpb") }.each { println it }
     println("single file = ${cpbs.singleFile.absolutePath}")
     classpath = files("$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar")
     jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
     args 'package', 'create',
-         '--cpb', cpbs.singleFile.absolutePath,
-         '--group-policy', 'MyGroupPolicy.json',
-         '--keystore', 'signingkeys.pfx',
-         '--storepass', 'keystore password',
-         '--key', 'my-signing-key',
-         '--tsa', 'https://freetsa.org/tsr',
-         '--file', "${project.archivesBaseName}-${project.version}.cpi"
+            '--cpb', cpbs.singleFile.absolutePath,
+            '--group-policy', 'GroupPolicy.json',
+            '--keystore', 'signingkeys.pfx',
+            '--storepass', 'keystore password',
+            '--key', 'my-signing-key',
+            '--tsa', 'https://freetsa.org/tsr',
+            '--file', "${project.archivesBaseName}-${project.version}.cpi"
 }
 
 tasks.register('list') {
@@ -432,26 +456,27 @@ tasks.register('nameStuff') {
 }
 
 
-tasks.register("uploadCPIUnix", Exec) {
-    def CPI = "cordapp-hello-cordapp-1.0-SNAPSHOT-package.cpi"
+tasks.register("uploadCPI", Exec) {
+    def cpi = "${project.archivesBaseName}-${project.version}.cpi"
+
+    standardOutput = new FileOutputStream("CPIupload.json")
     commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
-            "-F", "upload=@$CPI",
+            "-F", "upload=@$cpi",
             "https://localhost:8888/api/v1/cpi/"
 
-    doFirst {
-        standardOutput = new FileOutputStream("CPIupload.json")
-    }
     doLast {
-        def parsedJson = slurper.parseText("CPIupload.json")
+        def jsonFile = file("CPIupload.json")
+        def slurper = new groovy.json.JsonSlurper()
+        def parsedJson = slurper.parseText(jsonFile.text)
         println("${parsedJson.id}")
     }
 }
 
-tasks.register("forceUploadUnix", Exec) {
+tasks.register("forceUploadCPI", Exec) {
     // curl --insecure -u admin:admin -s -F upload=@$CPI https://localhost:8888/api/v1/maintenance/virtualnode/forcecpiupload/
-    def CPI = "cordapp-hello-cordapp-1.0-SNAPSHOT-package.cpi"
+    def cpi = "${project.archivesBaseName}-${project.version}.cpi"
     commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
-            "-F", "upload=@$CPI",
+            "-F", "upload=@$cpi",
             "https://localhost:8888/api/v1/maintenance/virtualnode/forcecpiupload/"
 
     doFirst {
@@ -464,21 +489,28 @@ tasks.register("forceUploadUnix", Exec) {
     }
 }
 
-tasks.register("deployCPIUnix", Exec) {
 
+
+tasks.register("deployCPIUnix", Exec) {
     standardOutput = new FileOutputStream("CPIFileStatus.json")
     def jsonFileA = file("CPIupload.json")
     def requestId = (new groovy.json.JsonSlurper().parseText(jsonFileA.text)).id
-    //println("${parsedJson.id}")
     println(requestId)
-    def URL=
+
     commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
             "https://localhost:8888/api/v1/cpi/status/${requestId}"
 
     doLast {
-      def jsonFile = file("CPIFileStatus.json")
-      def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
-      println("${parsedJson.cpiFileChecksum}")
+        def jsonFile = file("CPIFileStatus.json")
+        def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
+
+        println("status=$parsedJson.status")
+        if(!parsedJson.status.equals("OK")) {
+            throw new GradleException("CPI Deployment failed.\n$parsedJson.details.errorMessage")
+        }
+        else {
+            println("CPI checksum=${parsedJson.cpiFileChecksum}")
+        }
   }
 }
 
@@ -490,13 +522,26 @@ tasks.register("createVNodes") {
     def cpiChkSum = (new groovy.json.JsonSlurper().parseText(CpiFileStatusFile.text)).cpiFileChecksum
     println(parsedJson.identities)
     doLast {
+        exec {
+            commandLine "rm", "-f", "vnodes.json"
+        }
         parsedJson.identities.forEach {
             println(it)
             def X500 = it
             exec {
+                java.util.HashMap<String,String> data
+                data = new java.util.Hashmap<String,String>()
+                // Read JSON datada
+                standardOutput = new FileOutputStream()
                 commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                         "-d", "{ \"request\" : { \"cpiFileChecksum\": \"$cpiChkSum\", \"x500Name\": \"$X500\"  } }",
                         "https://localhost:8888/api/v1/virtualnode"
+            }
+        }
+        parsedJson.identities.forEach {
+            def X500 = it
+            exec {
+                curl -s --insecure -u admin:admin -d '{ "memberRegistrationRequest": { "action": "requestJoin",  "context": { "corda.key.scheme" : "CORDA.ECDSA.SECP256R1" } } }' https://localhost:8888/api/v1/membership/$HOLDING_IDAlice
             }
         }
     }
@@ -536,22 +581,40 @@ task startDaemon(type: com.github.psxpaul.task.ExecFork) {
     // environment = ['JAVA_HOME': "$buildDir/java", 'USER_HOME': "$buildDir/userhome"]
 }
 
-tasks.register("startCorda") {
+tasks.register("startDB") {
     doLast {
-        /*
-        new ProcessBuilder(List.of(
+        new ProcessBuilder(
                 "docker",
-                "run", "--rm",
+                "run", "-d", "--rm",
                 "-p", "5432:5432",
-                "--name", "postgresql",
+                "--name", dbContainerName,
                 "-e", "POSTGRES_DB=cordacluster",
                 "-e", "POSTGRES_USER=postgres",
-                "-e POSTGRES_PASSWORD=password",
-                "postgres:latest")).start()
-        Thread::sleep(10)
-        */
+                "-e", "POSTGRES_PASSWORD=password",
+                "postgres:latest").start()
+    }
+}
+
+tasks.register("startCorda") {
+    dependsOn('getMiniCorda')
+    // def combiWorkerJar = configurations.combinedWorker.singleFile
+    def combiWorkerJar = "$cordaBinDir/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
+    doLast {
+        /*
+        new ProcessBuilder(
+                "docker",
+                "run", "-d", "--rm",
+                "-p", "5432:5432",
+                "--name", dbContainerName,
+                "-e", "POSTGRES_DB=cordacluster",
+                "-e", "POSTGRES_USER=postgres",
+                "-e", "POSTGRES_PASSWORD=password",
+                "postgres:latest").start()
+         */
+        new ProcessBuilder("$rootDir/tools/postgres-nonpersist-start-detach.sh").start()
+        Thread::sleep(10000)
         def procBuild = new ProcessBuilder("$rootDir/tools/mini-corda-start.sh")
-        //def combiWorkerJar = configurations.combinedWorker.singleFile
+
         /*
         def procBuild = new ProcessBuilder("java " +
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 " +
@@ -561,7 +624,7 @@ tasks.register("startCorda") {
                 "-spassphrase=password " + "-ssalt=salt -spassphrase=password -ssalt=salt " +
                 "-ddatabase.user=user " + "-ddatabase.pass=password " +
                 "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster")
-         */
+        */
         /*
         def procBuild = new ProcessBuilder(List.of("java",
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
@@ -571,6 +634,16 @@ tasks.register("startCorda") {
                 "-spassphrase=password", "-ssalt=salt -spassphrase=password -ssalt=salt",
                 "-ddatabase.user=user", "-ddatabase.pass=password",
                 "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster") as List<String>)
+         */
+        /*
+        def procBuild = new ProcessBuilder("java",
+                "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
+                "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
+                "-jar $combiWorkerJar",
+                "--instanceId=0", "-mbus.busType=DATABASE",
+                "-spassphrase=password", "-ssalt=salt -spassphrase=password -ssalt=salt",
+                "-ddatabase.user=user", "-ddatabase.pass=password",
+                "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster")
 
          */
         procBuild.redirectErrorStream(true)
@@ -578,17 +651,44 @@ tasks.register("startCorda") {
 
         def pidStore = new PrintStream(new FileOutputStream("$workspace/CordaPID.dat"))
         pidStore.print(proc.pid())
-        println("Process-id=$proc.pid()")
+        println("Corda Process-id=$proc.pid")
     }
 }
+
 
 tasks.register("stopCorda") {
     doLast {
         def sc = new Scanner(new File("$workspace/CordaPID.dat"))
         def pid = sc.nextLong()
         println("pid to kill=$pid")
-        ProcessHandle.of(pid).ifPresent(ProcessHandle::destroy)
+        // ProcessHandle.of(pid).ifPresent(ProcessHandle::destroy)
+        def pHandle = ProcessHandle.of(pid)
+        if(pHandle == null) { println("pHandle == null")}
+        else { println("pHandle != null")}
+
+        if(pHandle.ifPresent()) {
+            pHandle.get().descendants().each { d ->
+                d.destroy()
+            }
+            def pph = pHandle.get()
+            pph.destroy()
+        }
+
+
+        //new ProcessBuilder("$rootDir/tools/postgres-nonpersist-stop.sh").start()
+        new ProcessBuilder("docker", "stop", dbContainerName).start()
+
         // def pHandle = ProcessHandle.of(pid)
         // pHandle.ifPresent(java.lang.ProcessHandle::destroy())
+    }
+}
+
+
+
+tasks.register("pickOS") {
+    if (System.properties['os.name'].toLowerCase().contains('windows')) {
+        println "it's Windows"
+    } else {
+        println "it's not Windows"
     }
 }
