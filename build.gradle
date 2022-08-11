@@ -409,14 +409,6 @@ tasks.register('createKeystore') {
             delete "$devEnvWorkspace/signingkeys.pfx"
         }
         exec {
-            commandLine "keytool", "-importcert",
-                    "-alias", "freetsa",
-                    "-keystore", "$devEnvWorkspace/signingkeys.pfx",
-                    "-storepass", "keystore password",
-                    "-file", "${devEnvWorkspace}/cacert.pem",
-                    "-noprompt"
-        }
-        exec {
             commandLine "keytool", "-genkey",
                     "-alias", "my-signing-key",
                     "-keystore", "$devEnvWorkspace/signingkeys.pfx",
@@ -425,6 +417,14 @@ tasks.register('createKeystore') {
                     "-keyalg", "RSA",
                     "-storetype", "pkcs12",
                     "-validity", "4000"
+        }
+        exec {
+            commandLine "keytool", "-importcert",
+                    "-alias", "freetsa",
+                    "-keystore", "$devEnvWorkspace/signingkeys.pfx",
+                    "-storepass", "keystore password",
+                    "-file", "${devEnvWorkspace}/cacert.pem",
+                    "-noprompt"
         }
     }
 }
@@ -636,7 +636,7 @@ class VNodeInfo {
 }
 
 tasks.register("createVNodes") {
-    //  dependsOn('deployCPI')
+    dependsOn('deployCPI')
     doLast {
         def jsonFile = file("$rootDir/config/dev-net.json")
         def slurper = new groovy.json.JsonSlurper()
@@ -645,7 +645,7 @@ tasks.register("createVNodes") {
         def cpiChkSum = (new groovy.json.JsonSlurper().parseText(CpiFileStatusFile.text)).cpiFileChecksum
         println(parsedJson.identities)
         def namesToShortHashes = new HashMap<String,String>()
-        def namesToVNodeInfo = new HashMap<String, VNodeInfo>()
+        HashMap<String, VNodeInfo> namesToVNodeInfo = new HashMap<String, VNodeInfo>()
 
         exec {
             commandLine "rm", "-f", "vnodes.json"
@@ -694,8 +694,15 @@ tasks.register("createVNodes") {
             }
         }
 
-        // def vnodeInfoOutput = new PrintStream(new FileOutputStream("${devEnvWorkspace}/vnodeinfo.json"))
-        // createVNodeFile(vnodeInfoOutput, namesToVNodeInfo)
+        // Debugging
+        // Run this just to see what nodes we have.
+        exec {
+            commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+                    "https://localhost:8888/api/v1/virtualnode"
+        }
+
+        def vnodeInfoOutput = new PrintStream(new FileOutputStream("${devEnvWorkspace}/vnodeinfo.json"))
+        createVNodeFile(vnodeInfoOutput, namesToVNodeInfo)
 
         // Code the check for registration
         parsedJson.identities.forEach {
