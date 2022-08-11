@@ -636,7 +636,7 @@ class VNodeInfo {
 }
 
 tasks.register("createVNodes") {
-    dependsOn('deployCPI')
+    //  dependsOn('deployCPI')
     doLast {
         def jsonFile = file("$rootDir/config/dev-net.json")
         def slurper = new groovy.json.JsonSlurper()
@@ -650,7 +650,6 @@ tasks.register("createVNodes") {
         exec {
             commandLine "rm", "-f", "vnodes.json"
         }
-
         exec {
             standardOutput = new FileOutputStream("${devEnvWorkspace}/existingvnodes.json")
             commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
@@ -667,6 +666,7 @@ tasks.register("createVNodes") {
             existingVNodes.add(new X500Principal(it.holdingIdentity.x500Name))
         }
 
+        Thread::sleep(6000)
         parsedJson.identities.forEach {
             def X500 = it
             if (!existingVNodes.contains(new X500Principal(X500))) {
@@ -715,21 +715,33 @@ tasks.register("createVNodes") {
    }
 }
 
-tasks.register('memberReg') {
+tasks.register('regAllVNodes') {
     // Code the check for registration
-    parsedJson.identities.forEach {
-        def X500 = it
-        if (!existingVNodes.contains(new X500Principal(X500))) {
-            if(namesToShortHashes.get(X500)!= null) {
-                println("Register $X500 with shorthash ${namesToShortHashes.get(X500)}")
-                exec {
-                    commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                            "-d", '{ "memberRegistrationRequest": { "action": "requestJoin",  "context": { "corda.key.scheme" : "CORDA.ECDSA.SECP256R1" } } }',
-                            "https://localhost:8888/api/v1/membership/${namesToShortHashes.get(X500)}"
-                }
-                print('\n')
-            }
+    exec {
+        standardOutput = new FileOutputStream("${devEnvWorkspace}/existingvnodes.json")
+        commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+                "https://localhost:8888/api/v1/virtualnode"
+    }
+
+    def existingVNodes = new HashSet<X500Principal>()
+    def rawExistingVNodeData=file("${devEnvWorkspace}/existingvnodes.json")
+    def existingVNodeData = new groovy.json.JsonSlurper().parseText(rawExistingVNodeData.text)
+    /*
+    existingVNodeData.virtualNodes.forEach {
+        println("Existing: ${it.holdingIdentity.x500Name}")
+    }
+     */
+
+    existingVNodeData.virtualNodes.forEach {
+        def X500 = it.holdingIdentity.x500Name
+        def shortHash = it.holdingIdentity.shortHash
+        println("Register $X500 with shorthash ${shortHash}")
+        exec {
+            commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+                    "-d", '{ "memberRegistrationRequest": { "action": "requestJoin",  "context": { "corda.key.scheme" : "CORDA.ECDSA.SECP256R1" } } }',
+                    "https://localhost:8888/api/v1/membership/${shortHash}"
         }
+        print('\n')
     }
 
 }
