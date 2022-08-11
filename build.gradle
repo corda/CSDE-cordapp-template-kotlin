@@ -697,20 +697,41 @@ tasks.register("createVNodes") {
         // def vnodeInfoOutput = new PrintStream(new FileOutputStream("${devEnvWorkspace}/vnodeinfo.json"))
         // createVNodeFile(vnodeInfoOutput, namesToVNodeInfo)
 
+        // Code the check for registration
         parsedJson.identities.forEach {
             def X500 = it
             if (!existingVNodes.contains(new X500Principal(X500))) {
                 if(namesToShortHashes.get(X500)!= null) {
-                    println("Register $X500")
+                    println("Register $X500 with shorthash ${namesToShortHashes.get(X500)}")
                     exec {
                         commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                                 "-d", '{ "memberRegistrationRequest": { "action": "requestJoin",  "context": { "corda.key.scheme" : "CORDA.ECDSA.SECP256R1" } } }',
                                 "https://localhost:8888/api/v1/membership/${namesToShortHashes.get(X500)}"
                     }
+                    print('\n')
                 }
             }
         }
    }
+}
+
+tasks.register('memberReg') {
+    // Code the check for registration
+    parsedJson.identities.forEach {
+        def X500 = it
+        if (!existingVNodes.contains(new X500Principal(X500))) {
+            if(namesToShortHashes.get(X500)!= null) {
+                println("Register $X500 with shorthash ${namesToShortHashes.get(X500)}")
+                exec {
+                    commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+                            "-d", '{ "memberRegistrationRequest": { "action": "requestJoin",  "context": { "corda.key.scheme" : "CORDA.ECDSA.SECP256R1" } } }',
+                            "https://localhost:8888/api/v1/membership/${namesToShortHashes.get(X500)}"
+                }
+                print('\n')
+            }
+        }
+    }
+
 }
 
 tasks.register('deployCordapp') {
@@ -770,7 +791,9 @@ tasks.register("startCorda") {
         Thread::sleep(10000)
         // def procBuild = new ProcessBuilder("$rootDir/tools/mini-corda-start.sh")
 
-        def procBuild = new ProcessBuilder("java",
+
+        def javaBinDir = "${System.getProperty("java.home")}/bin"
+        def procBuild = new ProcessBuilder("${javaBinDir}/java",
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
                 "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
                 "-jar",
@@ -830,6 +853,10 @@ tasks.register("stopCorda") {
 
 
 // Junk
+
+tasks.register('javabindir') {
+    println("${System.getProperty("java.home")}/bin")
+}
 
 tasks.register("pickOS") {
     if (System.properties['os.name'].toLowerCase().contains('windows')) {
