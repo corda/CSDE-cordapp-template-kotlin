@@ -7,6 +7,9 @@ CPI=${1:-$(ls *.cpi | tail -n 1)}
 read REQUEST_ID < <(echo $(curl --insecure -u admin:admin  -s -F upload=@$CPI https://localhost:8888/api/v1/cpi/  | jq -r '.id') ) 
 echo "Uploaded with  id = " $REQUEST_ID
 
+# Force upload:
+# curl --insecure -u admin:admin  -s -F upload=@$CPI https://localhost:8888/api/v1/maintenance/virtualnode/forcecpiupload/
+
 sleep 3
 read CPI_HASH < <(echo $(curl -s --insecure -u admin:admin  https://localhost:8888/api/v1/cpi/status/$REQUEST_ID | jq -r '.cpiFileChecksum') )
 echo "CPI hash uploaded = "$CPI_HASH
