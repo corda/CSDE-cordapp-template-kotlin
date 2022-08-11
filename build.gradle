@@ -1,6 +1,7 @@
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
+import javax.security.auth.x500.X500Principal
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -473,8 +474,9 @@ tasks.register('parseJson') {
      }
 }
 
-/*
-tasks.register("uploadCPI2") {
+
+tasks.register("deployCPI") {
+    dependsOn('buildCPI')
     doLast {
         def retryLimit = 10
         def retryWaitInMs = 3000
@@ -493,20 +495,23 @@ tasks.register("uploadCPI2") {
         def parsedJson = slurper.parseText(jsonFile.text)
         println("Request ID=${parsedJson.id}")
 
-        Thread::sleep(retryWaitInMs)
 
         // Loop if status != 400 and we don't have have a CPI Checksum
         def requestId = parsedJson.id
         println(requestId)
-        exec {
-            standardOutput = new FileOutputStream("CPIFileStatus.json")
-            commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
-                    "https://localhost:8888/api/v1/cpi/status/${requestId}"
-        }
-        def jsonFileCPI = file("CPIFileStatus.json")
-        println("initial upload status:${jsonFileCPI.text}")
-        def parsedJsonCPI = new groovy.json.JsonSlurper().parseText(jsonFileCPI.text)
-
+        Object parsedJsonCPI = null
+        do {
+            Thread::sleep(retryWaitInMs)
+            exec {
+                standardOutput = new FileOutputStream("CPIFileStatus.json")
+                commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+                        "https://localhost:8888/api/v1/cpi/status/${requestId}"
+            }
+            def jsonFileCPI = file("CPIFileStatus.json")
+            println("initial upload status:${jsonFileCPI.text}")
+            parsedJsonCPI = new groovy.json.JsonSlurper().parseText(jsonFileCPI.text)
+            println("status=$parsedJsonCPI.status")
+        } while(parsedJsonCPI != null && parsedJsonCPI.status instanceof String && parsedJsonCPI.status != "OK")
         println("status=$parsedJsonCPI.status")
         if (!parsedJsonCPI.status.equals("OK")) {
             // println("CPI Deployment failed:$parsedJsonCPI.details.errorMessage")
@@ -525,27 +530,31 @@ tasks.register("uploadCPI2") {
             def parsedJsonForce = slurper.parseText(jsonFileForce.text)
             println("Request ID=${parsedJsonForce.id}")
 
-            Thread::sleep(3000)
 
             // Loop if status != 400 and we don't have have a CPI Checksum
             def jsonFileA = file("CPIupload.json")
             requestId = (new groovy.json.JsonSlurper().parseText(jsonFileA.text)).id
             println(requestId)
-            exec {
-                standardOutput = new FileOutputStream("CPIFileStatus.json")
-                commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
-                        "https://localhost:8888/api/v1/cpi/status/${requestId}"
-            }
-            def jsonFileForceStatus = file("CPIFileStatus.json")
-            parsedJson = new groovy.json.JsonSlurper().parseText(jsonFileForceStatus.text)
+            do {
 
-            println("status=$parsedJsonForceStatus.status")
-            if (!parsedJsonForceStatus.status.equals("OK")) {
-                println("CPI Deployment failed:$parsedJsonForceStatus.details.errorMessage")
+                Thread::sleep(3000)
+                exec {
+                    standardOutput = new FileOutputStream("CPIFileStatus.json")
+                    commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+                            "https://localhost:8888/api/v1/cpi/status/${requestId}"
+                }
+                def jsonFileForceStatus = file("CPIFileStatus.json")
+                parsedJson = new groovy.json.JsonSlurper().parseText(jsonFileForceStatus.text)
+
+                println("status=$parsedJson.status")
+            } while (parsedJson != null && parsedJson.status instanceof String && parsedJson.status != "OK")
+
+            if (!parsedJson.status.equals("OK")) {
+                println("CPI Deployment failed:$parsedJson.details.errorMessage")
                 println(parsedJson)
-                throw new GradleException("CPI Deployment failed.\n$parsedJsonForceStatus.details.errorMessage")
+                throw new GradleException("CPI Deployment failed.\n$parsedJson.details.errorMessage")
             } else {
-                println("CPI checksum=${parsedJsonForceStatus.cpiFileChecksum}")
+                println("CPI checksum=${parsedJson.cpiFileChecksum}")
             }
 
         } else {
@@ -553,7 +562,7 @@ tasks.register("uploadCPI2") {
         }
     }
 }
-*/
+
 
 tasks.register("uploadCPI") {
     doLast {
@@ -591,7 +600,7 @@ tasks.register("forceUploadCPI") {
 
 
 
-tasks.register("deployCPI") {
+tasks.register("uploadCPIStatus") {
     // dependsOn ('uploadCPI')
 
     doLast {
@@ -617,7 +626,17 @@ tasks.register("deployCPI") {
     }
 }
 
+class VNodeInfo {
+    public VNodeInfo(String shash, String cpi) {
+        ShortHash=shash;
+        CPIName=cpi;
+    }
+    public String ShortHash;
+    public String CPIName;
+}
+
 tasks.register("createVNodes") {
+    dependsOn('deployCPI')
     doLast {
         def jsonFile = file("$rootDir/config/dev-net.json")
         def slurper = new groovy.json.JsonSlurper()
@@ -626,37 +645,89 @@ tasks.register("createVNodes") {
         def cpiChkSum = (new groovy.json.JsonSlurper().parseText(CpiFileStatusFile.text)).cpiFileChecksum
         println(parsedJson.identities)
         def namesToShortHashes = new HashMap<String,String>()
+        def namesToVNodeInfo = new HashMap<String, VNodeInfo>()
+
         exec {
             commandLine "rm", "-f", "vnodes.json"
         }
-        parsedJson.identities.forEach {
-            def X500 = it
-            println("Create VNode for $X500 with CPI(with check sum) $cpiChkSum")
-            exec {
-                standardOutput = new FileOutputStream("vnodetemp.json")
-                commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                        "-d", "{ \"request\" : { \"cpiFileChecksum\": \"$cpiChkSum\", \"x500Name\": \"$X500\"  } }",
-                        "https://localhost:8888/api/v1/virtualnode"
-            }
-            def outputData = file("vnodetemp.json")
-            println("Data=${outputData.text}")
-            // TODO: Can do error checking with this
-            def jsonOut = new groovy.json.JsonSlurper().parseText(outputData.text)
 
-            def idShortHash = jsonOut.holdingIdentity.shortHash
-            namesToShortHashes.put(X500, idShortHash)
-            println(".shortHash=$idShortHash")
+        exec {
+            standardOutput = new FileOutputStream("${devEnvWorkspace}/existingvnodes.json")
+            commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+                    "https://localhost:8888/api/v1/virtualnode"
+        }
+
+        def existingVNodes = new HashSet<X500Principal>()
+        def rawExistingVNodeData=file("${devEnvWorkspace}/existingvnodes.json")
+        def existingVNodeData = new groovy.json.JsonSlurper().parseText(rawExistingVNodeData.text)
+        existingVNodeData.virtualNodes.forEach {
+            println("Existing: ${it.holdingIdentity.x500Name}")
+        }
+        existingVNodeData.virtualNodes.forEach {
+            existingVNodes.add(new X500Principal(it.holdingIdentity.x500Name))
         }
 
         parsedJson.identities.forEach {
             def X500 = it
-            exec {
-                commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                           "-d", '{ "memberRegistrationRequest": { "action": "requestJoin",  "context": { "corda.key.scheme" : "CORDA.ECDSA.SECP256R1" } } }',
-                           "https://localhost:8888/api/v1/membership/${namesToShortHashes.get(X500)}"
+            if (!existingVNodes.contains(new X500Principal(X500))) {
+                println("Create VNode for $X500 with CPI(with check sum) $cpiChkSum")
+                exec {
+                    standardOutput = new FileOutputStream("vnodetemp.json")
+                    commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+                            "-d", "{ \"request\" : { \"cpiFileChecksum\": \"$cpiChkSum\", \"x500Name\": \"$X500\"  } }",
+                            "https://localhost:8888/api/v1/virtualnode"
+                }
+                def outputData = file("vnodetemp.json")
+                println("Data=${outputData.text}")
+                // TODO: Can do error checking with this
+                def jsonOut = new groovy.json.JsonSlurper().parseText(outputData.text)
+
+                if(jsonOut.holdingIdentity != null) {
+                    def idShortHash = jsonOut.holdingIdentity.shortHash
+                    namesToShortHashes.put(X500, idShortHash)
+                    namesToVNodeInfo.put(X500, new VNodeInfo(idShortHash, cpiChkSum))
+                    println(".shortHash=$idShortHash")
+                }
+
+            } else {
+                println("Already created $X500")
             }
         }
+
+        // def vnodeInfoOutput = new PrintStream(new FileOutputStream("${devEnvWorkspace}/vnodeinfo.json"))
+        // createVNodeFile(vnodeInfoOutput, namesToVNodeInfo)
+
+        parsedJson.identities.forEach {
+            def X500 = it
+            if (!existingVNodes.contains(new X500Principal(X500))) {
+                if(namesToShortHashes.get(X500)!= null) {
+                    println("Register $X500")
+                    exec {
+                        commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+                                "-d", '{ "memberRegistrationRequest": { "action": "requestJoin",  "context": { "corda.key.scheme" : "CORDA.ECDSA.SECP256R1" } } }',
+                                "https://localhost:8888/api/v1/membership/${namesToShortHashes.get(X500)}"
+                    }
+                }
+            }
+        }
+   }
+}
+
+tasks.register('deployCordapp') {
+    dependsOn("createVNodes")
+}
+
+def createVNodeFile(PrintWriter printer, HashMap<String,VNodeInfo> vnodeData) {
+    printer.println('{')
+    printer.println("  \"vnodes\": [")
+    boolean first=true
+    for(String X500: vnodeData) {
+        VNodeInfo info = vnodeData.get(X500)
+        printer.print("    { \"X500\": \"" + X500 + "\", \"shortHash\": \"" + info.ShortHash + "\", \"CPI\": \"" + info.CPIName +"\" }" )
+        if(!first) { print(',')}
+        printer.print('\n')
     }
+    printer.println('  ]\n}')
 }
 
 
