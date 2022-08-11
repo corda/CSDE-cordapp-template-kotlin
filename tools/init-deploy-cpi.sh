@@ -38,5 +38,6 @@ echo "Holding id = " $HOLDING_IDCharlie
 sleep 2
 curl -s --insecure -u admin:admin -d '{ "memberRegistrationRequest": { "action": "requestJoin",  "context": { "corda.key.scheme" : "CORDA.ECDSA.SECP256R1" } } }' https://localhost:8888/api/v1/membership/$HOLDING_IDCharlie
 
-
+# Get virtual nodes
+# curl -s --insecure -u admin:admin  https://localhost:8888/api/v1/virtualnode
 
