@@ -749,6 +749,11 @@ tasks.register("startCorda") {
     dependsOn('getMiniCorda')
     // def combiWorkerJar = "$cordaBinDir/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
     doLast {
+
+        exec {
+            commandLine 'mkdir', '-p', "$devEnvWorkspace"
+        }
+
         def combiWorkerJar = configurations.combinedWorker.singleFile
 
         new ProcessBuilder(
