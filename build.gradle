@@ -15,7 +15,6 @@ import java.lang.String
 
 import static org.gradle.api.JavaVersion.VERSION_11
 
-
 plugins {
     id 'org.jetbrains.kotlin.jvm'
 
@@ -273,6 +272,11 @@ def cordaCliDir = "$cordaBinDir/corda-cli"
 def CORDA_CLI_JAR_DIR = "${cordaCliDir}"
 def CORDA_CLI_PLUGINS_DIR = "${cordaCliDir}/plugins"
 
+tasks.register('projInit') {
+    doLast {
+        mkdir devEnvWorkspace
+    }
+}
 
 tasks.register("getCordaCli") {
     //dependsOn('getCordaCliMgmPlugin', 'getCordaCliPackagePlugin')
@@ -295,17 +299,15 @@ tasks.register("getCordaCli") {
     }
 }
 
-
-
-
 tasks.register("createGroupPolicy") {
     //classpath = files("$cordaCliStorageDir/$CORDA_CLI_JAR")
     //classpath = files("$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar"
+    dependsOn('projInit')
     doLast {
         javaexec {
             classpath = configurations.cordaCli
             jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
-            standardOutput = new FileOutputStream("GroupPolicy.json")
+            standardOutput = new FileOutputStream("${devEnvWorkspace}/GroupPolicy.json")
             LinkedList<String> myArgs = new LinkedList<String>()
             myArgs.add("mgm")
             myArgs.add("groupPolicy")
@@ -395,6 +397,7 @@ tasks.register('createKeystore') {
  */
 
 tasks.register('downloadFreeTsaCert', Download) {
+    dependsOn('projInit')
     src 'https://freetsa.org/files/cacert.pem'
     dest devEnvWorkspace
     overwrite false
@@ -431,17 +434,10 @@ tasks.register('createKeystore') {
 
 tasks.register('buildCPI') {
     dependsOn('cpb', 'createGroupPolicy', 'createKeystore')
-    // Cannot enclose this in "doLast" section for some reason
 
-    // classpath = files("$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar")
     doLast{
         def cpiFile= "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
         delete { delete cpiFile }
-        /*
-        exec {
-            commandLine "rm", "-f", cpiFile
-        }
-         */
         File srcDir
         srcDir = file('build/libs')
 
@@ -455,7 +451,7 @@ tasks.register('buildCPI') {
             jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
             args 'package', 'create',
                     '--cpb', cpbs.singleFile.absolutePath,
-                    '--group-policy', 'GroupPolicy.json',
+                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
                     '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
                     '--storepass', 'keystore password',
                     '--key', 'my-signing-key',
@@ -484,12 +480,12 @@ tasks.register("deployCPI") {
         def cpi = "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
         println("cpi=$cpi")
         exec {
-            standardOutput = new FileOutputStream("CPIupload.json")
+            standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIupload.json")
             commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                     "-F", "upload=@$cpi",
                     "https://localhost:8888/api/v1/cpi/"
         }
-        def jsonFile = file("CPIupload.json")
+        def jsonFile = file("${devEnvWorkspace}/CPIupload.json")
         println("upload attempt output:${jsonFile.text}")
         def slurper = new groovy.json.JsonSlurper()
         def parsedJson = slurper.parseText(jsonFile.text)
@@ -503,11 +499,11 @@ tasks.register("deployCPI") {
         do {
             Thread::sleep(retryWaitInMs)
             exec {
-                standardOutput = new FileOutputStream("CPIFileStatus.json")
+                standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIFileStatus.json")
                 commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                         "https://localhost:8888/api/v1/cpi/status/${requestId}"
             }
-            def jsonFileCPI = file("CPIFileStatus.json")
+            def jsonFileCPI = file("${devEnvWorkspace}/CPIFileStatus.json")
             println("initial upload status:${jsonFileCPI.text}")
             parsedJsonCPI = new groovy.json.JsonSlurper().parseText(jsonFileCPI.text)
             println("status=$parsedJsonCPI.status")
@@ -515,16 +511,15 @@ tasks.register("deployCPI") {
         println("status=$parsedJsonCPI.status")
         if (!parsedJsonCPI.status.equals("OK")) {
             // println("CPI Deployment failed:$parsedJsonCPI.details.errorMessage")
-            println("Error:\n$parsedJsonCPI")
 
             // Attempt forceCPIupload
             exec {
-                standardOutput = new FileOutputStream("CPIupload.json")
+                standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIupload.json")
                 commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                         "-F", "upload=@$cpi",
                         "https://localhost:8888/api/v1/maintenance/virtualnode/forcecpiupload/"
             }
-            def jsonFileForce = file("CPIupload.json")
+            def jsonFileForce = file("${devEnvWorkspace}/CPIupload.json")
             def slurperForce = new groovy.json.JsonSlurper()
             println("forcecpiload output=${jsonFileForce.text}")
             def parsedJsonForce = slurper.parseText(jsonFileForce.text)
@@ -532,18 +527,18 @@ tasks.register("deployCPI") {
 
 
             // Loop if status != 400 and we don't have have a CPI Checksum
-            def jsonFileA = file("CPIupload.json")
+            def jsonFileA = file("${devEnvWorkspace}/CPIupload.json")
             requestId = (new groovy.json.JsonSlurper().parseText(jsonFileA.text)).id
             println(requestId)
             do {
 
                 Thread::sleep(3000)
                 exec {
-                    standardOutput = new FileOutputStream("CPIFileStatus.json")
+                    standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIFileStatus.json")
                     commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                             "https://localhost:8888/api/v1/cpi/status/${requestId}"
                 }
-                def jsonFileForceStatus = file("CPIFileStatus.json")
+                def jsonFileForceStatus = file("${devEnvWorkspace}/CPIFileStatus.json")
                 parsedJson = new groovy.json.JsonSlurper().parseText(jsonFileForceStatus.text)
 
                 println("status=$parsedJson.status")
@@ -565,16 +560,17 @@ tasks.register("deployCPI") {
 
 
 tasks.register("uploadCPI") {
+    dependsOn('projInit')
     doLast {
         def cpi = "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
         println("cpi=$cpi")
         exec {
-            standardOutput = new FileOutputStream("CPIupload.json")
+            standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIupload.json")
             commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                     "-F", "upload=@$cpi",
                     "https://localhost:8888/api/v1/cpi/"
         }
-        def jsonFile = file("CPIupload.json")
+        def jsonFile = file("${devEnvWorkspace}/CPIupload.json")
         def slurper = new groovy.json.JsonSlurper()
         def parsedJson = slurper.parseText(jsonFile.text)
         println("Request ID=${parsedJson.id}")
@@ -582,17 +578,16 @@ tasks.register("uploadCPI") {
 }
 
 tasks.register("forceUploadCPI") {
-    // curl --insecure -u admin:admin -s -F upload=@$CPI https://localhost:8888/api/v1/maintenance/virtualnode/forcecpiupload/
-
+    dependsOn('projInit')
     doLast {
         def cpi = "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
-        standardOutput = new FileOutputStream("CPIupload.json")
+        standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIupload.json")
         exec {
             commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
                     "-F", "upload=@$cpi",
                     "https://localhost:8888/api/v1/maintenance/virtualnode/forcecpiupload/"
         }
-        def jsonFile = file("CPIupload.json")
+        def jsonFile = file("${devEnvWorkspace}/CPIupload.json")
         def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
         println("${parsedJson.id}")
     }
@@ -602,17 +597,17 @@ tasks.register("forceUploadCPI") {
 
 tasks.register("uploadCPIStatus") {
     // dependsOn ('uploadCPI')
-
+    dependsOn('projInit')
     doLast {
-        def jsonFileA = file("CPIupload.json")
+        def jsonFileA = file("${devEnvWorkspace}/CPIupload.json")
         def requestId = (new groovy.json.JsonSlurper().parseText(jsonFileA.text)).id
         println(requestId)
         exec {
-            standardOutput = new FileOutputStream("CPIFileStatus.json")
+            standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIFileStatus.json")
             commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
                     "https://localhost:8888/api/v1/cpi/status/${requestId}"
         }
-        def jsonFile = file("CPIFileStatus.json")
+        def jsonFile = file("${devEnvWorkspace}/CPIFileStatus.json")
         def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
 
         println("status=$parsedJson.status")
@@ -641,14 +636,14 @@ tasks.register("createVNodes") {
         def jsonFile = file("$rootDir/config/dev-net.json")
         def slurper = new groovy.json.JsonSlurper()
         def parsedJson = slurper.parseText(jsonFile.text)
-        def CpiFileStatusFile = file("CPIFileStatus.json")
+        def CpiFileStatusFile = file("${devEnvWorkspace}/CPIFileStatus.json")
         def cpiChkSum = (new groovy.json.JsonSlurper().parseText(CpiFileStatusFile.text)).cpiFileChecksum
         println(parsedJson.identities)
         def namesToShortHashes = new HashMap<String,String>()
         HashMap<String, VNodeInfo> namesToVNodeInfo = new HashMap<String, VNodeInfo>()
 
-        exec {
-            commandLine "rm", "-f", "vnodes.json"
+        delete {
+            delete "${devEnvWorkspace}/vnodes.json"
         }
         exec {
             standardOutput = new FileOutputStream("${devEnvWorkspace}/existingvnodes.json")
@@ -667,17 +662,18 @@ tasks.register("createVNodes") {
         }
 
         Thread::sleep(6000)
+        def vnodeInfoOutput = new PrintStream(new FileOutputStream("${devEnvWorkspace}/vnodeinfo.csv"))
         parsedJson.identities.forEach {
             def X500 = it
             if (!existingVNodes.contains(new X500Principal(X500))) {
                 println("Create VNode for $X500 with CPI(with check sum) $cpiChkSum")
                 exec {
-                    standardOutput = new FileOutputStream("vnodetemp.json")
+                    standardOutput = new FileOutputStream("${devEnvWorkspace}/vnodetemp.json")
                     commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                             "-d", "{ \"request\" : { \"cpiFileChecksum\": \"$cpiChkSum\", \"x500Name\": \"$X500\"  } }",
                             "https://localhost:8888/api/v1/virtualnode"
                 }
-                def outputData = file("vnodetemp.json")
+                def outputData = file("${devEnvWorkspace}/vnodetemp.json")
                 println("Data=${outputData.text}")
                 // TODO: Can do error checking with this
                 def jsonOut = new groovy.json.JsonSlurper().parseText(outputData.text)
@@ -686,6 +682,7 @@ tasks.register("createVNodes") {
                     def idShortHash = jsonOut.holdingIdentity.shortHash
                     namesToShortHashes.put(X500, idShortHash)
                     namesToVNodeInfo.put(X500, new VNodeInfo(idShortHash, cpiChkSum))
+                    println("\"$X500\", \"$idShortHash\"")
                     println(".shortHash=$idShortHash")
                 }
 
@@ -701,8 +698,20 @@ tasks.register("createVNodes") {
                     "https://localhost:8888/api/v1/virtualnode"
         }
 
+        /*
         def vnodeInfoOutput = new PrintStream(new FileOutputStream("${devEnvWorkspace}/vnodeinfo.json"))
-        createVNodeFile(vnodeInfoOutput, namesToVNodeInfo)
+        //createVNodeFile(vnodeInfoOutput, namesToVNodeInfo)
+        vnodeInfoOutput.println('{')
+        vnodeInfoOutput.println("  \"vnodes\": [")
+        boolean first=true
+        for(String X500: namesToVNodeInfo) {
+            VNodeInfo info = namesToVNodeInfo.get(X500)
+            vnodeInfoOutput.print("    { \"X500\": \"" + X500 + "\", \"shortHash\": \"" + info.ShortHash + "\", \"CPI\": \"" + info.CPIName +"\" }" )
+            if(!first) { print(',')}
+            vnodeInfoOutput.print('\n')
+        }
+        vnodeInfoOutput.println('  ]\n}')
+        */
 
         // Code the check for registration
         parsedJson.identities.forEach {
@@ -786,9 +795,14 @@ tasks.register("startCorda") {
     // def combiWorkerJar = "$cordaBinDir/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
     doLast {
 
+        /*
         exec {
             commandLine 'mkdir', '-p', "$devEnvWorkspace"
         }
+
+         */
+
+        mkdir devEnvWorkspace
 
         def combiWorkerJar = configurations.combinedWorker.singleFile
 
