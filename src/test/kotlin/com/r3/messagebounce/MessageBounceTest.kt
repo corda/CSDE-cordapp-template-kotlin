@@ -1,11 +1,11 @@
-package com.r3.hellocorda.tests
+package com.r3.messagebounce
 
-import com.r3.hellocorda.InitiatorMsg
-import com.r3.hellocorda.MessageReturner
-import com.r3.hellocorda.MessageSender
-import com.r3.hellocorda.ResponderMsg
-import com.r3.hellocorda.StartRPCFlowArgs
-import net.corda.testutils.CordaMock
+import com.r3.messagebounce.InitiatorMsg
+import com.r3.messagebounce.MessageReturner
+import com.r3.messagebounce.MessageSender
+import com.r3.messagebounce.ResponderMsg
+import com.r3.messagebounce.StartRPCFlowArgs
+import net.corda.testutils.FakeCorda
 import net.corda.testutils.tools.CordaFlowChecker
 import net.corda.testutils.tools.RPCRequestDataMock
 import net.corda.testutils.tools.ResponderMock
@@ -31,7 +31,7 @@ class MessageSenderTests {
     @Test
     fun `Should get message back with responder prefix `() {
         // Create an instance of the mock cluster
-        val corda = CordaMock()
+        val corda = FakeCorda()
         val responderMock = ResponderMock<InitiatorMsg, ResponderMsg>()
 
         // Create virtual node
@@ -61,7 +61,7 @@ class MessageSenderTests {
     // Integration Test
     @Test
     fun `Should return the correct message using actual responder flow`() {
-        val corda = CordaMock()
+        val corda = FakeCorda()
 
         // Liz is this the correct way?
         // Create virtual node

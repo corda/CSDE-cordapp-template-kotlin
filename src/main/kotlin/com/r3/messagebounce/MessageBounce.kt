@@ -1,4 +1,4 @@
-package com.r3.hellocorda
+package com.r3.messagebounce
 
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService

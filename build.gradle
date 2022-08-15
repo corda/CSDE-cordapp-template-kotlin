@@ -485,7 +485,7 @@ tasks.register("deployCPI") {
             standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIupload.json")
             commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                     "-F", "upload=@$cpi",
-                    "https://localhost:8888/api/v1/cpi/"
+                    "${cordaClusterURL}/api/v1/cpi/"
         }
         def jsonFile = file("${devEnvWorkspace}/CPIupload.json")
         // println("upload attempt output:${jsonFile.text}")
@@ -503,7 +503,7 @@ tasks.register("deployCPI") {
             exec {
                 standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIFileStatus.json")
                 commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                        "https://localhost:8888/api/v1/cpi/status/${requestId}"
+                        "${cordaClusterURL}/api/v1/cpi/status/${requestId}"
             }
             def jsonFileCPI = file("${devEnvWorkspace}/CPIFileStatus.json")
             // println("initial upload status:${jsonFileCPI.text}")
@@ -519,7 +519,7 @@ tasks.register("deployCPI") {
                 standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIupload.json")
                 commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                         "-F", "upload=@$cpi",
-                        "https://localhost:8888/api/v1/maintenance/virtualnode/forcecpiupload/"
+                        "${cordaClusterURL}/api/v1/maintenance/virtualnode/forcecpiupload/"
             }
             def jsonFileForce = file("${devEnvWorkspace}/CPIupload.json")
             def slurperForce = new groovy.json.JsonSlurper()
@@ -538,7 +538,7 @@ tasks.register("deployCPI") {
                 exec {
                     standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIFileStatus.json")
                     commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                            "https://localhost:8888/api/v1/cpi/status/${requestId}"
+                            "${cordaClusterURL}/api/v1/cpi/status/${requestId}"
                 }
                 def jsonFileForceStatus = file("${devEnvWorkspace}/CPIFileStatus.json")
                 parsedJson = new groovy.json.JsonSlurper().parseText(jsonFileForceStatus.text)
@@ -570,7 +570,7 @@ tasks.register("uploadCPI") {
             standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIupload.json")
             commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                     "-F", "upload=@$cpi",
-                    "https://localhost:8888/api/v1/cpi/"
+                    "${cordaClusterURL}/api/v1/cpi/"
         }
         def jsonFile = file("${devEnvWorkspace}/CPIupload.json")
         def slurper = new groovy.json.JsonSlurper()
@@ -587,7 +587,7 @@ tasks.register("forceUploadCPI") {
         exec {
             commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
                     "-F", "upload=@$cpi",
-                    "https://localhost:8888/api/v1/maintenance/virtualnode/forcecpiupload/"
+                    "${cordaClusterURL}/api/v1/maintenance/virtualnode/forcecpiupload/"
         }
         def jsonFile = file("${devEnvWorkspace}/CPIupload.json")
         def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
@@ -607,7 +607,7 @@ tasks.register("uploadCPIStatus") {
         exec {
             standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIFileStatus.json")
             commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
-                    "https://localhost:8888/api/v1/cpi/status/${requestId}"
+                    "${cordaClusterURL}/api/v1/cpi/status/${requestId}"
         }
         def jsonFile = file("${devEnvWorkspace}/CPIFileStatus.json")
         def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
@@ -650,7 +650,7 @@ tasks.register("createVNodes") {
         exec {
             standardOutput = new FileOutputStream("${devEnvWorkspace}/existingvnodes.json")
             commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                    "https://localhost:8888/api/v1/virtualnode"
+                    "${cordaClusterURL}/api/v1/virtualnode"
         }
 
         def existingVNodes = new HashSet<X500Principal>()
@@ -701,7 +701,7 @@ tasks.register("createVNodes") {
                     standardOutput = new FileOutputStream("${devEnvWorkspace}/vnodetemp.json")
                     commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                             "-d", "{ \"request\" : { \"cpiFileChecksum\": \"$cpiChkSum\", \"x500Name\": \"$X500\"  } }",
-                            "https://localhost:8888/api/v1/virtualnode"
+                            "${cordaClusterURL}/api/v1/virtualnode"
                 }
                 def outputData = file("${devEnvWorkspace}/vnodetemp.json")
                 //println("Data=${outputData.text}")
@@ -725,7 +725,7 @@ tasks.register("createVNodes") {
         /*
         exec {
             commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                    "https://localhost:8888/api/v1/virtualnode"
+                    "${cordaClusterURL}/api/v1/virtualnode"
         }
         */
         /*
@@ -753,7 +753,7 @@ tasks.register("createVNodes") {
                     exec {
                         commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                                 "-d", '{ "memberRegistrationRequest": { "action": "requestJoin",  "context": { "corda.key.scheme" : "CORDA.ECDSA.SECP256R1" } } }',
-                                "https://localhost:8888/api/v1/membership/${namesToShortHashes.get(X500)}"
+                                "${cordaClusterURL}/api/v1/membership/${namesToShortHashes.get(X500)}"
                     }
                     print('\n')
                 }
@@ -771,7 +771,7 @@ tasks.register('regAllVNodes') {
         exec {
             standardOutput = new FileOutputStream("${devEnvWorkspace}/existingvnodes.json")
             commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                    "https://localhost:8888/api/v1/virtualnode"
+                    "${cordaClusterURL}/api/v1/virtualnode"
         }
 
         def existingVNodes = new HashSet<X500Principal>()
@@ -785,7 +785,7 @@ tasks.register('regAllVNodes') {
             exec {
                 commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                         "-d", '{ "memberRegistrationRequest": { "action": "requestJoin",  "context": { "corda.key.scheme" : "CORDA.ECDSA.SECP256R1" } } }',
-                        "https://localhost:8888/api/v1/membership/${shortHash}"
+                        "${cordaClusterURL}/api/v1/membership/${shortHash}"
             }
             print('\n')
         }
@@ -797,7 +797,7 @@ tasks.register('listVNodes') {
         exec {
             standardOutput = new FileOutputStream("${devEnvWorkspace}/tempy.json")
             commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                    "https://localhost:8888/api/v1/virtualnode"
+                    "${cordaClusterURL}/api/v1/virtualnode"
         }
 
         def existingVNodes = new HashSet<X500Principal>()
@@ -966,7 +966,7 @@ task urldemo {
             }
         })
         def body = [user: "dummyUser"]
-        def req = new URL('https://localhost:8888/').openConnection()
+        def req = new URL("${cordaClusterURL}/").openConnection()
 
         req.setRequestMethod("POST")
         req.setRequestProperty("Content-Type", "application/json; charset=UTF-8")

@@ -2,7 +2,7 @@ package com.r3.examples.tests
 
 import com.r3.examples.ConcatFlow
 import com.r3.examples.ConcatInputMessage
-import net.corda.testutils.CordaMock
+import net.corda.testutils.FakeCorda
 import net.corda.testutils.tools.CordaFlowChecker
 import net.corda.testutils.tools.RPCRequestDataMock
 import net.corda.v5.base.types.MemberX500Name
@@ -23,7 +23,7 @@ class ConcatFlowTest {
 
     @Test
     fun `ConcatFlow should concatenate the correct string to the input message`() {
-        val corda = CordaMock()
+        val corda = FakeCorda()
         corda.upload(eric, ConcatFlow::class.java)
         val messageText = "Suffix here->"
         // Stongly typed version to recommend.

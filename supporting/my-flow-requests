@@ -3,7 +3,7 @@ curl -s --insecure -u admin:admin -X 'POST' https://localhost:8888/api/v1/flow/$
   "startFlow":
   {
     "clientRequestId": "mbr1",
-    "flowClassName": "com.r3.hellocorda.MessageSender",
+    "flowClassName": "com.r3.messagebounce.MessageSender",
     "requestData": "{ \"recipientX500\": \"O=Blueberry, L=London, C=GB\", \"message\" : \"Hello from Apricot\" }"
   }
 }
