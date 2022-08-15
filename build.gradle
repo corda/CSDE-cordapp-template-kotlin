@@ -261,11 +261,28 @@ def cordaCliDir = "$cordaBinDir/corda-cli"
 def CORDA_CLI_JAR_DIR = "${cordaCliDir}"
 def CORDA_CLI_PLUGINS_DIR = "${cordaCliDir}/plugins"
 
+/*
+abstract class ProjInit extends DefaultTask {
+    @Input
+    final abstract Property<String> workspace= project.objects.property(String).convention("workspace")
+    @OutputDirectories
+    final abstract outputDirectory = project.objects.directoryProperty().convention(project.layout.projectDirectory.dir(getWorkspace()))
+    @TaskAction
+    void doThing() {
+         mkdir getWorkspace()
+    }
+}
+tasks.register('projInit', ProjInit) {
+    workspace devEnvWorkspace
+}
+*/
+
 tasks.register('projInit') {
     doLast {
         mkdir devEnvWorkspace
     }
 }
+
 
 tasks.register("getCordaCli") {
     //dependsOn('getCordaCliMgmPlugin', 'getCordaCliPackagePlugin')
@@ -291,7 +308,7 @@ tasks.register("getCordaCli") {
 tasks.register("createGroupPolicy") {
     //classpath = files("$cordaCliStorageDir/$CORDA_CLI_JAR")
     //classpath = files("$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar"
-    dependsOn('projInit')
+    dependsOn('projInit', 'getCordaCli')
     doLast {
         javaexec {
             classpath = configurations.cordaCli
@@ -316,7 +333,6 @@ tasks.register("createGroupPolicy") {
 }
 
 tasks.register('printCPB' ) {
-    dependsOn('cpb')
     println("myCordaCpb=${configurations.myCordaCpb.files()}")
     println("cpb.outputs.files()=${cpb.outputs.files()}")
     println("assemble.outputs.files()=${assemble.outputs.files()}")
@@ -331,7 +347,7 @@ tasks.register('printCPB' ) {
     //println("Cpb file=${cpbFile.absolutePath}")
 }
 
-tasks.register("getMiniCorda", Copy) {
+tasks.register("getDevCorda", Copy) {
     from configurations.combinedWorker
     into cordaBinDir
 }
@@ -830,7 +846,7 @@ tasks.register("startDB") {
 }
 
 tasks.register("startCorda") {
-    dependsOn('getMiniCorda')
+    dependsOn('getDevCorda')
     // def combiWorkerJar = "$cordaBinDir/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
     doLast {
 
