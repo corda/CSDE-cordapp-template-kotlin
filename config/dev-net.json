@@ -1,3 +1,7 @@
 {
-"identities" : [ "C=GB, L=London, O=Apricot" , "C=GB, L=London, O=Blueberry", "C=GB, L=London, O=Cantalope"]
+"identities" : [
+ "C=GB, L=London, O=Apricot" , 
+ "C=GB, L=London, O=Blueberry", 
+ "C=GB, L=London, O=Cantalope"
+ ]
 }
