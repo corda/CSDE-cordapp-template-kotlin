@@ -155,7 +155,7 @@ dependencies {
     cordaProvided 'net.corda:corda-application'
     cordaProvided 'net.corda:corda-crypto'
     cordaProvided 'net.corda:corda-membership'
-    cordaProvided 'net.corda:corda-persistence'
+    // cordaProvided 'net.corda:corda-persistence'
     cordaProvided 'net.corda:corda-serialization'
 
 
@@ -236,12 +236,15 @@ dependencies {
 }
 
 def cordaBinDir="${System.getProperty('user.home')}/.corda/corda5"
+def cordaCliDir = "$cordaBinDir/corda-cli"
+def cordaJDBCDir = "$cordaBinDir/jdbcDrivers"
+def CORDA_CLI_PLUGINS_DIR = "${cordaCliDir}/plugins"
 
 tasks.register("getPostgresJDBC") {
     doLast {
         copy {
             from configurations.myPostgresJDBC
-            into "$cordaBinDir"
+            into "$cordaJDBCDir"
         }
     }
 }
@@ -256,22 +259,6 @@ tasks.register('listCli'){
 
 }
 
-//def combiWorkerJar = "${System.getProperty('user.home')}/.corda/corda5/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
-//def combiWorkerJar = "$cordaBinDir/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
-
-//def cordaCliStorageDir = "$cordaBinDir/corda-cli-storage"
-// def cordaCliStorageDir = "$cordaBinDir/test-corda-cli-storage"
-//def cordaCliDir = "$cordaBinDir/corda-cli-plugin-host"
-def cordaCliDir = "$cordaBinDir/corda-cli"
-//def cordaCliDir = "$cordaBinDir/test"
-
-// def CORDA_CLI_JAR = "corda-cli-0.0.1-SNAPSHOT.jar"
-//def CORDA_CLI_JAR = "corda-cli-0.0.1-beta-1659584654941.jar"
-//def CORDA_CLI_JAR_DIR = "${cordaCliStorageDir}/app/build/libs"
-//def CORDA_CLI_PLUGINS_DIR = "${cordaCliDir}/build/plugins"
-//def CORDA_CLI_PLUGINS_DIR = "${cordaCliSDir}/plugins"
-def CORDA_CLI_JAR_DIR = "${cordaCliDir}"
-def CORDA_CLI_PLUGINS_DIR = "${cordaCliDir}/plugins"
 
 /*
 abstract class ProjInit extends DefaultTask {
@@ -359,7 +346,7 @@ tasks.register('printCPB' ) {
     //println("Cpb file=${cpbFile.absolutePath}")
 }
 
-tasks.register("getDevCorda", Copy) {
+tasks.register("getDevCordaLite", Copy) {
     from configurations.combinedWorker
     into cordaBinDir
 }
@@ -716,7 +703,7 @@ tasks.register("createVNodes") {
                             "${cordaClusterURL}/api/v1/virtualnode"
                 }
                 def outputData = file("${devEnvWorkspace}/vnodetemp.json")
-                //println("Data=${outputData.text}")
+                println("Data=${outputData.text}")
                 // TODO: Can do error checking with this
                 def jsonOut = new groovy.json.JsonSlurper().parseText(outputData.text)
 
@@ -734,12 +721,12 @@ tasks.register("createVNodes") {
         }
 
         // Debugging
-        /*
+
         exec {
             commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                     "${cordaClusterURL}/api/v1/virtualnode"
         }
-        */
+
         /*
         def vnodeInfoOutput = new PrintStream(new FileOutputStream("${devEnvWorkspace}/vnodeinfo.json"))
         //createVNodeFile(vnodeInfoOutput, namesToVNodeInfo)
@@ -857,17 +844,9 @@ tasks.register("startDB") {
     }
 }
 
-tasks.register("startCorda") {
-    dependsOn('getDevCorda')
-    // def combiWorkerJar = "$cordaBinDir/corda-combined-worker-5.0.0.0-beta-1659630320700.jar"
+tasks.register("startCordaLite") {
+    dependsOn('getDevCordaLite', 'getPostgresJDBC')
     doLast {
-
-        /*
-        exec {
-            commandLine 'mkdir', '-p', "$devEnvWorkspace"
-        }
-
-         */
 
         mkdir devEnvWorkspace
 
@@ -882,11 +861,7 @@ tasks.register("startCorda") {
                 "-e", "POSTGRES_USER=postgres",
                 "-e", "POSTGRES_PASSWORD=password",
                 "postgres:latest").start()
-
-        //new ProcessBuilder("$rootDir/tools/postgres-nonpersist-start-detach.sh").start()
         Thread::sleep(10000)
-        // def procBuild = new ProcessBuilder("$rootDir/tools/mini-corda-start.sh")
-
 
         def javaBinDir = "${System.getProperty("java.home")}/bin"
         def procBuild = new ProcessBuilder("${javaBinDir}/java",
@@ -902,7 +877,8 @@ tasks.register("startCorda") {
                 "-ssalt=salt",
                 "-ddatabase.user=user",
                 "-ddatabase.pass=password",
-                "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster")
+                "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
+                "-ddatabase.jdbc.directory=$cordaJDBCDir")
 
 
         procBuild.redirectErrorStream(true)
@@ -914,7 +890,7 @@ tasks.register("startCorda") {
     }
 }
 
-tasks.register("stopCorda") {
+tasks.register("stopCordaLite") {
     doLast {
         def sc = new Scanner(new File("$devEnvWorkspace/CordaPID.dat"))
         def pid = sc.nextLong()
