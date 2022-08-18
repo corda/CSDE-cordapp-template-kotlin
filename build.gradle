@@ -212,7 +212,11 @@ configurations {
         canBeConsumed = false
     }
 
-    // TODO reconsider this
+    myPostgresJDBC {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+
     all {
         resolutionStrategy {
             // FORCE Gradle to use latest dynamic versions.
@@ -228,11 +232,19 @@ dependencies {
     cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
     cordaCliMgmPlugin "net.corda.cli.deployment:mgm-cli-plugin:$cordaCluPluginsVersion"
     cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$cordaCluPluginsVersion"
+    myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
 }
-
 
 def cordaBinDir="${System.getProperty('user.home')}/.corda/corda5"
 
+tasks.register("getPostgresJDBC") {
+    doLast {
+        copy {
+            from configurations.myPostgresJDBC
+            into "$cordaBinDir"
+        }
+    }
+}
 
 tasks.register('listCli'){
     print("Corda-Cli configuration:")
