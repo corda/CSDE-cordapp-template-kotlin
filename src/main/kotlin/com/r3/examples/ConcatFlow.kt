@@ -1,4 +1,4 @@
-package com.r3.hellocorda
+package com.r3.examples
 
 import net.corda.v5.application.flows.CordaInject
 import net.corda.v5.application.flows.RPCRequestData
@@ -26,6 +26,7 @@ class ConcatFlow : RPCStartableFlow {
         return jsonMarshallingService.format(ConcatOutputMessage("${args.inText ?: ""}$CONCAT_TEXT"))
     }
     companion object {
-        val CONCAT_TEXT = "FOO"
+        val CONCAT_TEXT = "it's a different yet again!"
     }
 }
+

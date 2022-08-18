@@ -1,6 +1,6 @@
-package com.r3.hellocorda
+package com.r3.examples
 
-
+/*
 import net.corda.v5.application.flows.CordaInject
 import net.corda.v5.application.flows.InitiatingFlow
 import net.corda.v5.application.flows.InitiatedBy
@@ -82,3 +82,4 @@ class Foof2 : ResponderFlow {
     }
 }
 
+*/
