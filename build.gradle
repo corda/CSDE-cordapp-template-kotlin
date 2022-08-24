@@ -32,6 +32,8 @@ plugins {
     id "com.github.psxpaul.execfork" version "0.2.0"
 
     id 'java'
+
+    id 'csde'
 }
 
 group 'com.r3.hellocorda'
