@@ -5,7 +5,7 @@ import com.r3.examples.ConcatInputMessage
 import net.corda.testutils.CordaSim
 import net.corda.testutils.HoldingIdentity
 import net.corda.testutils.tools.CordaFlowChecker
-import net.corda.testutils.tools.ResponderMock
+import net.corda.testutils.tools.RPCRequestDataWrapper
 import net.corda.testutils.tools.ResponderMock
 import net.corda.v5.base.types.MemberX500Name
 import org.hamcrest.MatcherAssert.assertThat
@@ -28,24 +28,18 @@ class ConcatFlowTest {
         val corda = CordaSim()
         val node = corda.createVirtualNode(HoldingIdentity(eric), ConcatFlow::class.java)
         val messageText = "Suffix here->"
-        val response1 = node.callFlow(
-            RPCRequestDataWrapper("r1",
-                ConcatFlow::class.java,
-                ConcatInputMessage(messageText)
-            )
-        )
-        // Stongly typed version to recommend.
+        // This does not work:
         /*
-        val response1 = corda.invoke(
-            eric,
-            ResponderMock.fromData(
-                "r1",
+        val dataWrapper: RPCRequestDataWrapper = RPCRequestDataWrapper("r1",
+            "${com.r3.examples.ConcatFlow::class.java}",
+            "{\"inText\" : \"${messageText}\" }"
+        )*/
+        val dataWrapper: RPCRequestDataWrapper =
+            RPCRequestDataWrapper.fromData("r1",
                 ConcatFlow::class.java,
-                ConcatInputMessage(messageText)
-            )
-        )
-
-         */
+            ConcatInputMessage(messageText))
+        println("dataWrapper=${dataWrapper}")
+        val response1 = node.callFlow(dataWrapper)
 
         println("response=$response1")
         assertThat(response1, `is`("{\"outText\":\"${messageText}${ConcatFlow.CONCAT_TEXT}\"}"))
