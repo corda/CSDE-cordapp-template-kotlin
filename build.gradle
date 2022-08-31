@@ -421,8 +421,8 @@ tasks.register('createKeystore') {
 }
 
 tasks.register('buildCPI') {
-    // dependsOn('cpb', 'createGroupPolicy', 'createKeystore')
-    dependsOn('cpb', 'createKeystore')
+    dependsOn('cpb', 'createGroupPolicy', 'createKeystore')
+    // dependsOn('cpb', 'createKeystore')
 
     doLast{
         def cpiFile= "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
