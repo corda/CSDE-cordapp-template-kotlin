@@ -4,6 +4,13 @@ pluginManagement {
     // Declare the repositories where plugins are stored.
     repositories {
         gradlePluginPortal()
+        maven {
+            url = "$artifactoryContextUrl/corda-os-maven-unstable-local"
+            credentials {
+                username = System.getenv('CORDA_ARTIFACTORY_USERNAME')
+                password = System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+            }
+        }
     }
 
     //  The plugin dependencies with versions of the plugins congruent with the specified CorDapp plugin version,

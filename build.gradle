@@ -24,6 +24,8 @@ plugins {
     // required by Corda.
     id 'net.corda.plugins.cordapp-cpb'
 
+    id 'net.corda.cordapp.cordapp-configuration'
+
     // Development Support tools
     // Plugin that provides gradle functions to download files from websites.
     id "de.undercouch.download" version "5.1.0"
@@ -154,6 +156,7 @@ dependencies {
     cordaProvided 'net.corda:corda-membership'
     // cordaProvided 'net.corda:corda-persistence'
     cordaProvided 'net.corda:corda-serialization'
+
 
 
     // Not yet fully implemented:
