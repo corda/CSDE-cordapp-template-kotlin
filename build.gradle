@@ -24,12 +24,11 @@ plugins {
     // required by Corda.
     id 'net.corda.plugins.cordapp-cpb'
 
+    id 'net.corda.cordapp.cordapp-configuration'
+
     // Development Support tools
     // Plugin that provides gradle functions to download files from websites.
     id "de.undercouch.download" version "5.1.0"
-
-    // id 'com.github.hesch.execfork' version '0.1.15'
-    id "com.github.psxpaul.execfork" version "0.2.0"
 
     id 'java'
 
@@ -161,6 +160,7 @@ dependencies {
     cordaProvided 'net.corda:corda-serialization'
 
 
+
     // Not yet fully implemented:
     // cordaProvided 'net.corda:corda-ledger'
 
@@ -168,8 +168,7 @@ dependencies {
     cordaProvided 'org.slf4j:slf4j-api'
 
     // Dependencies Required By Test Tooling
-    //testImplementation "net.corda:library:$testUtilsVersion"
-    testImplementation "net.corda:cordapp-test-utils:$testUtilsVersion"
+    testImplementation "net.corda:cordapp-test-utils:$combinedWorkerVersion"
 
     // 3rd party libraries
     // Required
@@ -311,6 +310,7 @@ tasks.register("createGroupPolicy") {
     //classpath = files("$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar"
     dependsOn('projInit', 'getCordaCli')
     doLast {
+        println("Creating a GroupPolicy")
         javaexec {
             classpath = configurations.cordaCli
             jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
@@ -402,15 +402,7 @@ tasks.register('createKeystore') {
 
  */
 
-tasks.register('downloadFreeTsaCert', Download) {
-    dependsOn('projInit')
-    src 'https://freetsa.org/files/cacert.pem'
-    dest devEnvWorkspace
-    overwrite false
-}
-
 tasks.register('createKeystore') {
-    dependsOn('downloadFreeTsaCert')
     println('createKeystore')
     println("devEnvWorkspace=$devEnvWorkspace")
     doLast {
@@ -427,19 +419,12 @@ tasks.register('createKeystore') {
                     "-storetype", "pkcs12",
                     "-validity", "4000"
         }
-        exec {
-            commandLine "keytool", "-importcert",
-                    "-alias", "freetsa",
-                    "-keystore", "$devEnvWorkspace/signingkeys.pfx",
-                    "-storepass", "keystore password",
-                    "-file", "${devEnvWorkspace}/cacert.pem",
-                    "-noprompt"
-        }
     }
 }
 
 tasks.register('buildCPI') {
-    dependsOn('cpb', 'createGroupPolicy', 'createKeystore')
+    // dependsOn('cpb', 'createGroupPolicy', 'createKeystore')
+    dependsOn('cpb', 'createKeystore')
 
     doLast{
         def cpiFile= "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
@@ -460,7 +445,6 @@ tasks.register('buildCPI') {
                     '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
                     '--storepass', 'keystore password',
                     '--key', 'my-signing-key',
-                    '--tsa', 'https://freetsa.org/tsr',
                     '--file', cpiFile
         }
     }
@@ -507,11 +491,11 @@ tasks.register("deployCPI") {
                         "${cordaClusterURL}/api/v1/cpi/status/${requestId}"
             }
             def jsonFileCPI = file("${devEnvWorkspace}/CPIFileStatus.json")
-            // println("initial upload status:${jsonFileCPI.text}")
+            println("initial upload status:${jsonFileCPI.text}")
             parsedJsonCPI = new groovy.json.JsonSlurper().parseText(jsonFileCPI.text)
             // println("status=$parsedJsonCPI.status")
         } while(parsedJsonCPI != null && parsedJsonCPI.status instanceof String && parsedJsonCPI.status != "OK")
-        // println("status=$parsedJsonCPI.status")
+        println("upload CPI reponse JSON=$parsedJsonCPI")
         if (!parsedJsonCPI.status.equals("OK")) {
             // println("CPI Deployment failed:$parsedJsonCPI.details.errorMessage")
 
@@ -533,6 +517,8 @@ tasks.register("deployCPI") {
             def jsonFileA = file("${devEnvWorkspace}/CPIupload.json")
             requestId = (new groovy.json.JsonSlurper().parseText(jsonFileA.text)).id
             // println(requestId)
+
+            def jsonFileForceStatus = null
             do {
 
                 Thread::sleep(3000)
@@ -541,7 +527,7 @@ tasks.register("deployCPI") {
                     commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
                             "${cordaClusterURL}/api/v1/cpi/status/${requestId}"
                 }
-                def jsonFileForceStatus = file("${devEnvWorkspace}/CPIFileStatus.json")
+                jsonFileForceStatus = file("${devEnvWorkspace}/CPIFileStatus.json")
                 parsedJson = new groovy.json.JsonSlurper().parseText(jsonFileForceStatus.text)
 
                //  println("status=$parsedJson.status")
@@ -549,7 +535,7 @@ tasks.register("deployCPI") {
 
             if (!parsedJson.status.equals("OK")) {
                 println("CPI Deployment failed:$parsedJson.details.errorMessage")
-                println(parsedJson)
+                println(jsonFileForceStatus.text)
                 throw new GradleException("CPI Deployment failed.\n$parsedJson.details.errorMessage")
             } else {
                 //println("CPI checksum=${parsedJson.cpiFileChecksum}")
@@ -969,47 +955,8 @@ task urldemo {
     }
 }
 
-/*
-task startDaemon(type: com.github.psxpaul.task.ExecFork) {
-    executable = './tools/mini-corda-start.sh'
-    // args = <string-array>
-    workingDir = "$projectDir"
-    standardOutput = new File("$buildDir/daemon.log")
-    errorOutput = new File("$buildDir/daemon-error.log")
-    // stopAfter = verify
-    // waitForPort = 8080
-    // waitForOutput = 'has started'
-    // environment = ['JAVA_HOME': "$buildDir/java", 'USER_HOME': "$buildDir/userhome"]
-}
-
- */
-
-/*
-tasks.register('startMiniCorda', JavaExec) {
-   jvmArgs = ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005',
-              '-Dco.paralleluniverse.fibers.verifyInstrumentation=true']
-    //classpath = files(combiWorkerJar)
-    classpath = configurations.combinedWorker.singleFile
-    args  '--instanceId=0', '-mbus.busType=DATABASE',
-          '-spassphrase=password', '-ssalt=salt', '-spassphrase=password', '-ssalt=salt',
-            '-ddatabase.user=user', '-ddatabase.pass=password',
-            '-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster'
-}*/
 
 
-/*
-tasks.register("getCordaCliMgmPlugin", Copy) {
-        from configurations.cordaCliMgmPlugin
-        into "$cordaCliDir/plugins"
-}
-
-
-tasks.register("getCordaCliPackagePlugin", Copy) {
-    from configurations.cordaCliPackagePlugin
-    into "$cordaCliDir/plugins"
-}
-
- */
 tasks.register('list') {
     //Matcher matcher = Pattern.Compile("corda-combined-worker.*.jar").matcher( it.getName())
     File srcDir
