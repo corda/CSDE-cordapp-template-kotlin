@@ -119,6 +119,14 @@ repositories {
     }
 
     maven {
+        url = "$artifactoryContextUrl/corda-ent-maven"
+        credentials {
+            username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
+            password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+        }
+    }
+
+    maven {
         url = "$artifactoryContextUrl/engineering-tools-maven-unstable"
         credentials {
             username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
@@ -166,7 +174,8 @@ dependencies {
     cordaProvided 'org.slf4j:slf4j-api'
 
     // Dependencies Required By Test Tooling
-    testImplementation "net.corda:cordapp-test-utils:$combinedWorkerVersion"
+    testImplementation "net.corda:cordapp-test-api:$cordappTestUtilsVersion"
+    testRuntimeOnly "net.corda:cordapp-test-utils:$combinedWorkerVersion"
 
     // 3rd party libraries
     // Required
@@ -229,8 +238,8 @@ configurations {
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
     cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
-    cordaCliMgmPlugin "net.corda.cli.deployment:mgm-cli-plugin:$cordaCluPluginsVersion"
-    cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$cordaCluPluginsVersion"
+    cordaCliMgmPlugin "net.corda.cli.deployment:mgm-cli-plugin:$cordaCliPluginsVersion"
+    cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$cordaCliPluginsVersion"
     myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
 }
 
@@ -417,6 +426,23 @@ tasks.register('createKeystore') {
                     "-storetype", "pkcs12",
                     "-validity", "4000"
         }
+        // Need to add the default signing key to the keystore
+        exec {
+            // Command to run
+            // keytool -importcert
+            // -keystore signingkeys.pfx
+            // -storepass "keystore password"
+            // -noprompt
+            // -alias gradle-plugin-default-key
+            // -file gradle-plugin-default-key.pem
+            commandLine "keytool", "-importcert",
+            "-keystore", "$devEnvWorkspace/signingkeys.pfx",
+            "-storepass", "keystore password",
+            "-noprompt",
+            "-alias", "gradle-plugin-default-key",
+            "-file", "$rootDir/config/gradle-plugin-default-key.pem"
+        }
+
     }
 }
 
