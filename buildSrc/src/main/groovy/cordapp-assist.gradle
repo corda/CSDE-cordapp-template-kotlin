@@ -1,0 +1,56 @@
+plugins {
+    id 'java-library'
+    id 'checkstyle'
+}
+
+/*
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+checkstyle {
+    maxWarnings = 0
+    // ...
+}
+
+tasks.withType(JavaCompile) {
+    options.warnings = true
+    // ...
+}
+
+dependencies {
+    testImplementation("junit:junit:4.13")
+    // ...
+}
+
+ */
+
+class MyTask extends DefaultTask {
+    @TaskAction
+    void run() {
+        println ('Hello from MyTask')
+    }
+}
+
+tasks.register('myTask', MyTask)
+
+tasks.register('createKeystore') {
+    println('createKeystore')
+    println("devEnvWorkspace=$devEnvWorkspace")
+    doLast {
+        delete {
+            delete "$devEnvWorkspace/signingkeys.pfx"
+        }
+        exec {
+            commandLine "keytool", "-genkey",
+                    "-alias", "my-signing-key",
+                    "-keystore", "$devEnvWorkspace/signingkeys.pfx",
+                    "-storepass", "keystore password",
+                    "-dname", "cn=CPI Example - My Signing Key, o=CorpOrgCorp, c=GB",
+                    "-keyalg", "RSA",
+                    "-storetype", "pkcs12",
+                    "-validity", "4000"
+        }
+    }
+}

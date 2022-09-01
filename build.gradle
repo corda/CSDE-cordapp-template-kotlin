@@ -13,6 +13,10 @@ import java.util.regex.Pattern
 import java.lang.ProcessHandle
 import java.lang.String
 
+
+import net.corda.plugins.csde.CsdePlugin
+// import net.corda.plugins.csde.MyTask
+
 import static org.gradle.api.JavaVersion.VERSION_11
 
 plugins {
@@ -32,7 +36,11 @@ plugins {
 
     id 'java'
 
-    id 'csde'
+    // Nope
+    //id 'CsdePlugin'
+    //id 'csde'
+
+    id 'cordapp-assist'
 }
 
 group 'com.r3.hellocorda'
@@ -401,7 +409,7 @@ tasks.register('createKeystore') {
 }
 
  */
-
+/*
 tasks.register('createKeystore') {
     println('createKeystore')
     println("devEnvWorkspace=$devEnvWorkspace")
@@ -421,6 +429,8 @@ tasks.register('createKeystore') {
         }
     }
 }
+
+ */
 
 tasks.register('buildCPI') {
     // dependsOn('cpb', 'createGroupPolicy', 'createKeystore')
