@@ -9,7 +9,6 @@ import net.corda.v5.base.types.MemberX500Name
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 
 class ConcatFlowTest {
 
@@ -20,12 +19,7 @@ class ConcatFlowTest {
         val corda = Simulator()
         val node = corda.createVirtualNode(HoldingIdentity.create(eric), ConcatFlow::class.java)
         val messageText = "Suffix here->"
-        // This does not work:
-        /*
-        val dataWrapper: RequestData = RPCRequestDataWrapper("r1",
-            "${com.r3.examples.ConcatFlow::class.java}",
-            "{\"inText\" : \"${messageText}\" }"
-        )*/
+
         val dataWrapper: RequestData =
             RequestData.create("r1",
                 ConcatFlow::class.java,

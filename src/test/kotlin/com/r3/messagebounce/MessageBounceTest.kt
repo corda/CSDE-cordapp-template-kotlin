@@ -1,24 +1,16 @@
 package com.r3.messagebounce
 
-import com.r3.examples.ConcatFlow
-import com.r3.messagebounce.InitiatorMsg
-import com.r3.messagebounce.MessageReturner
-import com.r3.messagebounce.MessageSender
-import com.r3.messagebounce.ResponderMsg
-import com.r3.messagebounce.StartRPCFlowArgs
-import net.corda.cordapptestutils.Simulator
 import net.corda.cordapptestutils.HoldingIdentity
 import net.corda.cordapptestutils.RequestData
+import net.corda.cordapptestutils.Simulator
 import net.corda.v5.base.types.MemberX500Name
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 
 class MessageSenderTests {
     private val nodeAX500 = MemberX500Name.parse("CN=Node A, OU=Test Dept, O=R3, L=London, C=GB")
     private val nodeBX500 = MemberX500Name.parse("CN=Node B, OU=Test Dept, O=R3, L=London, C=GB")
-
 
     // Integration Test
     @Test
@@ -26,7 +18,8 @@ class MessageSenderTests {
         val corda = Simulator()
 
         // Create virtual nodes
-        val nodeA = corda.createVirtualNode(HoldingIdentity.create(nodeAX500),
+        val nodeA = corda.createVirtualNode(
+            HoldingIdentity.create(nodeAX500),
             MessageSender::class.java
         )
         corda.createVirtualNode(
@@ -51,7 +44,4 @@ class MessageSenderTests {
         // Check the returned data with the expected data (which will be JSON)
         assertThat(response, `is`("{\"message\":\"Responder returned: here's my message\"}"))
     }
-
 }
-
-
