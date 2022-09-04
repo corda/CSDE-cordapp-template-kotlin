@@ -1,5 +1,6 @@
 package com.r3.examples.tests
 
+/*
 import com.r3.examples.ConcatFlow
 import com.r3.examples.ConcatInputMessage
 import net.corda.cordapptestutils.HoldingIdentity
@@ -32,3 +33,4 @@ class ConcatFlowTest {
     }
 }
 
+*/
