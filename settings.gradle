@@ -1,11 +1,25 @@
-
-
 pluginManagement {
     // Declare the repositories where plugins are stored.
     repositories {
         gradlePluginPortal()
         maven {
+            url = "$artifactoryContextUrl/corda-os-maven-unstable"
+            credentials {
+                username = System.getenv('CORDA_ARTIFACTORY_USERNAME')
+                password = System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+                // username = "chris.barratt@r3.com"
+                // password = "AKCp8k8smxviwVQpKbFC7ukLBVAD4N64FmHJ6NcGhBAqTX38tVdqi7PQym89NBeY7R4WFLWsY"
+            }
+        }
+        maven {
             url = "$artifactoryContextUrl/corda-os-maven-unstable-local"
+            credentials {
+                username = System.getenv('CORDA_ARTIFACTORY_USERNAME')
+                password = System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+            }
+        }
+        maven {
+            url = "$artifactoryContextUrl/corda-dev"
             credentials {
                 username = System.getenv('CORDA_ARTIFACTORY_USERNAME')
                 password = System.getenv('CORDA_ARTIFACTORY_PASSWORD')
@@ -16,6 +30,7 @@ pluginManagement {
     //  The plugin dependencies with versions of the plugins congruent with the specified CorDapp plugin version,
     //  Corda API version, and Kotlin version.
     plugins {
+        //id 'net.corda.plugins.cordapp-cpk2' version cordaPluginsVersion
         id 'net.corda.plugins.cordapp-cpk' version cordaPluginsVersion
         id 'net.corda.plugins.cordapp-cpb' version cordaPluginsVersion
         id 'net.corda.cordapp.cordapp-configuration' version cordaApiVersion
@@ -26,5 +41,7 @@ pluginManagement {
 }
 
 // Root project name, used in naming the project as a whole and used in naming objects built by the project.
-rootProject.name = 'cordapp-hello-cordapp'
+rootProject.name = 'cordapp-hello-corda'
+
+println( "username= ${System.getenv('CORDA_ARTIFACTORY_USERNAME')}")
 

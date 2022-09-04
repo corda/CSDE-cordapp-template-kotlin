@@ -1,34 +1,14 @@
 import javax.security.auth.x500.X500Principal
+import java.util.concurrent.TimeUnit
 
 plugins {
     id 'java-library'
     id 'checkstyle'
+    id 'groovy'
+    id 'java'
 }
 
-/*
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-}
 
-checkstyle {
-    maxWarnings = 0
-    // ...
-}
-
-tasks.withType(JavaCompile) {
-    options.warnings = true
-    // ...
-}
-
-dependencies {
-    testImplementation("junit:junit:4.13")
-    // ...
-}
-
- */
-
-// Support tooling
 configurations {
     combinedWorker{
         canBeConsumed = false
@@ -102,22 +82,6 @@ tasks.register('listCli'){
 }
 
 
-/*
-abstract class ProjInit extends DefaultTask {
-    @Input
-    final abstract Property<String> workspace= project.objects.property(String).convention("workspace")
-    @OutputDirectories
-    final abstract outputDirectory = project.objects.directoryProperty().convention(project.layout.projectDirectory.dir(getWorkspace()))
-    @TaskAction
-    void doThing() {
-         mkdir getWorkspace()
-    }
-}
-tasks.register('projInit', ProjInit) {
-    workspace devEnvWorkspace
-}
-*/
-
 tasks.register('projInit') {
     doLast {
         mkdir devEnvWorkspace
@@ -147,8 +111,6 @@ tasks.register("getCordaCli") {
 }
 
 tasks.register("createGroupPolicy") {
-    //classpath = files("$cordaCliStorageDir/$CORDA_CLI_JAR")
-    //classpath = files("$CORDA_CLI_JAR_DIR/corda-cli-0.0.1-SNAPSHOT.jar"
     dependsOn('projInit', 'getCordaCli')
     doLast {
         println("Creating a GroupPolicy")
@@ -171,23 +133,63 @@ tasks.register("createGroupPolicy") {
             myArgs.add("--endpoint=http://localhost:1080")
             args myArgs
         }
+
     }
 }
 
-tasks.register('printCPB' ) {
-    println("myCordaCpb=${configurations.myCordaCpb.files()}")
-    println("cpb.outputs.files()=${cpb.outputs.files()}")
-    println("assemble.outputs.files()=${assemble.outputs.files()}")
+/*
+tasks.register("createGroupPolicy") {
+    dependsOn('projInit', 'getCordaCli')
+    doLast {
+        println("Creating a GroupPolicy")
+        println("cordaCli jar: ${configurations.cordaCli.singleFile.toString()}")
+        String groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json".toString())
+        def groupPolicyFile = new File(groupPolicyFName)
+        println("GroupPolicy file: $groupPolicyFile")
 
-    // println(cpb.get().outputFile)
-    //File cpbFile = file('build/libs/*.cpb')
-    // inputs.files(myCordaCpb).withPropertyName('cpb').withPathSensitivity(PathSensitivity.RELATIVE)
-    //println("${configurations.myCordaCpb.singleFile.absolutePath}")
-    println("$buildDir/libs/")
+        def cordaCliJar = configurations.cordaCli.singleFile
+        def javaBinDir = "${System.getProperty("java.home")}/bin"
+        def jsonFile = file("$rootDir/config/dev-net.json")
+        def slurper = new groovy.json.JsonSlurper()
+        def parsedJson = slurper.parseText(jsonFile.text)
 
-    //println("cbp={$cpb.toString()}")
-    //println("Cpb file=${cpbFile.absolutePath}")
+        LinkedList<String> cmdArgs = new LinkedList<String>()
+        cmdArgs.add("${javaBinDir}/java".toString())
+        cmdArgs.add("-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR".toString())
+        cmdArgs.add("-jar")
+        //cmdArgs.add("${configurations.cordaCli.singleFile.toString()}")
+        cmdArgs.add("${cordaCliJar}".toString())
+        cmdArgs.add("mgm")
+        cmdArgs.add("groupPolicy")
+
+        parsedJson.identities.forEach {
+            cmdArgs.add("--name")
+            cmdArgs.add(it)
+        }
+        cmdArgs.add("--endpoint-protocol=1")
+        cmdArgs.add("--endpoint=http://localhost:1080")
+        println("CmdArgs=${cmdArgs}")
+        def pb = new ProcessBuilder(cmdArgs)
+        // pb.redirectErrorStream(true)
+        pb.redirectOutput(ProcessBuilder.Redirect.to(groupPolicyFile))
+
+        def proc = pb.start()
+        //proc.waitFor(60, TimeUnit.SECONDS)
+        assert pb.redirectOutput().file() == groupPolicyFile
+        proc.waitFor()
+
+
+    }
 }
+
+tasks.register("createGroupPolicy") {
+    dependsOn('projInit', 'getCordaCli')
+    doLast {
+        println("FAKE CREATE GroupPolicy - use pregen")
+    }
+}
+*/
+
 
 tasks.register("getDevCordaLite", Copy) {
     from configurations.combinedWorker
@@ -223,23 +225,6 @@ tasks.register('deleteOldSigningKeys'){
         }
 }
 
-tasks.register('createKeystore') {
-    dependsOn('deleteOldSigningKeys','downloadFreeTsaCert')
-    println('createKeystore')
-    doLast {
-        println('createKeystore running')
-        exec {
-            commandLine "keytool", "-genkey",
-                    "-alias", "my-signing-key",
-                    "-keystore", "signingkeys.pfx",
-                    "-storepass", "keystore password",
-                    "-dname", "cn=CPI Example - My Signing Key, o=CorpOrgCorp, c=GB",
-                    "-keyalg", "RSA",
-                    "-storetype", "pkcs12",
-                    "-validity", "4000"
-        }
-    }
-}
 
  */
 
@@ -274,10 +259,9 @@ tasks.register('createKeystore') {
 }
 
 
-
 tasks.register('buildCPI') {
-    dependsOn('cpb', 'createGroupPolicy', 'createKeystore')
-    // dependsOn('cpb', 'createKeystore')
+    dependsOn('build', 'createGroupPolicy', 'createKeystore')
+    // dependsOn('build', 'createKeystore')
 
     doLast{
         def cpiFile= "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
@@ -300,15 +284,6 @@ tasks.register('buildCPI') {
                     '--key', 'my-signing-key',
                     '--file', cpiFile
         }
-    }
-}
-
-tasks.register('parseJson') {
-    doLast {
-        def jsonFile = file("$rootDir/config/dev-net.json")
-        def slurper = new groovy.json.JsonSlurper()
-        def parsedJson = slurper.parseText(jsonFile.text)
-        println("${parsedJson.identities}")
     }
 }
 
@@ -762,23 +737,6 @@ tasks.register("stopCordaLite") {
 }
 
 
-// Junk
-
-tasks.register("pickOS") {
-    if (System.properties['os.name'].toLowerCase().contains('windows')) {
-        println "it's Windows"
-    } else {
-        println "it's not Windows"
-    }
-}
-tasks.register("clithing") {
-    //def collection = configurations.cordaCli
-    // def thing = collection.fileCollection().getFiles()
-    println("CombinedWorker=${configurations.cordaCli.singleFile}")
-    println("CombinedWorker=${configurations.cordaCli.files}")
-    def names=[]
-    fileTree(cordaCliDir).filter{ }
-}
 
 task urldemo {
     doLast {
@@ -802,12 +760,3 @@ task urldemo {
 }
 
 
-
-class MyTask extends DefaultTask {
-    @TaskAction
-    void run() {
-        println ('Hello from MyTask')
-    }
-}
-
-tasks.register('myTask', MyTask)

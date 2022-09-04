@@ -1,5 +1,8 @@
 package com.r3.messagebounce
 
+/*
+
+
 import net.corda.cordapptestutils.HoldingIdentity
 import net.corda.cordapptestutils.RequestData
 import net.corda.cordapptestutils.Simulator
@@ -45,3 +48,6 @@ class MessageSenderTests {
         assertThat(response, `is`("{\"message\":\"Responder returned: here's my message\"}"))
     }
 }
+
+
+ */
