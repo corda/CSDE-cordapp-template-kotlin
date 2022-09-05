@@ -276,6 +276,7 @@ tasks.register('buildCPI') {
         javaexec {
             classpath = configurations.cordaCli
             jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
+            /*
             args 'package', 'create',
                     '--cpb', cpbs.singleFile.absolutePath,
                     '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
@@ -283,6 +284,16 @@ tasks.register('buildCPI') {
                     '--storepass', 'keystore password',
                     '--key', 'my-signing-key',
                     '--file', cpiFile
+             */
+            args 'package', 'create-cpi',
+                    '--cpb', cpbs.singleFile.absolutePath,
+                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
+                    '--cpi-name', 'cpi name',
+                    '--cpi-version', '1.0.0.0-SNAPSHOT',
+                    '--file', cpiFile,
+                    '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
+                    '--storepass', 'keystore password',
+                    '--key', 'my-signing-key'
         }
     }
 }

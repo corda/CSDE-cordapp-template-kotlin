@@ -7,8 +7,7 @@ plugins {
     // These extend existing build environment so that CPB and CPK files can be built.
     // This includes a CorDapp DSL that allows the developer to supply metadata for the CorDapp
     // required by Corda.
-    id 'net.corda.plugins.cordapp-cpb'
-    // id 'net.corda.plugins.cordapp-cpk2'
+    id 'net.corda.plugins.cordapp-cpb2'
 
     id 'net.corda.cordapp.cordapp-configuration'
 

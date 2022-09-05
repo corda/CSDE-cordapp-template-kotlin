@@ -36,9 +36,8 @@ pluginManagement {
     //  The plugin dependencies with versions of the plugins congruent with the specified CorDapp plugin version,
     //  Corda API version, and Kotlin version.
     plugins {
-        //id 'net.corda.plugins.cordapp-cpk2' version cordaPluginsVersion
-        id 'net.corda.plugins.cordapp-cpk' version cordaPluginsVersion
-        id 'net.corda.plugins.cordapp-cpb' version cordaPluginsVersion
+        id 'net.corda.plugins.cordapp-cpk2' version cordaPluginsVersion
+        id 'net.corda.plugins.cordapp-cpb2' version cordaPluginsVersion
         id 'net.corda.cordapp.cordapp-configuration' version cordaApiVersion
         id 'org.jetbrains.kotlin.jvm' version kotlinVersion
         id 'org.jetbrains.kotlin.plugin.jpa' version kotlinVersion
