@@ -4,14 +4,11 @@ pluginManagement {
         gradlePluginPortal()
         // S3 repositories for Release Candidates
         maven {
-            url = "s3://corda-download-staging/maven/89f8f35a-293f-11ed-a261-0242ac120002"
-            credentials(AwsCredentials) {
-                accessKey "${System.getenv('AWS_ACCESS_KEY_ID')}"
-                secretKey "${System.getenv('AWS_SECRET_ACCESS_KEY')}"
-                sessionToken "${System.getenv('AWS_SESSION_TOKEN')}"
-            }
+           url = "$artifactoryContextUrl/"
         }
 
+        // Repositories for internal releases
+/*
         maven {
             url = "$artifactoryContextUrl/corda-os-maven-unstable"
             credentials {
@@ -33,6 +30,7 @@ pluginManagement {
                 password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
             }
         }
+*/
     }
 
     //  The plugin dependencies with versions of the plugins congruent with the specified CorDapp plugin version,
