@@ -14,7 +14,7 @@ plugins {
 
     id 'java'
 
-    id 'cordapp-assist'
+    id 'csde'
 }
 
 group 'com.r3.hellocorda'

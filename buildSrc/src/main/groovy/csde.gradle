@@ -57,12 +57,14 @@ dependencies {
     myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
 }
 
+def pluginGroupName = "CSDE"
 def cordaBinDir="${System.getProperty('user.home')}/.corda/corda5"
 def cordaCliDir = "$cordaBinDir/corda-cli"
 def cordaJDBCDir = "$cordaBinDir/jdbcDrivers"
 def CORDA_CLI_PLUGINS_DIR = "${cordaCliDir}/plugins"
 
 tasks.register("getPostgresJDBC") {
+    group = pluginGroupName
     doLast {
         copy {
             from configurations.myPostgresJDBC
@@ -72,6 +74,7 @@ tasks.register("getPostgresJDBC") {
 }
 
 tasks.register('listCli'){
+    group = pluginGroupName
     print("Corda-Cli configuration:")
     configurations.cordaCli.each { println(it) }
     print("MGM configuration:")
@@ -83,6 +86,7 @@ tasks.register('listCli'){
 
 
 tasks.register('projInit') {
+    group = pluginGroupName
     doLast {
         mkdir devEnvWorkspace
     }
@@ -90,6 +94,7 @@ tasks.register('projInit') {
 
 
 tasks.register("getCordaCli") {
+    group = pluginGroupName
     //dependsOn('getCordaCliMgmPlugin', 'getCordaCliPackagePlugin')
     doLast {
         delete {
@@ -111,6 +116,7 @@ tasks.register("getCordaCli") {
 }
 
 tasks.register("createGroupPolicy") {
+    group = pluginGroupName
     dependsOn('projInit', 'getCordaCli')
     doLast {
         println("Creating a GroupPolicy")
@@ -192,6 +198,7 @@ tasks.register("createGroupPolicy") {
 
 
 tasks.register("getDevCordaLite", Copy) {
+    group = pluginGroupName
     from configurations.combinedWorker
     into cordaBinDir
 }
@@ -229,6 +236,7 @@ tasks.register('deleteOldSigningKeys'){
  */
 
 tasks.register('createKeystore') {
+    group = pluginGroupName
     println('createKeystore')
     println("devEnvWorkspace=$devEnvWorkspace")
     doLast {
@@ -260,6 +268,7 @@ tasks.register('createKeystore') {
 
 
 tasks.register('buildCPI') {
+    group = pluginGroupName
     dependsOn('build', 'createGroupPolicy', 'createKeystore')
     // dependsOn('build', 'createKeystore')
 
@@ -288,6 +297,7 @@ tasks.register('buildCPI') {
 }
 
 tasks.register("deployCPI") {
+    group = pluginGroupName
     dependsOn('buildCPI')
     doLast {
         def retryLimit = 10
@@ -377,6 +387,7 @@ tasks.register("deployCPI") {
 
 
 tasks.register("uploadCPI") {
+    group = pluginGroupName
     dependsOn('projInit')
     doLast {
         def cpi = "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
@@ -395,6 +406,7 @@ tasks.register("uploadCPI") {
 }
 
 tasks.register("forceUploadCPI") {
+    group = pluginGroupName
     dependsOn('projInit')
     doLast {
         def cpi = "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
@@ -414,6 +426,7 @@ tasks.register("forceUploadCPI") {
 
 tasks.register("uploadCPIStatus") {
     // dependsOn ('uploadCPI')
+    group = pluginGroupName
     dependsOn('projInit')
     doLast {
         def jsonFileA = file("${devEnvWorkspace}/CPIupload.json")
@@ -448,6 +461,7 @@ class VNodeInfo {
 }
 
 tasks.register("createVNodes") {
+    group = pluginGroupName
     dependsOn('deployCPI')
     doLast {
         def jsonFile = file("$rootDir/config/dev-net.json")
@@ -580,6 +594,7 @@ tasks.register("createVNodes") {
 }
 
 tasks.register('regAllVNodes') {
+    group = pluginGroupName
     // Code the check for registration
     dependsOn('createVNodes')
     doLast {
@@ -608,6 +623,7 @@ tasks.register('regAllVNodes') {
 }
 
 tasks.register('listVNodes') {
+    group = pluginGroupName
     doLast {
         exec {
             standardOutput = new FileOutputStream("${devEnvWorkspace}/tempy.json")
@@ -626,6 +642,7 @@ tasks.register('listVNodes') {
 
 
 tasks.register('deployCordapp') {
+    group = pluginGroupName
     dependsOn("regAllVNodes")
 }
 
@@ -644,6 +661,7 @@ def createVNodeFile(PrintWriter printer, HashMap<String,VNodeInfo> vnodeData) {
 
 
 tasks.register("startDB") {
+    group = pluginGroupName
     doLast {
         new ProcessBuilder(
                 "docker",
@@ -658,6 +676,7 @@ tasks.register("startDB") {
 }
 
 tasks.register("startCordaLite") {
+    group = pluginGroupName
     dependsOn('getDevCordaLite', 'getPostgresJDBC')
     doLast {
 
@@ -704,6 +723,7 @@ tasks.register("startCordaLite") {
 }
 
 tasks.register("stopCordaLite") {
+    group = pluginGroupName
     doLast {
         def sc = new Scanner(new File("$devEnvWorkspace/CordaPID.dat"))
         def pid = sc.nextLong()
@@ -759,4 +779,39 @@ task urldemo {
     }
 }
 
+// Experiment
+//tasks.register("useBar") {
+//    doLast {
+//        def b = new Bar()
+//        println("${b.get()}")
+//    }
+//}
+//
+//tasks.register("useBarMeowMeow") {
+//    doLast {
+//        def b = new Bar("meow-meow")
+//        println("${b.get()}")
+//    }
+//}
+//
+//
+//public class Bar {
+//    private String data="default";
+//    public Bar() {
+//    }
+//
+//    public Bar(String m) {
+//        data = m;
+//    }
+//
+//
+//    public String get() {
+//        return data;
+//    }
+//
+//    public void set(String m) {
+//        data = m;
+//    }
+//}
+//
 
