@@ -90,7 +90,6 @@ tasks.register('projInit') {
 
 
 tasks.register("getCordaCli") {
-    //dependsOn('getCordaCliMgmPlugin', 'getCordaCliPackagePlugin')
     doLast {
         delete {
             delete cordaCliDir
@@ -137,96 +136,10 @@ tasks.register("createGroupPolicy") {
     }
 }
 
-/*
-tasks.register("createGroupPolicy") {
-    dependsOn('projInit', 'getCordaCli')
-    doLast {
-        println("Creating a GroupPolicy")
-        println("cordaCli jar: ${configurations.cordaCli.singleFile.toString()}")
-        String groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json".toString())
-        def groupPolicyFile = new File(groupPolicyFName)
-        println("GroupPolicy file: $groupPolicyFile")
-
-        def cordaCliJar = configurations.cordaCli.singleFile
-        def javaBinDir = "${System.getProperty("java.home")}/bin"
-        def jsonFile = file("$rootDir/config/dev-net.json")
-        def slurper = new groovy.json.JsonSlurper()
-        def parsedJson = slurper.parseText(jsonFile.text)
-
-        LinkedList<String> cmdArgs = new LinkedList<String>()
-        cmdArgs.add("${javaBinDir}/java".toString())
-        cmdArgs.add("-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR".toString())
-        cmdArgs.add("-jar")
-        //cmdArgs.add("${configurations.cordaCli.singleFile.toString()}")
-        cmdArgs.add("${cordaCliJar}".toString())
-        cmdArgs.add("mgm")
-        cmdArgs.add("groupPolicy")
-
-        parsedJson.identities.forEach {
-            cmdArgs.add("--name")
-            cmdArgs.add(it)
-        }
-        cmdArgs.add("--endpoint-protocol=1")
-        cmdArgs.add("--endpoint=http://localhost:1080")
-        println("CmdArgs=${cmdArgs}")
-        def pb = new ProcessBuilder(cmdArgs)
-        // pb.redirectErrorStream(true)
-        pb.redirectOutput(ProcessBuilder.Redirect.to(groupPolicyFile))
-
-        def proc = pb.start()
-        //proc.waitFor(60, TimeUnit.SECONDS)
-        assert pb.redirectOutput().file() == groupPolicyFile
-        proc.waitFor()
-
-
-    }
-}
-
-tasks.register("createGroupPolicy") {
-    dependsOn('projInit', 'getCordaCli')
-    doLast {
-        println("FAKE CREATE GroupPolicy - use pregen")
-    }
-}
-*/
-
-
 tasks.register("getDevCordaLite", Copy) {
     from configurations.combinedWorker
     into cordaBinDir
 }
-
-/*
-tasks.register('addTsaCertToKeystore') {
-    dependsOn ('createKeystore')
-    doLast {
-        println('addTsaCertToKeystore running')
-        exec {
-            commandLine "keytool", "-importcert",
-                    "-alias", "freetsa",
-                    "-keystore", "signingkeys.pfx",
-                    "-storepass", "keystore password",
-                    "-file", "cacert.pem",
-                    "-noprompt"
-        }
-    }
-
-}
-
-tasks.register('deleteOldSigningKeys'){
-        doLast {
-            println('deleteOldSigningKeys running')
-            delete {
-               "${rootDir}/signingkeys.pfx"
-            }
-            exec {
-                commandLine 'ls', '-l', rootDir
-            }
-        }
-}
-
-
- */
 
 tasks.register('createKeystore') {
     println('createKeystore')
@@ -261,7 +174,6 @@ tasks.register('createKeystore') {
 
 tasks.register('buildCPI') {
     dependsOn('build', 'createGroupPolicy', 'createKeystore')
-    // dependsOn('build', 'createKeystore')
 
     doLast{
         def cpiFile= "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
@@ -271,20 +183,10 @@ tasks.register('buildCPI') {
 
         // Create a file collection using a closure
         def collection = layout.files { srcDir.listFiles() }
-        //def cpbs = collection.filter { it.getName().endsWith(".cpb") }.each { println it }
         def cpbs = collection.filter { it.getName().endsWith(".cpb") }
         javaexec {
             classpath = configurations.cordaCli
             jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
-            /*
-            args 'package', 'create',
-                    '--cpb', cpbs.singleFile.absolutePath,
-                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
-                    '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
-                    '--storepass', 'keystore password',
-                    '--key', 'my-signing-key',
-                    '--file', cpiFile
-             */
             args 'package', 'create-cpi',
                     '--cpb', cpbs.singleFile.absolutePath,
                     '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
@@ -424,7 +326,6 @@ tasks.register("forceUploadCPI") {
 
 
 tasks.register("uploadCPIStatus") {
-    // dependsOn ('uploadCPI')
     dependsOn('projInit')
     doLast {
         def jsonFileA = file("${devEnvWorkspace}/CPIupload.json")
@@ -482,40 +383,10 @@ tasks.register("createVNodes") {
         def existingVNodes = new HashSet<X500Principal>()
         def rawExistingVNodeData=file("${devEnvWorkspace}/existingvnodes.json")
         def existingVNodeData = new groovy.json.JsonSlurper().parseText(rawExistingVNodeData.text)
-        /*
-        existingVNodeData.virtualNodes.forEach {
-            println("Existing: ${it.holdingIdentity.x500Name}")
-        }
-
-         */
         existingVNodeData.virtualNodes.forEach {
             existingVNodes.add(new X500Principal(it.holdingIdentity.x500Name))
         }
 
-        /*
-        println("Existing as X500Principals:")
-        existingVNodes.forEach {
-            println("X500Principal: $it")
-        }
-
-        // Doesn't not work
-        println("Check for existence with string search:")
-        existingVNodeData.virtualNodes.forEach {
-            String myX500Name = it.holdingIdentity.x500Name
-            println("$myX500Name: does it match ${existingVNodes.contains(myX500Name)}")
-        }
-
-        // Need to create X500... thing to work
-        println("Check for existence with X500Principal search:")
-        existingVNodeData.virtualNodes.forEach {
-            String myX500Name = it.holdingIdentity.x500Name
-            println("${myX500Name}: does it match ${existingVNodes.contains(new X500Principal(myX500Name))}")
-        }
-        parsedJson.identities.forEach {
-            X500Principal x500 = new X500Principal(it)
-            println("$it, as X500 getname ${x500.getName()}, as string ${x500}")
-        }
-        */
 
         Thread::sleep(6000)
         def vnodeInfoOutput = new PrintStream(new FileOutputStream("${devEnvWorkspace}/vnodeinfo.csv"))
@@ -554,39 +425,6 @@ tasks.register("createVNodes") {
                     "${cordaClusterURL}/api/v1/virtualnode"
         }
 
-        /*
-        def vnodeInfoOutput = new PrintStream(new FileOutputStream("${devEnvWorkspace}/vnodeinfo.json"))
-        //createVNodeFile(vnodeInfoOutput, namesToVNodeInfo)
-        vnodeInfoOutput.println('{')
-        vnodeInfoOutput.println("  \"vnodes\": [")
-        boolean first=true
-        for(String X500: namesToVNodeInfo) {
-            VNodeInfo info = namesToVNodeInfo.get(X500)
-            vnodeInfoOutput.print("    { \"X500\": \"" + X500 + "\", \"shortHash\": \"" + info.ShortHash + "\", \"CPI\": \"" + info.CPIName +"\" }" )
-            if(!first) { print(',')}
-            vnodeInfoOutput.print('\n')
-        }
-        vnodeInfoOutput.println('  ]\n}')
-        */
-
-        /*
-        // Code the check for registration
-        parsedJson.identities.forEach {
-            def X500 = it
-            if (!existingVNodes.contains(new X500Principal(X500))) {
-                if(namesToShortHashes.get(X500)!= null) {
-                    println("Register $X500 with shorthash ${namesToShortHashes.get(X500)}")
-                    exec {
-                        commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                                "-d", '{ "memberRegistrationRequest": { "action": "requestJoin",  "context": { "corda.key.scheme" : "CORDA.ECDSA.SECP256R1" } } }',
-                                "${cordaClusterURL}/api/v1/membership/${namesToShortHashes.get(X500)}"
-                    }
-                    print('\n')
-                }
-            }
-        }
-
-         */
     }
 }
 
@@ -720,34 +558,13 @@ tasks.register("stopCordaLite") {
         def pid = sc.nextLong()
         println("pid to kill=$pid")
 
-        /*
-        def pHandle = ProcessHandle.of(pid)
-        if(pHandle == null) { println("pHandle == null")}
-        else { println("pHandle != null")}
-
-        if(pHandle.ifPresent()) {
-            pHandle.get().descendants().each { d ->
-                d.destroy()
-            }
-            def pph = pHandle.get()
-            pph.destroy()
-        }
-
-         */
-
         exec {
             commandLine "kill", "-9", pid
         }
 
-        //new ProcessBuilder("$rootDir/tools/postgres-nonpersist-stop.sh").start()
         new ProcessBuilder("docker", "stop", dbContainerName).start()
-
-        // def pHandle = ProcessHandle.of(pid)
-        // pHandle.ifPresent(java.lang.ProcessHandle::destroy())
     }
 }
-
-
 
 task urldemo {
     doLast {
@@ -769,5 +586,3 @@ task urldemo {
         println("Response: ${resp}")
     }
 }
-
-

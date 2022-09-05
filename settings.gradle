@@ -6,31 +6,6 @@ pluginManagement {
         maven {
            url = "$artifactoryContextUrl/"
         }
-
-        // Repositories for internal releases
-/*
-        maven {
-            url = "$artifactoryContextUrl/corda-os-maven-unstable"
-            credentials {
-                username = settings.ext.find('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
-                password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
-            }
-        }
-        maven {
-            url = "$artifactoryContextUrl/corda-os-maven-unstable-local"
-            credentials {
-                username = settings.ext.find('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
-                password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
-            }
-        }
-        maven {
-            url = "$artifactoryContextUrl/corda-dev"
-            credentials {
-                username = settings.ext.find('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
-                password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
-            }
-        }
-*/
     }
 
     //  The plugin dependencies with versions of the plugins congruent with the specified CorDapp plugin version,
