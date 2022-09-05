@@ -79,6 +79,16 @@ repositories {
         url = "$artifactoryContextUrl/corda-dependencies"
     }
 
+    // S3 repositories for Release Candidates
+    maven {
+        url = "s3://corda-download-staging/maven/89f8f35a-293f-11ed-a261-0242ac120002"
+        credentials(AwsCredentials) {
+            accessKey "${System.getenv('AWS_ACCESS_KEY_ID')}"
+            secretKey "${System.getenv('AWS_SECRET_ACCESS_KEY')}"
+            sessionToken "${System.getenv('AWS_SESSION_TOKEN')}"
+        }
+    }
+
     // Repository provides Corda 5 binaries that implement Corda-API.
     // These will be made publicly available.
     // Final location to be decided.
