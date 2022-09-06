@@ -1,5 +1,12 @@
 import javax.security.auth.x500.X500Principal
-import java.util.concurrent.TimeUnit
+
+import kong.unirest.HttpResponse
+import kong.unirest.JsonNode
+import kong.unirest.Unirest
+import kong.unirest.json.JSONObject
+import org.jetbrains.annotations.NotNull
+
+import static java.lang.Thread.sleep
 
 plugins {
     id 'java-library'
@@ -55,7 +62,10 @@ dependencies {
     cordaCliMgmPlugin "net.corda.cli.deployment:mgm-cli-plugin:$cordaCliPluginsVersion"
     cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$cordaCliPluginsVersion"
     myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
+
+
 }
+
 
 def pluginGroupName = "CSDE"
 def cordaBinDir="${System.getProperty('user.home')}/.corda/corda5"
@@ -588,23 +598,378 @@ tasks.register("stopCordaLite") {
     }
 }
 
-task urldemo {
-    doLast {
-        Authenticator.setDefault (new Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication ("admin", "admin".toCharArray());
-            }
-        })
-        def body = [user: "dummyUser"]
-        def req = new URL("${cordaClusterURL}/").openConnection()
 
-        req.setRequestMethod("POST")
-        req.setRequestProperty("Content-Type", "application/json; charset=UTF-8")
-        req.setDoOutput(true)
-        req.getOutputStream().write(JsonOutput.toJson(body).getBytes("UTF-8"))
-        logger.quiet "Status code: ${req.getResponseCode()}" // HTTP request done on first read
-        def resp = new groovy.json.JsonSlurper().parseText(req.getInputStream().getText())
-        logger.quiet "Response: ${resp}"
-        println("Response: ${resp}")
+tasks.register('listCPIs') {
+    doLast {
+        def thing = new CsdsRpcInterface()
+        thing.listCPIs()
     }
+}
+
+public class CsdsRpcInterface {
+    private String baseURL = "https://localhost:8888";
+    //private String baseURL = "http://localhost:2008";
+    private String rpcUser = "admin";
+    private String rpcPasswd = "admin";
+    private int retryWaitInMs = 3000;
+    static PrintStream out = System.out;
+    private String CPIUploadSstatusFName = "CPIFileStatus.json";
+    private String X500ConfigFile = "dev-net.json";
+
+    private void rpcWait(int millis) {
+        try {
+            sleep(1000);
+        }
+        catch(InterruptedException e) {
+            throw new UnsupportedOperationException("Interupts now supported.", e);
+        }
+    }
+
+    public LinkedList<String> getX500Identities() throws IOException {
+        LinkedList<String> x500Ids = new LinkedList<String>();
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        FileInputStream in = new FileInputStream(X500ConfigFile);
+        com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
+        for( com.fasterxml.jackson.databind.JsonNode identity:  jsonNode.get("identities")) {
+            x500Ids.add(identity.toString());
+        }
+        return x500Ids;
+    }
+
+    public String getLastCPIUploadChkSum() throws IOException {
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        FileInputStream in = new FileInputStream(CPIUploadSstatusFName);
+        com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
+        // out.println("CPI File status data:\n"+ jsonNode.toPrettyString());
+        return jsonNode.get("cpiFileChecksum").toString();
+    }
+
+    /*
+    public static void main(String[] args) throws IOException, JsonProcessingException, InterruptedException {
+        Thing thing = new Thing();
+        String CPI = "/Users/chris.barratt/DevWork/DevExWork/cordapp-hello-corda/build/cordapp-hello-corda-1.0-SNAPSHOT.cpi";
+        try {
+            thing.getX500Identities();
+        }
+        catch(Exception e) {
+            throw e;
+        }
+        // thing.listCPIs();
+        // thing.deployCPI(CPI);
+        // thing.listCPIs();
+        // thing.createVNodes();
+        thing.createAndRegVNodes();
+    }
+
+     */
+    public CsdsRpcInterface() {}
+
+
+    public void reportError(@NotNull HttpResponse<JsonNode> response){
+        out.println("*** *** ***");
+        out.println("Should throw execption:");
+        out.println("Status="+ response.getStatus());
+        out.println("*** Headers ***\n"+ response.getHeaders());
+        out.println("*** Body ***\n"+ response.getBody());
+        out.println("*** *** ***");
+    }
+
+    public void listCPIs() {
+        Unirest.config().verifySsl(false);
+        HttpResponse<JsonNode> cpiResponse = Unirest.get(baseURL + "/api/v1/cpi/")
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+
+        out.println("CPIs:\n" + cpiResponse.getBody().toPrettyString());
+    }
+
+    public void uploadCPI(String cpiFName) throws FileNotFoundException, InterruptedException {
+        Unirest.config().verifySsl(false);
+        HttpResponse<JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")
+                .field("upload", new File(cpiFName))
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+
+        JsonNode body = uploadResponse.getBody();
+
+        int status = uploadResponse.getStatus();
+
+        out.println("Upload Status:" + status);
+        out.println("Pretty print the body\n" + body.toPrettyString());
+
+        // We expect the id field to be a string.
+        if(status == 200) {
+            String id = (String) body.getObject().get("id");
+            out.println("get id:\n" +id);
+
+            // If we do not sleep then we get a 400 status and a message saying the Request Id from the upload is not
+            // recognised.
+
+            // sleep(retryWaitInMs);
+            // Without the sleep we get this body:
+            // {"title":"No such requestId=07f9f03b-c2fc-463b-8b2e-8ea738a5ffda","status":400,"type":"https://javalin.io/documentation#error-responses","details":{"code":"INVALID_INPUT_DATA"}}
+            // When the validation has not completed we can get:
+            //  {"status":"Validating CPI","cpiFileChecksum":""}
+            HttpResponse<JsonNode> statusResponse = null;
+            int tries=0;
+            do {
+                rpcWait(1000);
+                statusResponse = Unirest
+                        .get(baseURL + "/api/v1/cpi/status/" + id + "/")
+                        .basicAuth(rpcUser, rpcPasswd)
+                        .asJson();
+                tries++;
+                out.println("tries (status="+statusResponse.getStatus()+") ="+tries);
+                reportError(statusResponse);
+
+            }
+            while (statusResponse.getStatus()==200
+                    && statusResponse.getBody().getObject().get("status").toString().equals("OK"));
+            /*
+            while (statusResponse.getStatus() == 400
+                && statusResponse.getBody().getObject().get("title").toString().contains("No such requestId=")
+                    ||
+                    statusResponse.getBody().getObject().get("status").toString().equals("Validating CPI")
+            );
+            */
+
+            if(statusResponse.getStatus()==409
+                    && statusResponse.getBody().getObject().getJSONObject("details").get("code").toString().equals("CONFLICT"))
+            {
+                out.println("Try a force cpi upload");
+            }
+            if(statusResponse.getStatus() == 200 ) {
+                PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadSstatusFName));
+                cpiUploadStatus.print(statusResponse.getBody());
+                out.println("*** Upload status:\n" + statusResponse.getBody());
+            }
+            else {
+                reportError(statusResponse);
+            }
+        }
+        else{
+            reportError(uploadResponse);
+        }
+
+        // Meed to check status
+        // Need to pick out the RequiestID
+    }
+
+    public void forceuploadCPI(String cpiFName) throws FileNotFoundException {
+        // curl --insecure -u admin:admin  -s -F upload=@$CPI https://localhost:8888/api/v1/cpi/
+        //
+        //                 commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+        //                        "-F", "upload=@$cpi",
+        //                        "${cordaClusterURL}/api/v1/maintenance/virtualnode/forcecpiupload/"
+        Unirest.config().verifySsl(false);
+        HttpResponse<JsonNode> jsonResponse = Unirest.post(baseURL + "/api/v1/maintenance/virtualnode/forcecpiupload/")
+                .field("upload", new File(cpiFName))
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+
+        if(jsonResponse.getStatus() == 200) {
+            String id = (String) jsonResponse.getBody().getObject().get("id");
+            out.println("get id:\n" +id);
+            HttpResponse<JsonNode> statusResponse = uploadStatus(id);
+
+            if (statusResponse.getStatus() == 200) {
+                PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadSstatusFName));
+                cpiUploadStatus.print(statusResponse.getBody());
+                out.println("*** Upload status:\n" + statusResponse.getBody());
+            } else {
+                reportError(statusResponse);
+            }
+        }
+        else {
+            reportError(jsonResponse);
+        }
+    }
+
+    // If we do not sleep then we get a 400 status and a message saying the Request Id from the upload is not
+    // recognised.
+
+    // sleep(retryWaitInMs);
+    // Without the sleep we get this body:
+    // {"title":"No such requestId=07f9f03b-c2fc-463b-8b2e-8ea738a5ffda","status":400,"type":"https://javalin.io/documentation#error-responses","details":{"code":"INVALID_INPUT_DATA"}}
+    // When the validation has not completed we can get:
+    //  {"status":"Validating CPI","cpiFileChecksum":""}
+    /*
+    while (statusResponse.getStatus() == 400
+        && statusResponse.getBody().getObject().get("title").toString().contains("No such requestId=")
+            ||
+            statusResponse.getBody().getObject().get("status").toString().equals("Validating CPI")
+    );
+    */
+    public HttpResponse<JsonNode> uploadStatus(String requestId) {
+        HttpResponse<kong.unirest.JsonNode> statusResponse = null;
+        int tries=0;
+        do {
+
+            rpcWait(1000);
+            statusResponse = Unirest
+                    .get(baseURL + "/api/v1/cpi/status/" + requestId + "/")
+                    .basicAuth(rpcUser, rpcPasswd)
+                    .asJson();
+            tries++;
+            out.println("tries (status="+statusResponse.getStatus()+") ="+tries);
+            reportError(statusResponse);
+
+        }
+        while (statusResponse.getStatus()!=200
+                && ! statusResponse.getBody().getObject().get("status").toString().equals("OK")
+                && statusResponse.getStatus() != 409);
+
+        return statusResponse;
+    }
+
+    public void deployCPI(String cpiFName) throws FileNotFoundException {
+        Unirest.config().verifySsl(false);
+        HttpResponse<JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")
+                .field("upload", new File(cpiFName))
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+
+        JsonNode body = uploadResponse.getBody();
+
+        int status = uploadResponse.getStatus();
+
+        out.println("Upload Status:" + status);
+        out.println("Pretty print the body\n" + body.toPrettyString());
+
+        // We expect the id field to be a string.
+        if(status == 200) {
+            String id = (String) body.getObject().get("id");
+            out.println("get id:\n" +id);
+
+            HttpResponse<JsonNode> statusResponse = uploadStatus(id);
+
+            if(statusResponse.getStatus()==409
+                    && statusResponse.getBody().getObject().getJSONObject("details").get("code").toString().equals("CONFLICT"))
+            {
+                out.println("Try a force cpi upload");
+                forceuploadCPI(cpiFName);
+            }
+            else {
+                if (statusResponse.getStatus() == 200) {
+                    PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadSstatusFName));
+                    cpiUploadStatus.print(statusResponse.getBody());
+                    out.println("*** Upload status:\n" + statusResponse.getBody());
+                } else {
+                    reportError(statusResponse);
+                }
+            }
+        }
+        else{
+            reportError(uploadResponse);
+        }
+    }
+
+
+    public void debugUploadCPI(String cpiFName) {
+        // curl --insecure -u admin:admin  -s -F upload=@$CPI https://localhost:8888/api/v1/cpi/
+        //
+        //                 commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+        //                        "-F", "upload=@$cpi",
+        //                        "${cordaClusterURL}/api/v1/maintenance/virtualnode/forcecpiupload/"
+        Unirest.config().verifySsl(false);
+        HttpResponse<JsonNode> jsonResponse = Unirest.post(baseURL + "/api/v1/cpi/")
+                .field("upload", new File(cpiFName))
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+
+        JsonNode body = jsonResponse.getBody();
+
+        out.println();
+        out.println("Pretty print the body\n" + body.toPrettyString());
+        out.println("get object:\n" + body.getObject().toString());
+        // Is string
+        out.println("get id:\n" + body.getObject().get("id"));
+
+        // Returns an int
+        // int JsonResponse::getStatus()
+        out.println("Status:" + jsonResponse.getStatus());
+        // HttpResponse<JsonNode> jsonResponse = Unirest.get(baseURL + "/api/v1/cpi/status/"+ id + "/").basicAuth(rpcUser, rpcPasswd).asJson();
+
+        // Meed to check status
+        // Need to pick out the RequiestID
+    }
+
+    public void createVNodes() throws IOException {
+        Unirest.config().verifySsl(false);
+        //
+        // HttpResponse<JsonNode> jsonResponse = Unirest.get(baseURL + "/api/v1/virtualnode")
+        //        .basicAuth(rpcUser, rpcPasswd)
+        //        .asJson();
+
+        // Need to read in the CPI check sum
+        // ... HERE ...
+        String cpiCheckSum = getLastCPIUploadChkSum();
+        // Get read in the list of X500Identities
+        LinkedList<String> x500Ids = getX500Identities();
+
+        // old curl command
+        //                    commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+        //                            "-d", "{ \"request\" : { \"cpiFileChecksum\": \"$cpiChkSum\", \"x500Name\": \"$X500\"  } }",
+        //                            "${cordaClusterURL}/api/v1/virtualnode"
+        for(String x500id: x500Ids) {
+            out.println("x500id=" + x500id + " cpi checksum=" + cpiCheckSum);
+            // HttpResponse<JsonNode> jsonNode = Unirest.post(baseURL + "/api/v1/virtualnode")
+            //        .field("namething", "valuething")
+            //        .basicAuth(rpcUser, rpcPasswd)
+            //        .asJson();
+            // NOTE: the string data in cpiCheckSum and x500id includes double quoting.
+            HttpResponse<JsonNode> jsonNode = Unirest.post(baseURL + "/api/v1/virtualnode")
+                    .body("{ \"request\" : { \"cpiFileChecksum\": " + cpiCheckSum + ", \"x500Name\": " + x500id + "  } }")
+                    .basicAuth(rpcUser, rpcPasswd)
+                    .asJson();
+        }
+    }
+
+    public void createAndRegVNodes() throws IOException{
+        Unirest.config().verifySsl(false);
+        String cpiCheckSum = getLastCPIUploadChkSum();
+        LinkedList<String> x500Ids = getX500Identities();
+        LinkedList<String> OKHoldingShortIds = new LinkedList<String>();
+
+        out.println("Creating V-Nodes for CPI"+ cpiCheckSum +" and X500 identities:");
+        for(String x500id: x500Ids) {
+            out.println(x500id);
+        }
+
+        // Create the VNodes
+        for(String x500id: x500Ids) {
+            out.println("x500id=" + x500id + " cpi checksum=" + cpiCheckSum);
+            HttpResponse<JsonNode> jsonNode = Unirest.post(baseURL + "/api/v1/virtualnode")
+                    .body("{ \"request\" : { \"cpiFileChecksum\": " + cpiCheckSum + ", \"x500Name\": " + x500id + "  } }")
+                    .basicAuth(rpcUser, rpcPasswd)
+                    .asJson();
+            // Logging.
+
+            // need to check this and report errors.
+            // 200 - OK
+            // 409 - Vnode already exists
+            if(jsonNode.getStatus() != 409) {
+                if (jsonNode.getStatus() != 200) {
+                    reportError(jsonNode);
+                } else {
+                    JSONObject thing = jsonNode.getBody().getObject().getJSONObject("holdingIdentity");
+                    String shortHash =  (String) thing.get("shortHash");
+                    OKHoldingShortIds.add(shortHash);
+                }
+            }
+        }
+
+        // Register the VNodes
+        for(String shortHoldingIdHash: OKHoldingShortIds) {
+            HttpResponse<JsonNode> jsonNode = Unirest.post(baseURL + "/api/v1/membership" + shortHoldingIdHash)
+                    .body("{ \"memberRegistrationRequest\": { \"action\": \"requestJoin\",  \"context\": { \"corda.key.scheme\" : \"CORDA.ECDSA.SECP256R1\" } } }")
+                    .basicAuth(rpcUser, rpcPasswd)
+                    .asJson();
+            // Logging
+        }
+
+    }
+
+
 }
