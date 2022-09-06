@@ -149,11 +149,11 @@ tasks.register('createKeystore') {
             delete "$devEnvWorkspace/signingkeys.pfx"
         }
         exec {
-            commandLine "keytool", "-genkey",
+            commandLine "keytool", "-genkeypair",
                     "-alias", "my-signing-key",
                     "-keystore", "$devEnvWorkspace/signingkeys.pfx",
                     "-storepass", "keystore password",
-                    "-dname", "cn=CPI Example - My Signing Key, o=CorpOrgCorp, c=GB",
+                    "-dname", "CN=CPI Example - My Signing Key, O=CorpOrgCorp, L=London, C=GB",
                     "-keyalg", "RSA",
                     "-storetype", "pkcs12",
                     "-validity", "4000"
