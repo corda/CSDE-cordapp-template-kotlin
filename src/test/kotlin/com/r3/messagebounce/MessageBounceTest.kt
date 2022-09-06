@@ -1,7 +1,5 @@
 package com.r3.messagebounce
 
-/*
-
 
 import net.corda.cordapptestutils.HoldingIdentity
 import net.corda.cordapptestutils.RequestData
@@ -49,5 +47,3 @@ class MessageSenderTests {
     }
 }
 
-
- */
