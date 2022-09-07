@@ -138,22 +138,26 @@ tasks.register("getCordaCli") {
     }
 }
 
-tasks.register("installCordaCli") {
-    def args = new LinkedList<String>()
-    /*
-    if (System.properties['os.name'].toLowerCase().contains('windows')) {
-        arg
-    } else {
-        println "it's not Windows"
-    }
-*/
-    args.add("$cordaCliZipDir/install.sh")
 
-    exec {
-        commandLine args
-    }
+// tasks.register("installCordaCli") {
+//    def args = new LinkedList<String>()
+//    /*
+//    if (System.properties['os.name'].toLowerCase().contains('windows')) {
+//        arg
+//    } else {
+//        println "it's not Windows"
+//    }
+//
+//
+//     */
+//    args.add("$cordaCliZipDir/install.sh")
+//
+//    exec {
+//        commandLine args
+//    }
+//
+//}
 
-}
 
 tasks.register("createGroupPolicy") {
     group = pluginGroupName
@@ -668,7 +672,7 @@ tasks.register("startCordaLite") {
 
         def pidStore = new PrintStream(new FileOutputStream("$devEnvWorkspace/CordaPID.dat"))
         pidStore.print(proc.pid())
-        println("Corda Process-id=$proc.pid")
+        println("Corda Process-id=${proc.pid()}")
     }
 }
 
@@ -679,8 +683,14 @@ tasks.register("stopCordaLite") {
         def pid = sc.nextLong()
         println("pid to kill=$pid")
 
-        exec {
-            commandLine "kill", "-9", pid
+        if (System.properties['os.name'].toLowerCase().contains('windows')) {
+            exec {
+                commandLine "Powershell", "-Command", "Stop-Process", "-Id", pid, "-PassThru"
+            }
+        } else {
+            exec {
+             commandLine "kill", "-9", pid
+            }
         }
 
         new ProcessBuilder("docker", "stop", dbContainerName).start()

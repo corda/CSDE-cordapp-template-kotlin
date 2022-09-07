@@ -10,7 +10,7 @@ plugins {
     id 'net.corda.plugins.cordapp-cpb2'
     id 'net.corda.cordapp.cordapp-configuration'
 
-    id 'org.jetbrains.kotlin.jpa'
+    id 'org.jetbrains.kotlin.plugin.jpa'
 
     id 'java'
 
