@@ -1,0 +1,8 @@
+@Library('corda-shared-build-pipeline-steps@5.0') _
+
+cordaPipeline(
+    publishRepoPrefix: '',
+    slimBuild: true,
+    runUnitTests: false,
+    dedicatedJobForSnykDelta: false
+    )
