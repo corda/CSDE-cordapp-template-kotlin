@@ -3,5 +3,6 @@
 cordaPipeline(
     publishRepoPrefix: '',
     slimBuild: true,
-    runUnitTests: false
+    runUnitTests: false,
+    dedicatedJobForSnykDelta: false
     )
