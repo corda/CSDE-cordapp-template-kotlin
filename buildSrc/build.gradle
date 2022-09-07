@@ -1,3 +1,20 @@
+
+
 plugins {
     id 'groovy-gradle-plugin'
+    id 'java'
 }
+repositories {
+    mavenCentral()
+}
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    implementation "com.konghq:unirest-java:$unirestVersion"
+    implementation "com.konghq:unirest-objectmapper-jackson:$unirestVersion"
+    implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion"
+// implementation "com.fasterxml.jackson.module:jackson-module-java:$jacksonVersion"
+}
+import javax.security.auth.x500.X500Principal

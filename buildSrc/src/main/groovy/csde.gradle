@@ -1,0 +1,692 @@
+import javax.security.auth.x500.X500Principal
+
+import kong.unirest.HttpResponse
+import kong.unirest.JsonNode
+import kong.unirest.Unirest
+import kong.unirest.json.JSONObject
+import org.jetbrains.annotations.NotNull
+
+
+import static java.lang.Thread.sleep
+
+plugins {
+    id 'java-library'
+    id 'checkstyle'
+    id 'groovy'
+    id 'java'
+}
+
+
+configurations {
+    combinedWorker{
+        canBeConsumed = false
+        canBeResolved= true
+    }
+
+    cordaCli{
+        canBeConsumed = false
+        canBeResolved= true
+    }
+
+    cordaCliMgmPlugin {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+
+    cordaCliPackagePlugin {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+
+    myCordaCpb {
+        canBeConsumed = false
+    }
+
+    myPostgresJDBC {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+
+    myCordaCliInstaller {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+
+    all {
+        resolutionStrategy {
+            // FORCE Gradle to use latest dynamic versions.
+            cacheDynamicVersionsFor 0, 'seconds'
+        }
+    }
+
+}
+
+// Dependencies for supporting tools
+dependencies {
+    combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
+    cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
+    cordaCliMgmPlugin "net.corda.cli.deployment:mgm-cli-plugin:$cordaCliPluginsVersion"
+    cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$cordaCliPluginsVersion"
+    myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
+    myCordaCliInstaller "net.corda.cli.deployment:corda-cli-installer:$combinedWorkerVersion"
+}
+
+
+def pluginGroupName = "CSDE"
+def cordaBinDir= "${System.getProperty('user.home')}/.corda/corda5"
+def cordaCliZipDir = "$cordaBinDir/cordaCliZip"
+def cordaCliBinDir = "${System.getProperty('user.home')}/.corda/cli"
+def cordaCliDir = "$cordaBinDir/corda-cli"
+def cordaJDBCDir = "$cordaBinDir/jdbcDrivers"
+def CORDA_CLI_PLUGINS_DIR = "${cordaCliDir}/plugins"
+
+tasks.register("getPostgresJDBC") {
+    group = pluginGroupName
+    doLast {
+        copy {
+            from configurations.myPostgresJDBC
+            into "$cordaJDBCDir"
+        }
+    }
+}
+
+tasks.register('listCli'){
+    group = pluginGroupName
+    print("Corda-Cli configuration:")
+    configurations.cordaCli.each { println(it) }
+    print("MGM configuration:")
+    configurations.cordaCliMgmPlugin.each { println(it) }
+    print("Package configuration:")
+    configurations.cordaCliPackagePlugin.each { println(it) }
+
+}
+
+
+tasks.register('projInit') {
+    group = pluginGroupName
+    doLast {
+         mkdir devEnvWorkspace
+    }
+}
+
+
+tasks.register("getCordaCli") {
+    group = pluginGroupName
+    //dependsOn('getCordaCliMgmPlugin', 'getCordaCliPackagePlugin')
+    doLast {
+        delete {
+            delete cordaCliDir
+        }
+        copy {
+            from configurations.cordaCli
+            into "$cordaCliDir"
+        }
+        copy {
+            from configurations.cordaCliPackagePlugin
+            into "$cordaCliDir/plugins"
+        }
+        copy {
+            from configurations.cordaCliMgmPlugin
+            into "$cordaCliDir/plugins"
+        }
+        copy {
+            from configurations.myCordaCliInstaller.asFileTree.each {
+                from(zipTree(it))
+            }
+            into "$cordaBinDir/cordaCliZip"
+        }
+    }
+}
+
+
+// tasks.register("installCordaCli") {
+//    def args = new LinkedList<String>()
+//    /*
+//    if (System.properties['os.name'].toLowerCase().contains('windows')) {
+//        arg
+//    } else {
+//        println "it's not Windows"
+//    }
+//
+//
+//     */
+//    args.add("$cordaCliZipDir/install.sh")
+//
+//    exec {
+//        commandLine args
+//    }
+//
+//}
+
+
+tasks.register("createGroupPolicy") {
+    group = pluginGroupName
+    dependsOn('projInit', 'getCordaCli')
+    doLast {
+        def groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json")
+        def devnetFName = new String("$rootDir/config/dev-net.json")
+        File groupPolicyFile = new File(groupPolicyFName)
+        File devnetFile = new File(devnetFName)
+        if(!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
+            println("Creating a GroupPolicy")
+            javaexec {
+                classpath = configurations.cordaCli
+                jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
+                standardOutput = new FileOutputStream(groupPolicyFName)
+                LinkedList<String> myArgs = new LinkedList<String>()
+                myArgs.add("mgm")
+                myArgs.add("groupPolicy")
+                def jsonFile = file(devnetFName)
+                def slurper = new groovy.json.JsonSlurper()
+                def parsedJson = slurper.parseText(jsonFile.text)
+                parsedJson.identities.forEach {
+                    myArgs.add("--name")
+                    myArgs.add(it)
+                }
+
+                myArgs.add("--endpoint-protocol=1")
+                myArgs.add("--endpoint=http://localhost:1080")
+                args myArgs
+            }
+        }
+        else {
+            println("createPolicyTask: everything up to date; not to do")
+        }
+
+    }
+}
+
+tasks.register("getDevCordaLite", Copy) {
+    group = pluginGroupName
+    from configurations.combinedWorker
+    into cordaBinDir
+}
+
+tasks.register('createKeystore') {
+    group = pluginGroupName
+    doLast {
+        File keystoreFile = new File("$devEnvWorkspace/signingkeys.pfx")
+        if(!keystoreFile.exists()) {
+            println('createKeystore - creating keystore')
+            exec {
+                commandLine "keytool", "-genkeypair",
+                        "-alias", "my-signing-key",
+                        "-keystore", "$devEnvWorkspace/signingkeys.pfx",
+                        "-storepass", "keystore password",
+                        "-dname", "CN=CPI Example - My Signing Key, O=CorpOrgCorp, L=London, C=GB",
+                        "-keyalg", "RSA",
+                        "-storetype", "pkcs12",
+                        "-validity", "4000"
+            }
+            // Need to add the default signing key to the keystore
+            exec {
+                commandLine "keytool", "-importcert",
+                        "-keystore", "$devEnvWorkspace/signingkeys.pfx",
+                        "-storepass", "keystore password",
+                        "-noprompt",
+                        "-alias", "gradle-plugin-default-key",
+                        "-file", "$rootDir/config/gradle-plugin-default-key.pem"
+            }
+        }
+        else {
+            println('createKeystore - keystore already created; nothing to do.')
+        }
+
+    }
+}
+
+
+tasks.register('buildCPI') {
+    group = pluginGroupName
+    dependsOn('build', 'createGroupPolicy', 'createKeystore')
+    // dependsOn('build')
+
+    doLast{
+        def cpiFile= "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
+        delete { delete cpiFile }
+        File srcDir
+        srcDir = file('build/libs')
+
+        // Create a file collection using a closure
+        def collection = layout.files { srcDir.listFiles() }
+        def cpbs = collection.filter { it.getName().endsWith(".cpb") }
+        javaexec {
+            classpath = configurations.cordaCli
+            jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
+            args 'package', 'create-cpi',
+                    '--cpb', cpbs.singleFile.absolutePath,
+                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
+                    '--cpi-name', 'cpi name',
+                    '--cpi-version', '1.0.0.0-SNAPSHOT',
+                    '--file', cpiFile,
+                    '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
+                    '--storepass', 'keystore password',
+                    '--key', 'my-signing-key'
+        }
+    }
+}
+
+tasks.register("deployCPI") {
+    group = pluginGroupName
+    dependsOn('buildCPI')
+    doLast {
+        def corda = createCsdeRpcInterface()
+
+        corda.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi")
+    }
+}
+
+tasks.register("createAndRegVNodes") {
+    group = pluginGroupName
+    dependsOn('deployCPI')
+    doLast {
+        def corda = createCsdeRpcInterface()
+        corda.createAndRegVNodes()
+    }
+}
+
+
+tasks.register('listVNodes') {
+    group = pluginGroupName
+    doLast {
+        def corda = createCsdeRpcInterface()
+        corda.listVNodes()
+    }
+
+}
+
+tasks.register('listCPIs') {
+    doLast {
+        def thing = new CsdeRpcInterface()
+        thing.listCPIs()
+    }
+}
+
+
+tasks.register('deployCordapp') {
+    group = pluginGroupName
+    dependsOn("createAndRegVNodes")
+    doLast{
+        def corda = createCsdeRpcInterface()
+        corda.createAndRegVNodes()
+
+    }
+}
+
+tasks.register("startDB") {
+    group = pluginGroupName
+    doLast {
+        new ProcessBuilder(
+                "docker",
+                "run", "-d", "--rm",
+                "-p", "5432:5432",
+                "--name", dbContainerName,
+                "-e", "POSTGRES_DB=cordacluster",
+                "-e", "POSTGRES_USER=postgres",
+                "-e", "POSTGRES_PASSWORD=password",
+                "postgres:latest").start()
+    }
+}
+
+tasks.register("startCordaLite") {
+    group = pluginGroupName
+    dependsOn('getDevCordaLite', 'getPostgresJDBC')
+    doLast {
+
+        mkdir devEnvWorkspace
+
+        def combiWorkerJar = configurations.combinedWorker.singleFile
+
+        new ProcessBuilder(
+                "docker",
+                "run", "-d", "--rm",
+                "-p", "5432:5432",
+                "--name", dbContainerName,
+                "-e", "POSTGRES_DB=cordacluster",
+                "-e", "POSTGRES_USER=postgres",
+                "-e", "POSTGRES_PASSWORD=password",
+                "postgres:latest").start()
+        Thread::sleep(10000)
+
+        def javaBinDir = "${System.getProperty("java.home")}/bin"
+        def procBuild = new ProcessBuilder("${javaBinDir}/java",
+                "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
+                "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
+                "-jar",
+                "$combiWorkerJar",
+                "--instanceId=0",
+                "-mbus.busType=DATABASE",
+                "-spassphrase=password",
+                "-ssalt=salt",
+                "-spassphrase=password",
+                "-ssalt=salt",
+                "-ddatabase.user=user",
+                "-ddatabase.pass=password",
+                "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
+                "-ddatabase.jdbc.directory=$cordaJDBCDir")
+
+
+        procBuild.redirectErrorStream(true)
+        Process proc = procBuild.start()
+
+        def pidStore = new PrintStream(new FileOutputStream("$devEnvWorkspace/CordaPID.dat"))
+        pidStore.print(proc.pid())
+        println("Corda Process-id=${proc.pid()}")
+    }
+}
+
+tasks.register("stopCordaLite") {
+    group = pluginGroupName
+    doLast {
+        def sc = new Scanner(new File("$devEnvWorkspace/CordaPID.dat"))
+        def pid = sc.nextLong()
+        println("pid to kill=$pid")
+
+        if (System.properties['os.name'].toLowerCase().contains('windows')) {
+            exec {
+                commandLine "Powershell", "-Command", "Stop-Process", "-Id", pid, "-PassThru"
+            }
+        } else {
+            exec {
+             commandLine "kill", "-9", pid
+            }
+        }
+
+        new ProcessBuilder("docker", "stop", dbContainerName).start()
+    }
+}
+
+
+
+//@CompileStatic
+//class CliPluginPackagerExtension {
+//    @Inject
+//    CliPluginPackagerExtension(ObjectFactory objects, String defaultPluginId) {
+//        cliPluginId = objects.property(String).convention(defaultPluginId)
+//        cliPluginClass = objects.property(String)
+//        cliPluginProvider = objects.property(String).convention("R3 Ltd")
+//        cliPluginDescription = objects.property(String)
+//    }
+//
+//    final Property<String> cliPluginId
+//    final Property<String> cliPluginClass
+//    final Property<String> cliPluginProvider
+//    final Property<String> cliPluginDescription
+//}
+// CliPluginPackagerExtension cliPlugin = extensions.create("cliPlugin", CliPluginPackagerExtension, project.name)
+// Then in the consuming build.gradle file:
+//cliPlugin {
+//    cliPluginClass = 'net.corda.cli.plugins.packaging.PackagePluginWrapper'
+//    cliPluginDescription = 'Plugin for CPB and CPI operations.'
+//}
+
+/*
+abstract class CsdeExtension {
+    abstract Property<String> getRpcUser();
+    abstract Property<String> getRpcPasswd();
+    abstract Property<String> getBaseUrl();
+    abstract Property<String> getWorkingSpace();
+
+    CsdeExtension() {
+        workingSpace.convention(project.rootDir + "workspace")
+    }
+
+}
+*/
+def createCsdeRpcInterface() {
+    return new CsdeRpcInterface(cordaClusterURL, cordaRpcUser, cordaRpcPasswd, devEnvWorkspace)
+}
+
+public class CsdeException extends Exception {
+
+}
+
+public class CsdeRpcInterface {
+    private String baseURL = "https://localhost:8888";
+    //private String baseURL = "http://localhost:2008";
+    private String rpcUser = "admin";
+    private String rpcPasswd = "admin";
+    private String workspaceDir = "workspace";
+    static private int retryWaitMs = 1000;
+    static PrintStream out = System.out;
+    private String CPIUploadStatusFName = "CPIFileStatus.json";
+    private String X500ConfigFile = "config/dev-net.json";
+
+    public CsdeRpcInterface() {
+        // CsdeExtension ext = extensions.getByName("csde") as CsdeExtension;
+    }
+
+    public CsdeRpcInterface (String inBaseUrl, String inRpcUser, String inRpcPasswd, String inWorkspaceDir) {
+        baseURL = inBaseUrl;
+        rpcUser = inRpcUser;
+        rpcPasswd = inRpcPasswd;
+        workspaceDir = inWorkspaceDir;
+        CPIUploadStatusFName = workspaceDir +"/"+ CPIUploadStatusFName;
+    }
+
+    static private void rpcWait(int millis) {
+        try {
+            sleep(retryWaitMs);
+        }
+        catch(InterruptedException e) {
+            throw new UnsupportedOperationException("Interupts not supported.", e);
+        }
+    }
+
+    public LinkedList<String> getX500Identities() throws IOException {
+        LinkedList<String> x500Ids = new LinkedList<String>();
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+        FileInputStream in = new FileInputStream(X500ConfigFile);
+        com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
+        for( com.fasterxml.jackson.databind.JsonNode identity:  jsonNode.get("identities")) {
+            x500Ids.add(identity.toString());
+        }
+        return x500Ids;
+    }
+
+    static public String getLastCPIUploadChkSum(@NotNull String CPIUploadStatusFName) throws IOException, NullPointerException {
+
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        FileInputStream in = new FileInputStream(CPIUploadStatusFName);
+        com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
+        // out.println("CPI File status data:\n"+ jsonNode.toPrettyString());
+
+        String checksum = jsonNode.get("cpiFileChecksum").toString();
+        if(checksum == null || checksum.equals("null")) {
+            throw NullPointerException("Missing cpiFileChecksum in file " + CPIUploadStatusFName+ " with contents:" + jsonNode.toString());
+        }
+        return checksum;
+    }
+
+
+    public void reportError(@NotNull kong.unirest.HttpResponse<kong.unirest.JsonNode> response){
+        out.println("*** *** ***");
+        out.println("Should throw execption:");
+        out.println("Status="+ response.getStatus());
+        out.println("*** Headers ***\n"+ response.getHeaders());
+        out.println("*** Body ***\n"+ response.getBody());
+        out.println("*** *** ***");
+    }
+
+    public void listVNodes() {
+        Unirest.config().verifySsl(false);
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse = Unirest.get(baseURL + "/api/v1/virtualnode/")
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+
+        out.println("CPIs:\n" + cpiResponse.getBody().toPrettyString());
+    }
+
+    public void listCPIs() {
+        Unirest.config().verifySsl(false);
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse = Unirest.get(baseURL + "/api/v1/cpi/")
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+
+        out.println("CPIs:\n" + cpiResponse.getBody().toPrettyString());
+    }
+
+
+   public void forceuploadCPI(String cpiFName) throws FileNotFoundException {
+        // curl --insecure -u admin:admin  -s -F upload=@$CPI https://localhost:8888/api/v1/cpi/
+        //
+        //                 commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
+        //                        "-F", "upload=@$cpi",
+        //                        "${cordaClusterURL}/api/v1/maintenance/virtualnode/forcecpiupload/"
+        Unirest.config().verifySsl(false);
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonResponse = Unirest.post(baseURL + "/api/v1/maintenance/virtualnode/forcecpiupload/")
+                .field("upload", new File(cpiFName))
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+
+        if(jsonResponse.getStatus() == 200) {
+            String id = (String) jsonResponse.getBody().getObject().get("id");
+            out.println("get id:\n" +id);
+            kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
+
+            if (statusResponse.getStatus() == 200) {
+                PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadStatusFName));
+                cpiUploadStatus.print(statusResponse.getBody());
+                out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
+            } else {
+                reportError(statusResponse);
+            }
+        }
+        else {
+            reportError(jsonResponse);
+        }
+    }
+
+    private boolean uploadStatusRetry(kong.unirest.HttpResponse<kong.unirest.JsonNode> response) {
+        int status = response.getStatus();
+        kong.unirest.JsonNode body = response.getBody()
+        // Do not retry on success
+        if(status == 200) {
+            // Keep retrying until we get "OK" may move through "Validateing upload", "Persisting CPI"
+            return !(body.getObject().get("status").equals("OK"))
+        }
+        else if (status == 400){
+            JSONObject details = response.getBody().getObject().getJSONObject("details");
+            if( details != null ){
+                String code = (String) details.getString('code');
+                return !code.equals("BAD_REQUEST");
+            }
+            else {
+                // 400 otherwise means some transient problem
+                return true;
+            }
+        }
+        else if (status == 409)
+        {
+            return false;
+        }
+        return false;
+    }
+
+    public kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadStatus(String requestId) {
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = null;
+        int tries=0;
+        do {
+            rpcWait(1000);
+            statusResponse = Unirest
+                    .get(baseURL + "/api/v1/cpi/status/" + requestId + "/")
+                    .basicAuth(rpcUser, rpcPasswd)
+                    .asJson();
+            tries++;
+            out.println("tries (status="+statusResponse.getStatus()+") ="+tries);
+        }
+        while(uploadStatusRetry(statusResponse));
+
+        return statusResponse;
+    }
+
+    public void deployCPI(String cpiFName) throws FileNotFoundException {
+        Unirest.config().verifySsl(false);
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")
+                .field("upload", new File(cpiFName))
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+
+        kong.unirest.JsonNode body = uploadResponse.getBody();
+
+        int status = uploadResponse.getStatus();
+
+        out.println("Upload Status:" + status);
+        out.println("Pretty print the body\n" + body.toPrettyString());
+
+        // We expect the id field to be a string.
+        if(status == 200) {
+            String id = (String) body.getObject().get("id");
+            out.println("get id:\n" +id);
+
+            kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
+
+            if(statusResponse.getStatus()==409
+                    && statusResponse.getBody().getObject().getJSONObject("details").get("code").toString().equals("CONFLICT"))
+            {
+                out.println("Try a force cpi upload");
+                forceuploadCPI(cpiFName);
+            }
+            else {
+                if (statusResponse.getStatus() == 200) {
+                    PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadStatusFName));
+                    cpiUploadStatus.print(statusResponse.getBody());
+                    out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
+                } else {
+                    reportError(statusResponse);
+                }
+            }
+        }
+        else{
+            reportError(uploadResponse);
+        }
+    }
+
+    public void createAndRegVNodes() throws IOException{
+        Unirest.config().verifySsl(false);
+        String cpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName );
+        LinkedList<String> x500Ids = getX500Identities();
+        LinkedList<String> OKHoldingShortIds = new LinkedList<String>();
+
+        out.println("Creating V-Nodes for CPI "+ cpiCheckSum +" and X500 identities:");
+        for(String x500id: x500Ids) {
+            out.println(x500id);
+        }
+
+        // Create the VNodes
+        for(String x500id: x500Ids) {
+            out.println("x500id=" + x500id + " cpi checksum=" + cpiCheckSum);
+            kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonNode = Unirest.post(baseURL + "/api/v1/virtualnode")
+                    .body("{ \"request\" : { \"cpiFileChecksum\": " + cpiCheckSum + ", \"x500Name\": " + x500id + "  } }")
+                    .basicAuth(rpcUser, rpcPasswd)
+                    .asJson();
+            // Logging.
+
+            // need to check this and report errors.
+            // 200 - OK
+            // 409 - Vnode already exists
+            if(jsonNode.getStatus() != 409) {
+                if (jsonNode.getStatus() != 200) {
+                    reportError(jsonNode);
+                } else {
+                    JSONObject thing = jsonNode.getBody().getObject().getJSONObject("holdingIdentity");
+                    String shortHash =  (String) thing.get("shortHash");
+                    OKHoldingShortIds.add(shortHash);
+                }
+            }
+        }
+
+        // Register the VNodes
+        for(String shortHoldingIdHash: OKHoldingShortIds) {
+            kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = Unirest.post(baseURL + "/api/v1/membership/" + shortHoldingIdHash)
+                    .body("{ \"memberRegistrationRequest\": { \"action\": \"requestJoin\",  \"context\": { \"corda.key.scheme\" : \"CORDA.ECDSA.SECP256R1\" } } }")
+                    .basicAuth(rpcUser, rpcPasswd)
+                    .asJson();
+
+            out.println("Vnode membership submission:\n" + vnodeResponse.getBody().toPrettyString());
+        }
+
+    }
+
+}
