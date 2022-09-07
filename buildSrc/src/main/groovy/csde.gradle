@@ -205,9 +205,6 @@ tasks.register("getDevCordaLite", Copy) {
 tasks.register('createKeystore') {
     group = pluginGroupName
     doLast {
-        //delete {
-        //    delete "$devEnvWorkspace/signingkeys.pfx"
-        //}
         File keystoreFile = new File("$devEnvWorkspace/signingkeys.pfx")
         if(!keystoreFile.exists()) {
             println('createKeystore - creating keystore')
@@ -279,173 +276,6 @@ tasks.register("deployCPI") {
     }
 }
 
-/*
-tasks.register("deployCPI") {
-    group = pluginGroupName
-    dependsOn('buildCPI')
-    doLast {
-        def retryLimit = 10
-        def retryWaitInMs = 3000
-        def retries=0
-        def cpi = "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
-        exec {
-            standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIupload.json")
-            commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                    "-F", "upload=@$cpi",
-                    "${cordaClusterURL}/api/v1/cpi/"
-        }
-        def jsonFile = file("${devEnvWorkspace}/CPIupload.json")
-        // println("upload attempt output:${jsonFile.text}")
-        def slurper = new groovy.json.JsonSlurper()
-        def parsedJson = slurper.parseText(jsonFile.text)
-        // println("Request ID=${parsedJson.id}")
-
-
-        // Loop if status != 400 and we don't have have a CPI Checksum
-        def requestId = parsedJson.id
-        // println(requestId)
-        Object parsedJsonCPI = null
-        do {
-            Thread::sleep(retryWaitInMs)
-            exec {
-                standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIFileStatus.json")
-                commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                        "${cordaClusterURL}/api/v1/cpi/status/${requestId}"
-            }
-            def jsonFileCPI = file("${devEnvWorkspace}/CPIFileStatus.json")
-            println("initial upload status:${jsonFileCPI.text}")
-            parsedJsonCPI = new groovy.json.JsonSlurper().parseText(jsonFileCPI.text)
-            // println("status=$parsedJsonCPI.status")
-        } while(parsedJsonCPI != null && parsedJsonCPI.status instanceof String && parsedJsonCPI.status != "OK")
-        println("upload CPI reponse JSON=$parsedJsonCPI")
-        if (!parsedJsonCPI.status.equals("OK")) {
-            // println("CPI Deployment failed:$parsedJsonCPI.details.errorMessage")
-
-            // Attempt forceCPIupload
-            exec {
-                standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIupload.json")
-                commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                        "-F", "upload=@$cpi",
-                        "${cordaClusterURL}/api/v1/maintenance/virtualnode/forcecpiupload/"
-            }
-            def jsonFileForce = file("${devEnvWorkspace}/CPIupload.json")
-            def slurperForce = new groovy.json.JsonSlurper()
-            // println("forcecpiload output=${jsonFileForce.text}")
-            def parsedJsonForce = slurper.parseText(jsonFileForce.text)
-            // println("Request ID=${parsedJsonForce.id}")
-
-
-            // Loop if status != 400 and we don't have have a CPI Checksum
-            def jsonFileA = file("${devEnvWorkspace}/CPIupload.json")
-            requestId = (new groovy.json.JsonSlurper().parseText(jsonFileA.text)).id
-            // println(requestId)
-
-            def jsonFileForceStatus = null
-            do {
-
-                Thread::sleep(3000)
-                exec {
-                    standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIFileStatus.json")
-                    commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                            "${cordaClusterURL}/api/v1/cpi/status/${requestId}"
-                }
-                jsonFileForceStatus = file("${devEnvWorkspace}/CPIFileStatus.json")
-                parsedJson = new groovy.json.JsonSlurper().parseText(jsonFileForceStatus.text)
-
-                //  println("status=$parsedJson.status")
-            } while (parsedJson != null && parsedJson.status instanceof String && parsedJson.status != "OK")
-
-            if (!parsedJson.status.equals("OK")) {
-                println("CPI Deployment failed:$parsedJson.details.errorMessage")
-                println(jsonFileForceStatus.text)
-                throw new GradleException("CPI Deployment failed.\n$parsedJson.details.errorMessage")
-            } else {
-                //println("CPI checksum=${parsedJson.cpiFileChecksum}")
-            }
-
-        } else {
-            //println("CPI checksum=${parsedJsonCPI.cpiFileChecksum}")
-        }
-    }
-}
-
-*/
-/*
-tasks.register("uploadCPI") {
-    group = pluginGroupName
-    dependsOn('projInit')
-    doLast {
-        def cpi = "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
-        println("cpi=$cpi")
-        exec {
-            standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIupload.json")
-            commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                    "-F", "upload=@$cpi",
-                    "${cordaClusterURL}/api/v1/cpi/"
-        }
-        def jsonFile = file("${devEnvWorkspace}/CPIupload.json")
-        def slurper = new groovy.json.JsonSlurper()
-        def parsedJson = slurper.parseText(jsonFile.text)
-        println("Request ID=${parsedJson.id}")
-    }
-}
-
-tasks.register("forceUploadCPI") {
-    group = pluginGroupName
-    dependsOn('projInit')
-    doLast {
-        def cpi = "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
-        standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIupload.json")
-        exec {
-            commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
-                    "-F", "upload=@$cpi",
-                    "${cordaClusterURL}/api/v1/maintenance/virtualnode/forcecpiupload/"
-        }
-        def jsonFile = file("${devEnvWorkspace}/CPIupload.json")
-        def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
-        println("${parsedJson.id}")
-    }
-}
-
-
-
-tasks.register("uploadCPIStatus") {
-    // dependsOn ('uploadCPI')
-    group = pluginGroupName
-    dependsOn('projInit')
-    doLast {
-        def jsonFileA = file("${devEnvWorkspace}/CPIupload.json")
-        def requestId = (new groovy.json.JsonSlurper().parseText(jsonFileA.text)).id
-        // println(requestId)
-        exec {
-            standardOutput = new FileOutputStream("${devEnvWorkspace}/CPIFileStatus.json")
-            commandLine "curl", "--insecure", "-u", "admin:admin",  "-s",
-                    "${cordaClusterURL}/api/v1/cpi/status/${requestId}"
-        }
-        def jsonFile = file("${devEnvWorkspace}/CPIFileStatus.json")
-        def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
-
-        // println("status=$parsedJson.status")
-        if (!parsedJson.status.equals("OK")) {
-            println("CPI Deployment failed:$parsedJson.details.errorMessage")
-            println(parsedJson)
-            throw new GradleException("CPI Deployment failed.\n$parsedJson.details.errorMessage")
-        } else {
-            println("CPI checksum=${parsedJson.cpiFileChecksum}")
-        }
-    }
-}
-*/
-
-class VNodeInfo {
-    public VNodeInfo(String shash, String cpi) {
-        ShortHash=shash;
-        CPIName=cpi;
-    }
-    public String ShortHash;
-    public String CPIName;
-}
-
 tasks.register("createAndRegVNodes") {
     group = pluginGroupName
     dependsOn('deployCPI')
@@ -455,106 +285,6 @@ tasks.register("createAndRegVNodes") {
     }
 }
 
-/*
-tasks.register("createVNodes") {
-    group = pluginGroupName
-    dependsOn('deployCPI')
-    doLast {
-        def jsonFile = file("$rootDir/config/dev-net.json")
-        def slurper = new groovy.json.JsonSlurper()
-        def parsedJson = slurper.parseText(jsonFile.text)
-        def CpiFileStatusFile = file("${devEnvWorkspace}/CPIFileStatus.json")
-        def cpiChkSum = (new groovy.json.JsonSlurper().parseText(CpiFileStatusFile.text)).cpiFileChecksum
-        // println("ParsedJson=${parsedJson.identities}")
-        def namesToShortHashes = new HashMap<String,String>()
-        HashMap<String, VNodeInfo> namesToVNodeInfo = new HashMap<String, VNodeInfo>()
-
-        delete {
-            delete "${devEnvWorkspace}/vnodes.json"
-        }
-        exec {
-            standardOutput = new FileOutputStream("${devEnvWorkspace}/existingvnodes.json")
-            commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                    "${cordaClusterURL}/api/v1/virtualnode"
-        }
-
-        def existingVNodes = new HashSet<X500Principal>()
-        def rawExistingVNodeData=file("${devEnvWorkspace}/existingvnodes.json")
-        def existingVNodeData = new groovy.json.JsonSlurper().parseText(rawExistingVNodeData.text)
-        existingVNodeData.virtualNodes.forEach {
-            existingVNodes.add(new X500Principal(it.holdingIdentity.x500Name))
-        }
-
-
-        Thread::sleep(6000)
-        def vnodeInfoOutput = new PrintStream(new FileOutputStream("${devEnvWorkspace}/vnodeinfo.csv"))
-        parsedJson.identities.forEach {
-            def X500 = it
-            if (!existingVNodes.contains(new X500Principal(X500))) {
-                //println("Create VNode for $X500 with CPI(with check sum) $cpiChkSum")
-                exec {
-                    standardOutput = new FileOutputStream("${devEnvWorkspace}/vnodetemp.json")
-                    commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                            "-d", "{ \"request\" : { \"cpiFileChecksum\": \"$cpiChkSum\", \"x500Name\": \"$X500\"  } }",
-                            "${cordaClusterURL}/api/v1/virtualnode"
-                }
-                def outputData = file("${devEnvWorkspace}/vnodetemp.json")
-                println("Data=${outputData.text}")
-                // TODO: Can do error checking with this
-                def jsonOut = new groovy.json.JsonSlurper().parseText(outputData.text)
-
-                if(jsonOut.holdingIdentity != null) {
-                    def idShortHash = jsonOut.holdingIdentity.shortHash
-                    namesToShortHashes.put(X500, idShortHash)
-                    namesToVNodeInfo.put(X500, new VNodeInfo(idShortHash, cpiChkSum))
-                    //println("\"$X500\", \"$idShortHash\"")
-                    //println(".shortHash=$idShortHash")
-                }
-
-            } else {
-                //println("Already created $X500")
-            }
-        }
-
-        // Debugging
-
-        exec {
-            commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                    "${cordaClusterURL}/api/v1/virtualnode"
-        }
-
-    }
-}
-
-tasks.register('regAllVNodes') {
-    group = pluginGroupName
-    // Code the check for registration
-    dependsOn('createVNodes')
-    doLast {
-        exec {
-            standardOutput = new FileOutputStream("${devEnvWorkspace}/existingvnodes.json")
-            commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                    "${cordaClusterURL}/api/v1/virtualnode"
-        }
-
-        def existingVNodes = new HashSet<X500Principal>()
-        def rawExistingVNodeData = file("${devEnvWorkspace}/existingvnodes.json")
-        def existingVNodeData = new groovy.json.JsonSlurper().parseText(rawExistingVNodeData.text)
-
-        existingVNodeData.virtualNodes.forEach {
-            def X500 = it.holdingIdentity.x500Name
-            def shortHash = it.holdingIdentity.shortHash
-            println("Register $X500 with shorthash ${shortHash}")
-            exec {
-                commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                        "-d", '{ "memberRegistrationRequest": { "action": "requestJoin",  "context": { "corda.key.scheme" : "CORDA.ECDSA.SECP256R1" } } }',
-                        "${cordaClusterURL}/api/v1/membership/${shortHash}"
-            }
-            print('\n')
-        }
-    }
-}
-*/
 
 tasks.register('listVNodes') {
     group = pluginGroupName
@@ -563,23 +293,6 @@ tasks.register('listVNodes') {
         corda.listVNodes()
     }
 
-    /*
-    doLast {
-        exec {
-            standardOutput = new FileOutputStream("${devEnvWorkspace}/tempy.json")
-            commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-                    "${cordaClusterURL}/api/v1/virtualnode"
-        }
-
-        def existingVNodes = new HashSet<X500Principal>()
-        def rawExistingVNodeData = file("${devEnvWorkspace}/tempy.json")
-        def existingVNodeData = new groovy.json.JsonSlurper().parseText(rawExistingVNodeData.text)
-        existingVNodeData.virtualNodes.forEach {
-            println("${it.holdingIdentity.x500Name}\t${it.holdingIdentity.shortHash}")
-        }
-    }
-
-     */
 }
 
 tasks.register('listCPIs') {
@@ -599,20 +312,6 @@ tasks.register('deployCordapp') {
 
     }
 }
-
-def createVNodeFile(PrintWriter printer, HashMap<String,VNodeInfo> vnodeData) {
-    printer.println('{')
-    printer.println("  \"vnodes\": [")
-    boolean first=true
-    for(String X500: vnodeData) {
-        VNodeInfo info = vnodeData.get(X500)
-        printer.print("    { \"X500\": \"" + X500 + "\", \"shortHash\": \"" + info.ShortHash + "\", \"CPI\": \"" + info.CPIName +"\" }" )
-        if(!first) { print(',')}
-        printer.print('\n')
-    }
-    printer.println('  ]\n}')
-}
-
 
 tasks.register("startDB") {
     group = pluginGroupName
@@ -800,24 +499,6 @@ public class CsdeRpcInterface {
         return checksum;
     }
 
-    /*
-    public static void main(String[] args) throws IOException, JsonProcessingException, InterruptedException {
-        Thing thing = new Thing();
-        String CPI = "/Users/chris.barratt/DevWork/DevExWork/cordapp-hello-corda/build/cordapp-hello-corda-1.0-SNAPSHOT.cpi";
-        try {
-            thing.getX500Identities();
-        }
-        catch(Exception e) {
-            throw e;
-        }
-        // thing.listCPIs();
-        // thing.deployCPI(CPI);
-        // thing.listCPIs();
-        // thing.createVNodes();
-        thing.createAndRegVNodes();
-    }
-
-     */
 
     public void reportError(@NotNull kong.unirest.HttpResponse<kong.unirest.JsonNode> response){
         out.println("*** *** ***");
@@ -845,124 +526,6 @@ public class CsdeRpcInterface {
 
         out.println("CPIs:\n" + cpiResponse.getBody().toPrettyString());
     }
-//
-//    public void uploadCPI(String cpiFName) throws FileNotFoundException, InterruptedException {
-//        Unirest.config().verifySsl(false);
-//        HttpResponse<JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")
-//                .field("upload", new File(cpiFName))
-//                .basicAuth(rpcUser, rpcPasswd)
-//                .asJson();
-//
-//        JsonNode body = uploadResponse.getBody();
-//
-//        int status = uploadResponse.getStatus();
-//
-//        out.println("Upload Status:" + status);
-//        out.println("Pretty print the body\n" + body.toPrettyString());
-//
-//        // We expect the id field to be a string.
-//        if(status == 200) {
-//            String id = (String) body.getObject().get("id");
-//            out.println("get id:\n" +id);
-//
-//            // If we do not sleep then we get a 400 status and a message saying the Request Id from the upload is not
-//            // recognised.
-//
-//            // sleep(retryWaitInMs);
-//            // Without the sleep we get this body:
-//            // {"title":"No such requestId=07f9f03b-c2fc-463b-8b2e-8ea738a5ffda","status":400,"type":"https://javalin.io/documentation#error-responses","details":{"code":"INVALID_INPUT_DATA"}}
-//            // When the validation has not completed we can get:
-//            //  {"status":"Validating CPI","cpiFileChecksum":""}
-//            HttpResponse<JsonNode> statusResponse = null;
-//            int tries=0;
-//            do {
-//                rpcWait(1000);
-//                statusResponse = Unirest
-//                        .get(baseURL + "/api/v1/cpi/status/" + id + "/")
-//                        .basicAuth(rpcUser, rpcPasswd)
-//                        .asJson();
-//                tries++;
-//                out.println("tries (status="+statusResponse.getStatus()+") ="+tries);
-//                reportError(statusResponse);
-//
-//            }
-//            while (statusResponse.getStatus()==200
-//                    && statusResponse.getBody().getObject().get("status").toString().equals("OK"));
-//            /*
-//            while (statusResponse.getStatus() == 400
-//                && statusResponse.getBody().getObject().get("title").toString().contains("No such requestId=")
-//                    ||
-//                    statusResponse.getBody().getObject().get("status").toString().equals("Validating CPI")
-//            );
-//            */
-//
-//            if(statusResponse.getStatus()==409
-//                    && statusResponse.getBody().getObject().getJSONObject("details").get("code").toString().equals("CONFLICT"))
-//            {
-//                out.println("Try a force cpi upload");
-//            }
-//            if(statusResponse.getStatus() == 200 ) {
-//                PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadStatusFName));
-//                cpiUploadStatus.print(statusResponse.getBody());
-//                out.println("*** Upload status:\n" + statusResponse.getBody());
-//            }
-//            else {
-//                reportError(statusResponse);
-//            }
-//        }
-//        else{
-//            reportError(uploadResponse);
-//        }
-//
-//        // Meed to check status
-//        // Need to pick out the RequiestID
-//    }
-
-    /*
-    private boolean forceUploadStatusRetry(kong.unirest.HttpResponse<kong.unirest.JsonNode> response) {
-        int status = response.getStatus();
-        JSONObject details = response.getBody().getObject().getJSONObject("details");
-        // Do not retry on success
-        if(status == 200) {
-            return false
-        }
-        else if (status == 400){
-            if( details != null ){
-                String code = (String) details.getString('code');
-                return code.equals("BAD_REQUEST");
-            }
-            else {
-                // 400 otherwise means some transient problem
-                return true;
-            }
-        }
-    }
-
-    public kong.unirest.HttpResponse<kong.unirest.JsonNode> forceUploadStatus(String requestId) {
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = null;
-        int tries=0;
-        do {
-
-            rpcWait(1000);
-            statusResponse = Unirest
-                    .get(baseURL + "/api/v1/cpi/status/" + requestId + "/")
-                    .basicAuth(rpcUser, rpcPasswd)
-                    .asJson();
-            tries++;
-            out.println("tries (status="+statusResponse.getStatus()+") ="+tries);
-            reportError(statusResponse);
-
-        }
-        while(forceUploadStatusRetry(statusResponse));
-
-        // Old way
-        // while (statusResponse.getStatus()!=200
-        //        && ! statusResponse.getBody().getObject().get("status").toString().equals("OK")
-        //        && statusResponse.getStatus() != 409);
-
-        return statusResponse;
-    }
-*/
 
 
    public void forceuploadCPI(String cpiFName) throws FileNotFoundException {
@@ -994,22 +557,6 @@ public class CsdeRpcInterface {
             reportError(jsonResponse);
         }
     }
-
-    // If we do not sleep then we get a 400 status and a message saying the Request Id from the upload is not
-    // recognised.
-
-    // sleep(retryWaitInMs);
-    // Without the sleep we get this body:
-    // {"title":"No such requestId=07f9f03b-c2fc-463b-8b2e-8ea738a5ffda","status":400,"type":"https://javalin.io/documentation#error-responses","details":{"code":"INVALID_INPUT_DATA"}}
-    // When the validation has not completed we can get:
-    //  {"status":"Validating CPI","cpiFileChecksum":""}
-    /*
-    while (statusResponse.getStatus() == 400
-        && statusResponse.getBody().getObject().get("title").toString().contains("No such requestId=")
-            ||
-            statusResponse.getBody().getObject().get("status").toString().equals("Validating upload")
-    );
-    */
 
     private boolean uploadStatusRetry(kong.unirest.HttpResponse<kong.unirest.JsonNode> response) {
         int status = response.getStatus();
@@ -1050,11 +597,6 @@ public class CsdeRpcInterface {
             out.println("tries (status="+statusResponse.getStatus()+") ="+tries);
         }
         while(uploadStatusRetry(statusResponse));
-
-        // Old way
-        // while (statusResponse.getStatus()!=200
-        //        && ! statusResponse.getBody().getObject().get("status").toString().equals("OK")
-        //        && statusResponse.getStatus() != 409);
 
         return statusResponse;
     }
@@ -1101,40 +643,6 @@ public class CsdeRpcInterface {
         }
     }
 
-
-/*
-    public void createVNodes() throws IOException {
-        Unirest.config().verifySsl(false);
-        //
-        // HttpResponse<JsonNode> jsonResponse = Unirest.get(baseURL + "/api/v1/virtualnode")
-        //        .basicAuth(rpcUser, rpcPasswd)
-        //        .asJson();
-
-        // Need to read in the CPI check sum
-        // ... HERE ...
-        String cpiCheckSum = getLastCPIUploadChkSum();
-        // Get read in the list of X500Identities
-        LinkedList<String> x500Ids = getX500Identities();
-
-        // old curl command
-        //                    commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-        //                            "-d", "{ \"request\" : { \"cpiFileChecksum\": \"$cpiChkSum\", \"x500Name\": \"$X500\"  } }",
-        //                            "${cordaClusterURL}/api/v1/virtualnode"
-        for(String x500id: x500Ids) {
-            out.println("x500id=" + x500id + " cpi checksum=" + cpiCheckSum);
-            // HttpResponse<JsonNode> jsonNode = Unirest.post(baseURL + "/api/v1/virtualnode")
-            //        .field("namething", "valuething")
-            //        .basicAuth(rpcUser, rpcPasswd)
-            //        .asJson();
-            // NOTE: the string data in cpiCheckSum and x500id includes double quoting.
-            kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonNode = Unirest.post(baseURL + "/api/v1/virtualnode")
-                    .body("{ \"request\" : { \"cpiFileChecksum\": " + cpiCheckSum + ", \"x500Name\": " + x500id + "  } }")
-                    .basicAuth(rpcUser, rpcPasswd)
-                    .asJson();
-        }
-    }
-*/
-
     public void createAndRegVNodes() throws IOException{
         Unirest.config().verifySsl(false);
         String cpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName );
@@ -1179,36 +687,6 @@ public class CsdeRpcInterface {
             out.println("Vnode membership submission:\n" + vnodeResponse.getBody().toPrettyString());
         }
 
-    }
-
-    // To go
-    public void debugUploadCPI(String cpiFName) {
-        // curl --insecure -u admin:admin  -s -F upload=@$CPI https://localhost:8888/api/v1/cpi/
-        //
-        //                 commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-        //                        "-F", "upload=@$cpi",
-        //                        "${cordaClusterURL}/api/v1/maintenance/virtualnode/forcecpiupload/"
-        Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonResponse = Unirest.post(baseURL + "/api/v1/cpi/")
-                .field("upload", new File(cpiFName))
-                .basicAuth(rpcUser, rpcPasswd)
-                .asJson();
-
-        kong.unirest.JsonNode body = jsonResponse.getBody();
-
-        out.println();
-        out.println("Pretty print the body\n" + body.toPrettyString());
-        out.println("get object:\n" + body.getObject().toString());
-        // Is string
-        out.println("get id:\n" + body.getObject().get("id"));
-
-        // Returns an int
-        // int JsonResponse::getStatus()
-        out.println("Status:" + jsonResponse.getStatus());
-        // HttpResponse<kong.unirest.JsonNode> jsonResponse = Unirest.get(baseURL + "/api/v1/cpi/status/"+ id + "/").basicAuth(rpcUser, rpcPasswd).asJson();
-
-        // Meed to check status
-        // Need to pick out the RequiestID
     }
 
 }
