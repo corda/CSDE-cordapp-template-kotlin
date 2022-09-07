@@ -150,7 +150,7 @@ tasks.register("installCordaCli") {
     args.add("$cordaCliZipDir/install.sh")
 
     exec {
-        command
+        commandLine args
     }
 
 }
@@ -159,25 +159,34 @@ tasks.register("createGroupPolicy") {
     group = pluginGroupName
     dependsOn('projInit', 'getCordaCli')
     doLast {
-        println("Creating a GroupPolicy")
-        javaexec {
-            classpath = configurations.cordaCli
-            jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
-            standardOutput = new FileOutputStream("${devEnvWorkspace}/GroupPolicy.json")
-            LinkedList<String> myArgs = new LinkedList<String>()
-            myArgs.add("mgm")
-            myArgs.add("groupPolicy")
-            def jsonFile = file("$rootDir/config/dev-net.json")
-            def slurper = new groovy.json.JsonSlurper()
-            def parsedJson = slurper.parseText(jsonFile.text)
-            parsedJson.identities.forEach {
-                myArgs.add("--name")
-                myArgs.add(it)
-            }
+        def groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json")
+        def devnetFName = new String("$rootDir/config/dev-net.json")
+        File groupPolicyFile = new File(groupPolicyFName)
+        File devnetFile = new File(devnetFName)
+        if(!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
+            println("Creating a GroupPolicy")
+            javaexec {
+                classpath = configurations.cordaCli
+                jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
+                standardOutput = new FileOutputStream(groupPolicyFName)
+                LinkedList<String> myArgs = new LinkedList<String>()
+                myArgs.add("mgm")
+                myArgs.add("groupPolicy")
+                def jsonFile = file(devnetFName)
+                def slurper = new groovy.json.JsonSlurper()
+                def parsedJson = slurper.parseText(jsonFile.text)
+                parsedJson.identities.forEach {
+                    myArgs.add("--name")
+                    myArgs.add(it)
+                }
 
-            myArgs.add("--endpoint-protocol=1")
-            myArgs.add("--endpoint=http://localhost:1080")
-            args myArgs
+                myArgs.add("--endpoint-protocol=1")
+                myArgs.add("--endpoint=http://localhost:1080")
+                args myArgs
+            }
+        }
+        else {
+            println("createPolicyTask: everything up to date; not to do")
         }
 
     }
@@ -191,30 +200,35 @@ tasks.register("getDevCordaLite", Copy) {
 
 tasks.register('createKeystore') {
     group = pluginGroupName
-    println('createKeystore')
-    println("devEnvWorkspace=$devEnvWorkspace")
     doLast {
-        delete {
-            delete "$devEnvWorkspace/signingkeys.pfx"
+        //delete {
+        //    delete "$devEnvWorkspace/signingkeys.pfx"
+        //}
+        File keystoreFile = new File("$devEnvWorkspace/signingkeys.pfx")
+        if(!keystoreFile.exists()) {
+            println('createKeystore - creating keystore')
+            exec {
+                commandLine "keytool", "-genkeypair",
+                        "-alias", "my-signing-key",
+                        "-keystore", "$devEnvWorkspace/signingkeys.pfx",
+                        "-storepass", "keystore password",
+                        "-dname", "CN=CPI Example - My Signing Key, O=CorpOrgCorp, L=London, C=GB",
+                        "-keyalg", "RSA",
+                        "-storetype", "pkcs12",
+                        "-validity", "4000"
+            }
+            // Need to add the default signing key to the keystore
+            exec {
+                commandLine "keytool", "-importcert",
+                        "-keystore", "$devEnvWorkspace/signingkeys.pfx",
+                        "-storepass", "keystore password",
+                        "-noprompt",
+                        "-alias", "gradle-plugin-default-key",
+                        "-file", "$rootDir/config/gradle-plugin-default-key.pem"
+            }
         }
-        exec {
-            commandLine "keytool", "-genkeypair",
-                    "-alias", "my-signing-key",
-                    "-keystore", "$devEnvWorkspace/signingkeys.pfx",
-                    "-storepass", "keystore password",
-                    "-dname", "CN=CPI Example - My Signing Key, O=CorpOrgCorp, L=London, C=GB",
-                    "-keyalg", "RSA",
-                    "-storetype", "pkcs12",
-                    "-validity", "4000"
-        }
-        // Need to add the default signing key to the keystore
-        exec {
-            commandLine "keytool", "-importcert",
-            "-keystore", "$devEnvWorkspace/signingkeys.pfx",
-            "-storepass", "keystore password",
-            "-noprompt",
-            "-alias", "gradle-plugin-default-key",
-            "-file", "$rootDir/config/gradle-plugin-default-key.pem"
+        else {
+            println('createKeystore - keystore already created; nothing to do.')
         }
 
     }
@@ -223,8 +237,8 @@ tasks.register('createKeystore') {
 
 tasks.register('buildCPI') {
     group = pluginGroupName
-    // dependsOn('build', 'createGroupPolicy', 'createKeystore')
-    dependsOn('build')
+    dependsOn('build', 'createGroupPolicy', 'createKeystore')
+    // dependsOn('build')
 
     doLast{
         def cpiFile= "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
