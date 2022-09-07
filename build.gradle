@@ -8,8 +8,9 @@ plugins {
     // This includes a CorDapp DSL that allows the developer to supply metadata for the CorDapp
     // required by Corda.
     id 'net.corda.plugins.cordapp-cpb2'
-
     id 'net.corda.cordapp.cordapp-configuration'
+
+    id 'org.jetbrains.kotlin.jpa'
 
     id 'java'
 
@@ -46,7 +47,7 @@ cordapp {
 // Declare the set of Kotlin compiler options we need to build a CorDapp.
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
-        allWarningsAsErrors = true
+        allWarningsAsErrors = false
 
         // Specify the version of Kotlin that we are that we will be developing. 
         languageVersion = '1.7'
@@ -169,6 +170,7 @@ dependencies {
 
     // 3rd party libraries
     // Required
+    testImplementation "org.slf4j:slf4j-simple:2.0.0" 
     testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
