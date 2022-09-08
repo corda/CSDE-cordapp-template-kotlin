@@ -139,24 +139,22 @@ tasks.register("getCordaCli") {
 }
 
 
-// tasks.register("installCordaCli") {
-//    def args = new LinkedList<String>()
-//    /*
-//    if (System.properties['os.name'].toLowerCase().contains('windows')) {
-//        arg
-//    } else {
-//        println "it's not Windows"
-//    }
-//
-//
-//     */
-//    args.add("$cordaCliZipDir/install.sh")
-//
-//    exec {
-//        commandLine args
-//    }
-//
-//}
+tasks.register("installCordaCli") {
+    /*
+    def args = new LinkedList<String>()
+    if (System.properties['os.name'].toLowerCase().contains('windows')) {
+        arg
+    } else {
+        println "it's not Windows"
+    }
+    args.add("$cordaCliZipDir/install.sh")
+     */
+    File installer = new File("$cordaCliZipDir/install.sh")
+    installer.setExecutable(true)
+    exec {
+        commandLine "$cordaCliZipDir/install.sh"
+    }
+}
 
 
 tasks.register("createGroupPolicy") {
