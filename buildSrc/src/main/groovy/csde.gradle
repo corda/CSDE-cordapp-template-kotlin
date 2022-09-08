@@ -303,14 +303,10 @@ tasks.register('listCPIs') {
 }
 
 
+// Empty task, just acts as the Task user entry point task.
 tasks.register('deployCordapp') {
     group = pluginGroupName
     dependsOn("createAndRegVNodes")
-    doLast{
-        def corda = createCsdeRpcInterface()
-        corda.createAndRegVNodes()
-
-    }
 }
 
 tasks.register("startDB") {
@@ -594,7 +590,7 @@ public class CsdeRpcInterface {
                     .basicAuth(rpcUser, rpcPasswd)
                     .asJson();
             tries++;
-            out.println("tries (status="+statusResponse.getStatus()+") ="+tries);
+            out.println("Upload status="+statusResponse.getStatus()+", status query response:\n"+statusResponse.getBody().toPrettyString());
         }
         while(uploadStatusRetry(statusResponse));
 
