@@ -503,21 +503,28 @@ public class CsdeRpcInterface {
         out.println("*** *** ***");
     }
 
-    public void listVNodes() {
+    public kong.unirest.HttpResponse<kong.unirest.JsonNode> getVNodeInfo() {
         Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse = Unirest.get(baseURL + "/api/v1/virtualnode/")
+        return Unirest.get(baseURL + "/api/v1/virtualnode/")
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+    }
+
+    public void listVNodes() {
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = getVNodeInfo();
+        out.println("CPIs:\n" + vnodeResponse.getBody().toPrettyString());
+    }
+
+    public kong.unirest.HttpResponse<kong.unirest.JsonNode> getCpiInfo() {
+        Unirest.config().verifySsl(false);
+        return Unirest.get(baseURL + "/api/v1/cpi/")
                 .basicAuth(rpcUser, rpcPasswd)
                 .asJson();
 
-        out.println("CPIs:\n" + cpiResponse.getBody().toPrettyString());
     }
 
     public void listCPIs() {
-        Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse = Unirest.get(baseURL + "/api/v1/cpi/")
-                .basicAuth(rpcUser, rpcPasswd)
-                .asJson();
-
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo()
         out.println("CPIs:\n" + cpiResponse.getBody().toPrettyString());
     }
 
@@ -597,6 +604,10 @@ public class CsdeRpcInterface {
 
     public void deployCPI(String cpiFName) throws FileNotFoundException {
         Unirest.config().verifySsl(false);
+
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo()
+
+
         kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")
                 .field("upload", new File(cpiFName))
                 .basicAuth(rpcUser, rpcPasswd)
@@ -605,6 +616,7 @@ public class CsdeRpcInterface {
         kong.unirest.JsonNode body = uploadResponse.getBody();
 
         int status = uploadResponse.getStatus();
+
 
         out.println("Upload Status:" + status);
         out.println("Pretty print the body\n" + body.toPrettyString());

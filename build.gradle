@@ -79,6 +79,7 @@ repositories {
         url = "$artifactoryContextUrl/"
     }
 
+    /*
     // R3 Internal repositories
     // Repository the provides kotlin-stdlib-jdk8-osgi created by R3.
     // Final location to be decided.
@@ -124,6 +125,7 @@ repositories {
             password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
         }
     }
+*/
 
 
 
