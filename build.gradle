@@ -79,6 +79,10 @@ repositories {
         url = "$artifactoryContextUrl/"
     }
 
+    maven {
+        url = "$artifactoryContextUrlRC01/"
+    }
+
     /*
     // R3 Internal repositories
     // Repository the provides kotlin-stdlib-jdk8-osgi created by R3.
@@ -167,8 +171,10 @@ dependencies {
     cordaProvided 'org.slf4j:slf4j-api'
 
     // Dependencies Required By Test Tooling
-    testImplementation "net.corda:cordapp-test-api:$combinedWorkerVersion"
-    testRuntimeOnly "net.corda:cordapp-test-utils:$combinedWorkerVersion"
+    //testRuntimeOnly "net.corda:simulator-api:$combinedWorkerVersion"
+    //testRuntimeOnly "net.corda:simulator-runtime:$combinedWorkerVersion"
+    testImplementation "net.corda:cordapp-test-api:$testUtilsVersion"
+    testRuntimeOnly "net.corda:cordapp-test-utils:$testUtilsVersion"
 
     // 3rd party libraries
     // Required

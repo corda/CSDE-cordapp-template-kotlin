@@ -47,10 +47,12 @@ configurations {
         canBeResolved = true
     }
 
+    /*
     myCordaCliInstaller {
         canBeConsumed = false
         canBeResolved = true
     }
+*/
 
     all {
         resolutionStrategy {
@@ -68,7 +70,7 @@ dependencies {
     cordaCliMgmPlugin "net.corda.cli.deployment:mgm-cli-plugin:$cordaCliPluginsVersion"
     cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$cordaCliPluginsVersion"
     myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
-    myCordaCliInstaller "net.corda.cli.deployment:corda-cli-installer:$combinedWorkerVersion"
+    // myCordaCliInstaller "net.corda.cli.deployment:corda-cli-installer:$combinedWorkerVersion"
 }
 
 
@@ -79,6 +81,11 @@ def cordaCliBinDir = "${System.getProperty('user.home')}/.corda/cli"
 def cordaCliDir = "$cordaBinDir/corda-cli"
 def cordaJDBCDir = "$cordaBinDir/jdbcDrivers"
 def CORDA_CLI_PLUGINS_DIR = "${cordaCliDir}/plugins"
+def signingCertAlias="gradle-plugin-default-key"
+def signingCertFName = "$rootDir/config/gradle-plugin-default-key.pem"
+def keystoreAlias = "my-signing-key"
+def keystoreFName = "$devEnvWorkspace/signingkeys.pfx"
+def keystoreCertFName = "$devEnvWorkspace/signingkey1.pem"
 
 tasks.register("getPostgresJDBC") {
     group = pluginGroupName
@@ -129,32 +136,35 @@ tasks.register("getCordaCli") {
             from configurations.cordaCliMgmPlugin
             into "$cordaCliDir/plugins"
         }
+
+        /*
         copy {
             from configurations.myCordaCliInstaller.asFileTree.each {
                 from(zipTree(it))
             }
             into "$cordaBinDir/cordaCliZip"
         }
+         */
     }
 }
 
+//tasks.register("installCordaCli") {
+//    /*
+//    def args = new LinkedList<String>()
+//    if (System.properties['os.name'].toLowerCase().contains('windows')) {
+//        arg
+//    } else {
+//        println "it's not Windows"
+//    }
+//    args.add("$cordaCliZipDir/install.sh")
+//     */
+//    File installer = new File("$cordaCliZipDir/install.sh")
+//    installer.setExecutable(true)
+//    exec {
+//        commandLine "$cordaCliZipDir/install.sh"
+//    }
+//}
 
-tasks.register("installCordaCli") {
-    /*
-    def args = new LinkedList<String>()
-    if (System.properties['os.name'].toLowerCase().contains('windows')) {
-        arg
-    } else {
-        println "it's not Windows"
-    }
-    args.add("$cordaCliZipDir/install.sh")
-     */
-    File installer = new File("$cordaCliZipDir/install.sh")
-    installer.setExecutable(true)
-    exec {
-        commandLine "$cordaCliZipDir/install.sh"
-    }
-}
 
 
 tasks.register("createGroupPolicy") {
@@ -203,13 +213,13 @@ tasks.register("getDevCordaLite", Copy) {
 tasks.register('createKeystore') {
     group = pluginGroupName
     doLast {
-        File keystoreFile = new File("$devEnvWorkspace/signingkeys.pfx")
+        File keystoreFile = new File(keystoreFName)
         if(!keystoreFile.exists()) {
             println('createKeystore - creating keystore')
             exec {
                 commandLine "keytool", "-genkeypair",
-                        "-alias", "my-signing-key",
-                        "-keystore", "$devEnvWorkspace/signingkeys.pfx",
+                        "-alias", keystoreAlias,
+                        "-keystore", keystoreFName,
                         "-storepass", "keystore password",
                         "-dname", "CN=CPI Example - My Signing Key, O=CorpOrgCorp, L=London, C=GB",
                         "-keyalg", "RSA",
@@ -219,12 +229,22 @@ tasks.register('createKeystore') {
             // Need to add the default signing key to the keystore
             exec {
                 commandLine "keytool", "-importcert",
-                        "-keystore", "$devEnvWorkspace/signingkeys.pfx",
+                        "-keystore", keystoreFName,
                         "-storepass", "keystore password",
                         "-noprompt",
-                        "-alias", "gradle-plugin-default-key",
-                        "-file", "$rootDir/config/gradle-plugin-default-key.pem"
+                        "-alias", signingCertAlias,
+                        "-file", signingCertFName
             }
+            // keytool -exportcert -rfc -alias "signing key 1" -keystore signingkeys.pfx -storepass "keystore password" -file signingkey1.pem
+            exec {
+                commandLine "keytool",
+                        "-exportcert", "-rfc", "-alias", keystoreAlias,
+                        "-keystore", keystoreFName,
+                        "-storepass", "keystore password",
+                        "-file", keystoreCertFName
+            }
+            def iface = createCsdeRpcInterface()
+
         }
         else {
             println('createKeystore - keystore already created; nothing to do.')
@@ -269,7 +289,8 @@ tasks.register("deployCPI") {
     dependsOn('buildCPI')
     doLast {
         def corda = createCsdeRpcInterface()
-
+        corda.uploadCertificate(signingCertAlias, signingCertFName)
+        corda.uploadCertificate(keystoreAlias, keystoreCertFName)
         corda.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi")
     }
 }
@@ -524,10 +545,26 @@ public class CsdeRpcInterface {
     }
 
     public void listCPIs() {
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo()
-        out.println("CPIs:\n" + cpiResponse.getBody().toPrettyString());
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo();
+        kong.unirest.json.JSONArray jobj = cpiResponse.getBody().getObject().get("cpis");
+        //for(kong.unirest.json.JSONObject o: jobj.getArray()) {
+        //    out.println(o.toString());
+        //}
+        // out.println("CPIs:\n" + cpiResponse.getBody().toPrettyString());
+        out.println("get(cpis)\n"+ jobj);
     }
 
+    public void uploadCertificate(String certAlias, String certFName) {
+        Unirest.config().verifySsl(false);
+        // curl --insecure -u admin:admin -X PUT -F alias="gradle-plugin-default-key" -F certificate=@gradle-plugin-default-key.pem https://localhost:8888/api/v1/certificates/codesigner
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.put(baseURL + "/api/v1/certificates/codesigner/")
+                .field("alias", certAlias)
+                .field("certificate", new File(certFName))
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+        println("Certificate/key upload, alias "+certAlias+" certificate/key file "+certFName);
+        println(uploadResponse.getBody().toPrettyString());
+    }
 
    public void forceuploadCPI(String cpiFName) throws FileNotFoundException {
         // curl --insecure -u admin:admin  -s -F upload=@$CPI https://localhost:8888/api/v1/cpi/
@@ -605,7 +642,8 @@ public class CsdeRpcInterface {
     public void deployCPI(String cpiFName) throws FileNotFoundException {
         Unirest.config().verifySsl(false);
 
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo()
+        // kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo()
+
 
 
         kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")

@@ -7,8 +7,18 @@ pluginManagement {
            url = "$artifactoryContextUrl/"
         }
 
-        /*
+        maven {
+            url = "$artifactoryContextUrlRC01/"
+        }
+
+       /*
         // R3 internal repositories
+        maven {
+            url "${artifactoryContextUrl}/corda-dev"
+            content {
+                includeGroupByRegex 'net\\.corda\\.plugins(\\..*)?'
+            }
+        }
         maven {
             url = "$artifactoryContextUrl/corda-os-maven-unstable"
             credentials {
