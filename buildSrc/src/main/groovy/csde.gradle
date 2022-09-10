@@ -23,6 +23,7 @@ configurations {
         canBeResolved= true
     }
 
+    /*
     cordaCli{
         canBeConsumed = false
         canBeResolved= true
@@ -38,21 +39,17 @@ configurations {
         canBeResolved = true
     }
 
-    myCordaCpb {
-        canBeConsumed = false
-    }
+    */
 
     myPostgresJDBC {
         canBeConsumed = false
         canBeResolved = true
     }
 
-    /*
     myCordaCliInstaller {
         canBeConsumed = false
         canBeResolved = true
     }
-*/
 
     all {
         resolutionStrategy {
@@ -66,11 +63,11 @@ configurations {
 // Dependencies for supporting tools
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
-    cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
-    cordaCliMgmPlugin "net.corda.cli.deployment:mgm-cli-plugin:$cordaCliPluginsVersion"
-    cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$cordaCliPluginsVersion"
+    // cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
+    // cordaCliMgmPlugin "net.corda.cli.deployment:mgm-cli-plugin:$cordaCliPluginsVersion"
+    // cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$cordaCliPluginsVersion"
     myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
-    // myCordaCliInstaller "net.corda.cli.deployment:corda-cli-installer:$combinedWorkerVersion"
+    myCordaCliInstaller "net.corda.cli.deployment:corda-cli-installer:$combinedWorkerVersion"
 }
 
 
@@ -124,6 +121,8 @@ tasks.register("getCordaCli") {
         delete {
             delete cordaCliDir
         }
+
+        /*
         copy {
             from configurations.cordaCli
             into "$cordaCliDir"
@@ -137,14 +136,14 @@ tasks.register("getCordaCli") {
             into "$cordaCliDir/plugins"
         }
 
-        /*
+         */
+
         copy {
             from configurations.myCordaCliInstaller.asFileTree.each {
                 from(zipTree(it))
             }
             into "$cordaBinDir/cordaCliZip"
         }
-         */
     }
 }
 
