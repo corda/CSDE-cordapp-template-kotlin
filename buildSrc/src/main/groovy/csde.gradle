@@ -106,6 +106,13 @@ tasks.register('listCli'){
 }
 
 
+tasks.register('getCliInstaller') {
+    def cliInstallerUrl = "https://staging.download.corda.net/maven/20ede3c6-29c0-11ed-966d-b7c36748b9f6-DevPreview-2-RC02/net/corda/cli/deployment/corda-cli-installer-script/5.0.0.0-DevPreview-2-RC02/corda-cli-installer-script-5.0.0.0-DevPreview-2-RC02.sh"
+    def installerFilePath = "$devEnvWorkspace/cordaCliInstaller"
+    def corda = createCsdeRpcInterface()
+    corda.downloadFile(cliInstallerUrl, installerFilePath)
+}
+
 tasks.register('projInit') {
     group = pluginGroupName
     doLast {
@@ -521,6 +528,13 @@ public class CsdeRpcInterface {
         out.println("*** Headers ***\n"+ response.getHeaders());
         out.println("*** Body ***\n"+ response.getBody());
         out.println("*** *** ***");
+    }
+
+    //
+    public void downloadFile(String url, String targetPath) {
+        File result = Unirest.get(url)
+                .asFile(targetPath)
+                .getBody();
     }
 
     public kong.unirest.HttpResponse<kong.unirest.JsonNode> getVNodeInfo() {
