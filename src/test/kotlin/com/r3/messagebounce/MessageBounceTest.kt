@@ -1,6 +1,6 @@
 package com.r3.messagebounce
 
-/*
+
 import net.corda.simulator.HoldingIdentity
 import net.corda.simulator.RequestData
 import net.corda.simulator.Simulator
@@ -43,8 +43,7 @@ class MessageSenderTests {
         )
 
         // Check the returned data with the expected data (which will be JSON)
-        assertThat(response, `is`("{\"message\":\"Eh? Responder returned: here's my message\"}"))
+        assertThat(response, `is`("{\"message\":\"Responder returned: here's my message\"}"))
     }
 }
 
-*/

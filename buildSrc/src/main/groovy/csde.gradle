@@ -23,6 +23,11 @@ configurations {
         canBeResolved= true
     }
 
+    myPostgresJDBC {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+   /*
     cordaCli{
         canBeConsumed = false
         canBeResolved= true
@@ -38,37 +43,20 @@ configurations {
         canBeResolved = true
     }
 
-
-    myPostgresJDBC {
-        canBeConsumed = false
-        canBeResolved = true
-    }
-
-    /*
-    myCordaCliInstaller {
-        canBeConsumed = false
-        canBeResolved = true
-    }
-
-     */
-
     all {
         resolutionStrategy {
             // FORCE Gradle to use latest dynamic versions.
             cacheDynamicVersionsFor 0, 'seconds'
         }
     }
+     */
 
 }
 
 // Dependencies for supporting tools
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
-    cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
-    cordaCliMgmPlugin "net.corda.cli.deployment:mgm-cli-plugin:$cordaCliPluginsVersion"
-    cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$cordaCliPluginsVersion"
     myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
-    // myCordaCliInstaller "net.corda.cli.deployment:corda-cli-installer:$combinedWorkerVersion"
 }
 
 
@@ -87,7 +75,6 @@ def keystoreCertFName = "$devEnvWorkspace/signingkey1.pem"
 
 // Need to read things from cordapp plugin
 def cpiName =  'cpi name'
-//def cpiVersion = '1.0.0.0-SNAPSHOT'
 
 tasks.register("getPostgresJDBC") {
     group = pluginGroupName
@@ -99,18 +86,8 @@ tasks.register("getPostgresJDBC") {
     }
 }
 
-tasks.register('listCli'){
-    group = pluginGroupName
-    print("Corda-Cli configuration:")
-    configurations.cordaCli.each { println(it) }
-    print("MGM configuration:")
-    configurations.cordaCliMgmPlugin.each { println(it) }
-    print("Package configuration:")
-    configurations.cordaCliPackagePlugin.each { println(it) }
 
-}
-
-
+/*
 tasks.register('getCliInstaller') {
     def cliInstallerUrl = "https://staging.download.corda.net/maven/20ede3c6-29c0-11ed-966d-b7c36748b9f6-DevPreview-2-RC02/net/corda/cli/deployment/corda-cli-installer-script/5.0.0.0-DevPreview-2-RC02/corda-cli-installer-script-5.0.0.0-DevPreview-2-RC02.sh"
     def installerFilePath = "$devEnvWorkspace/cordaCliInstaller"
@@ -119,6 +96,7 @@ tasks.register('getCliInstaller') {
     File installer = new File("$installerFilePath")
     installer.setExecutable(true)
 }
+*/
 
 tasks.register('projInit') {
     group = pluginGroupName
@@ -128,39 +106,39 @@ tasks.register('projInit') {
 }
 
 
-tasks.register("getCordaCli") {
-    group = pluginGroupName
-    //dependsOn('getCordaCliMgmPlugin', 'getCordaCliPackagePlugin')
-    doLast {
-        delete {
-            delete cordaCliDir
-        }
-
-        copy {
-            from configurations.cordaCli
-            into "$cordaCliDir"
-        }
-        copy {
-            from configurations.cordaCliPackagePlugin
-            into "$cordaCliDir/plugins"
-        }
-        copy {
-            from configurations.cordaCliMgmPlugin
-            into "$cordaCliDir/plugins"
-        }
-
-
-        /*
-        copy {
-            from configurations.myCordaCliInstaller.asFileTree.each {
-                from(zipTree(it))
-            }
-            into "$cordaBinDir/cordaCliZip"
-        }
-
-         */
-    }
-}
+//tasks.register("getCordaCli") {
+//    group = pluginGroupName
+//    //dependsOn('getCordaCliMgmPlugin', 'getCordaCliPackagePlugin')
+//    doLast {
+//        delete {
+//            delete cordaCliDir
+//        }
+//
+//        copy {
+//            from configurations.cordaCli
+//            into "$cordaCliDir"
+//        }
+//        copy {
+//            from configurations.cordaCliPackagePlugin
+//            into "$cordaCliDir/plugins"
+//        }
+//        copy {
+//            from configurations.cordaCliMgmPlugin
+//            into "$cordaCliDir/plugins"
+//        }
+//
+//
+//        /*
+//        copy {
+//            from configurations.myCordaCliZip.asFileTree.each {
+//                from(zipTree(it))
+//            }
+//            into "$cordaBinDir/cordaCliZip"
+//        }
+//
+//         */
+//    }
+//}
 
 //tasks.register("installCordaCli") {
 //    /*
@@ -183,32 +161,41 @@ tasks.register("getCordaCli") {
 
 tasks.register("createGroupPolicy") {
     group = pluginGroupName
-    dependsOn('projInit', 'getCordaCli')
+    dependsOn('projInit')
     doLast {
+
         def groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json")
         def devnetFName = new String("$rootDir/config/dev-net.json")
         File groupPolicyFile = new File(groupPolicyFName)
         File devnetFile = new File(devnetFName)
         if(!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
-            println("Creating a GroupPolicy")
-            javaexec {
-                classpath = configurations.cordaCli
-                jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
-                standardOutput = new FileOutputStream(groupPolicyFName)
-                LinkedList<String> myArgs = new LinkedList<String>()
-                myArgs.add("mgm")
-                myArgs.add("groupPolicy")
-                def jsonFile = file(devnetFName)
-                def slurper = new groovy.json.JsonSlurper()
-                def parsedJson = slurper.parseText(jsonFile.text)
-                parsedJson.identities.forEach {
-                    myArgs.add("--name")
-                    myArgs.add(it)
-                }
 
-                myArgs.add("--endpoint-protocol=1")
-                myArgs.add("--endpoint=http://localhost:1080")
-                args myArgs
+            println("Creating a GroupPolicy")
+
+            LinkedList<String> cmdArgs = new LinkedList<String>()
+            if (System.properties['os.name'].toLowerCase().contains('windows')) {
+                cmdArgs.add("$cordaCliBinDir/corda-cli.cmd")
+            }
+            else {
+                cmdArgs.add("$cordaCliBinDir/corda-cli.sh")
+            }
+            cmdArgs.add("mgm")
+            cmdArgs.add("groupPolicy")
+            def jsonFile = file(devnetFName)
+            def slurper = new groovy.json.JsonSlurper()
+            def parsedJson = slurper.parseText(jsonFile.text)
+            parsedJson.identities.forEach {
+                cmdArgs.add("--name")
+                cmdArgs.add("$it")
+            }
+
+            cmdArgs.add("--endpoint-protocol=1")
+            cmdArgs.add("--endpoint=http://localhost:1080")
+
+            println("cmdArgs=$cmdArgs")
+            exec {
+                standardOutput = new FileOutputStream(groupPolicyFName)
+                commandLine cmdArgs
             }
         }
         else {
@@ -282,6 +269,7 @@ tasks.register('buildCPI') {
         // Create a file collection using a closure
         def collection = layout.files { srcDir.listFiles() }
         def cpbs = collection.filter { it.getName().endsWith(".cpb") }
+        /*
         javaexec {
             classpath = configurations.cordaCli
             jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
@@ -294,7 +282,41 @@ tasks.register('buildCPI') {
                     '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
                     '--storepass', 'keystore password',
                     '--key', 'my-signing-key'
+
         }
+         */
+
+        LinkedList<String> cmdArgs = new LinkedList<String>()
+        if (System.properties['os.name'].toLowerCase().contains('windows')) {
+            cmdArgs.add("$cordaCliBinDir/corda-cli.cmd")
+        }
+        else {
+            cmdArgs.add("$cordaCliBinDir/corda-cli.sh")
+        }
+        cmdArgs.add( 'package')
+        cmdArgs.add('create-cpi')
+        cmdArgs.add('--cpb')
+        cmdArgs.add(cpbs.singleFile.absolutePath)
+        cmdArgs.add('--group-policy')
+        cmdArgs.add("${devEnvWorkspace}/GroupPolicy.json")
+        cmdArgs.add('--cpi-name')
+        cmdArgs.add(cpiName)
+        cmdArgs.add('--cpi-version')
+        cmdArgs.add('1.0.0.0-SNAPSHOT')
+        cmdArgs.add('--file')
+        cmdArgs.add(cpiFile)
+        cmdArgs.add('--keystore')
+        cmdArgs.add("${devEnvWorkspace}/signingkeys.pfx")
+        cmdArgs.add('--storepass')
+        cmdArgs.add('keystore password')
+        cmdArgs.add('--key')
+        cmdArgs.add('my-signing-key')
+
+        println("cmdArgs=$cmdArgs")
+        exec {
+            commandLine cmdArgs
+        }
+
     }
 }
 
@@ -701,8 +723,11 @@ public class CsdeRpcInterface {
                out.println("get id:\n" + id);
 
                kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
-               if(statusResponse.getStatus() != 200)
-               {
+               if (statusResponse.getStatus() == 200) {
+                   PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadStatusFName));
+                   cpiUploadStatus.print(statusResponse.getBody());
+                   out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
+               } else {
                    reportError(statusResponse);
                }
            } else {

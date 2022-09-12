@@ -173,8 +173,6 @@ dependencies {
     // Dependencies Required By Test Tooling
     testImplementation "net.corda:simulator-api:$combinedWorkerVersion"
     testRuntimeOnly "net.corda:simulator-runtime:$combinedWorkerVersion"
-    //testImplementation "net.corda:cordapp-test-api:$testUtilsVersion"
-    //testRuntimeOnly "net.corda:cordapp-test-utils:$testUtilsVersion"
 
     // 3rd party libraries
     // Required
