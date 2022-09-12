@@ -7,11 +7,9 @@ pluginManagement {
            url = "$artifactoryContextUrl/"
         }
 
-        /*
         maven {
             url = "$artifactoryContextUrlRC01/"
         }
-*/
 
        /*
         // R3 internal repositories

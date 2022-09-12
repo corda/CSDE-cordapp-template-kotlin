@@ -23,7 +23,6 @@ configurations {
         canBeResolved= true
     }
 
-    /*
     cordaCli{
         canBeConsumed = false
         canBeResolved= true
@@ -39,17 +38,19 @@ configurations {
         canBeResolved = true
     }
 
-    */
 
     myPostgresJDBC {
         canBeConsumed = false
         canBeResolved = true
     }
 
+    /*
     myCordaCliInstaller {
         canBeConsumed = false
         canBeResolved = true
     }
+
+     */
 
     all {
         resolutionStrategy {
@@ -63,11 +64,11 @@ configurations {
 // Dependencies for supporting tools
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
-    // cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
-    // cordaCliMgmPlugin "net.corda.cli.deployment:mgm-cli-plugin:$cordaCliPluginsVersion"
-    // cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$cordaCliPluginsVersion"
+    cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
+    cordaCliMgmPlugin "net.corda.cli.deployment:mgm-cli-plugin:$cordaCliPluginsVersion"
+    cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$cordaCliPluginsVersion"
     myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
-    myCordaCliInstaller "net.corda.cli.deployment:corda-cli-installer:$combinedWorkerVersion"
+    // myCordaCliInstaller "net.corda.cli.deployment:corda-cli-installer:$combinedWorkerVersion"
 }
 
 
@@ -83,6 +84,10 @@ def signingCertFName = "$rootDir/config/gradle-plugin-default-key.pem"
 def keystoreAlias = "my-signing-key"
 def keystoreFName = "$devEnvWorkspace/signingkeys.pfx"
 def keystoreCertFName = "$devEnvWorkspace/signingkey1.pem"
+
+// Need to read things from cordapp plugin
+def cpiName =  'cpi name'
+//def cpiVersion = '1.0.0.0-SNAPSHOT'
 
 tasks.register("getPostgresJDBC") {
     group = pluginGroupName
@@ -111,6 +116,8 @@ tasks.register('getCliInstaller') {
     def installerFilePath = "$devEnvWorkspace/cordaCliInstaller"
     def corda = createCsdeRpcInterface()
     corda.downloadFile(cliInstallerUrl, installerFilePath)
+    File installer = new File("$installerFilePath")
+    installer.setExecutable(true)
 }
 
 tasks.register('projInit') {
@@ -129,7 +136,6 @@ tasks.register("getCordaCli") {
             delete cordaCliDir
         }
 
-        /*
         copy {
             from configurations.cordaCli
             into "$cordaCliDir"
@@ -143,14 +149,16 @@ tasks.register("getCordaCli") {
             into "$cordaCliDir/plugins"
         }
 
-         */
 
+        /*
         copy {
             from configurations.myCordaCliInstaller.asFileTree.each {
                 from(zipTree(it))
             }
             into "$cordaBinDir/cordaCliZip"
         }
+
+         */
     }
 }
 
@@ -280,8 +288,8 @@ tasks.register('buildCPI') {
             args 'package', 'create-cpi',
                     '--cpb', cpbs.singleFile.absolutePath,
                     '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
-                    '--cpi-name', 'cpi name',
-                    '--cpi-version', '1.0.0.0-SNAPSHOT',
+                    '--cpi-name', cpiName,
+                    '--cpi-version', project.version,
                     '--file', cpiFile,
                     '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
                     '--storepass', 'keystore password',
@@ -297,7 +305,7 @@ tasks.register("deployCPI") {
         def corda = createCsdeRpcInterface()
         corda.uploadCertificate(signingCertAlias, signingCertFName)
         corda.uploadCertificate(keystoreAlias, keystoreCertFName)
-        corda.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi")
+        corda.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi", cpiName, project.version)
     }
 }
 
@@ -559,12 +567,15 @@ public class CsdeRpcInterface {
 
     public void listCPIs() {
         kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo();
-        kong.unirest.json.JSONArray jobj = cpiResponse.getBody().getObject().get("cpis");
-        //for(kong.unirest.json.JSONObject o: jobj.getArray()) {
-        //    out.println(o.toString());
-        //}
-        // out.println("CPIs:\n" + cpiResponse.getBody().toPrettyString());
-        out.println("get(cpis)\n"+ jobj);
+        kong.unirest.json.JSONArray jArray = cpiResponse.getBody().getObject().get("cpis");
+
+        for(Object o: jArray){
+            if(o instanceof kong.unirest.json.JSONObject) {
+                kong.unirest.json.JSONObject idObj = ((kong.unirest.json.JSONObject) o).getJSONObject('id');
+                out.print("cpiName=" + idObj.get('cpiName'));
+                out.println(", cpiVersion=" + idObj.get('cpiVersion'));
+            }
+        }
     }
 
     public void uploadCertificate(String certAlias, String certFName) {
@@ -652,52 +663,56 @@ public class CsdeRpcInterface {
         return statusResponse;
     }
 
-    public void deployCPI(String cpiFName) throws FileNotFoundException {
+    public void deployCPI(String cpiFName, String cpiName, String cpiVersion) throws FileNotFoundException {
         Unirest.config().verifySsl(false);
 
-        // kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo()
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo()
+        kong.unirest.json.JSONArray jArray = cpiResponse.getBody().getObject().get("cpis");
 
-
-
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")
-                .field("upload", new File(cpiFName))
-                .basicAuth(rpcUser, rpcPasswd)
-                .asJson();
-
-        kong.unirest.JsonNode body = uploadResponse.getBody();
-
-        int status = uploadResponse.getStatus();
-
-
-        out.println("Upload Status:" + status);
-        out.println("Pretty print the body\n" + body.toPrettyString());
-
-        // We expect the id field to be a string.
-        if(status == 200) {
-            String id = (String) body.getObject().get("id");
-            out.println("get id:\n" +id);
-
-            kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
-
-            if(statusResponse.getStatus()==409
-                    && statusResponse.getBody().getObject().getJSONObject("details").get("code").toString().equals("CONFLICT"))
-            {
-                out.println("Try a force cpi upload");
-                forceuploadCPI(cpiFName);
+        int matches = jArray.toList().stream().filter(o -> {
+            if(o instanceof kong.unirest.json.JSONObject){
+                kong.unirest.json.JSONObject idObj = ((kong.unirest.json.JSONObject) o).getJSONObject('id');
+                return (idObj.get('cpiName').toString().equals(cpiName)
+                        && idObj.get('cpiVersion').toString().equals(cpiVersion));
             }
             else {
-                if (statusResponse.getStatus() == 200) {
-                    PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadStatusFName));
-                    cpiUploadStatus.print(statusResponse.getBody());
-                    out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
-                } else {
-                    reportError(statusResponse);
-                }
+                return false;
             }
-        }
-        else{
-            reportError(uploadResponse);
-        }
+        }).count();
+        println("Matching CPIS="+matches);
+
+
+       if(matches == 0) {
+           kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")
+                   .field("upload", new File(cpiFName))
+                   .basicAuth(rpcUser, rpcPasswd)
+                   .asJson();
+
+           kong.unirest.JsonNode body = uploadResponse.getBody();
+
+           int status = uploadResponse.getStatus();
+
+           out.println("Upload Status:" + status);
+           out.println("Pretty print the body\n" + body.toPrettyString());
+
+           // We expect the id field to be a string.
+           if (status == 200) {
+               String id = (String) body.getObject().get("id");
+               out.println("get id:\n" + id);
+
+               kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
+               if(statusResponse.getStatus() != 200)
+               {
+                   reportError(statusResponse);
+               }
+           } else {
+               reportError(uploadResponse);
+           }
+       }
+        else {
+           out.println("CPI already uploaded doing a 'force' upload.");
+           forceuploadCPI(cpiFName);
+       }
     }
 
     public void createAndRegVNodes() throws IOException{
