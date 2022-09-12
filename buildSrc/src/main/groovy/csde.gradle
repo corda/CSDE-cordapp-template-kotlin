@@ -23,6 +23,11 @@ configurations {
         canBeResolved= true
     }
 
+    myPostgresJDBC {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+   /*
     cordaCli{
         canBeConsumed = false
         canBeResolved= true
@@ -38,37 +43,20 @@ configurations {
         canBeResolved = true
     }
 
-    myCordaCpb {
-        canBeConsumed = false
-    }
-
-    myPostgresJDBC {
-        canBeConsumed = false
-        canBeResolved = true
-    }
-
-    myCordaCliInstaller {
-        canBeConsumed = false
-        canBeResolved = true
-    }
-
     all {
         resolutionStrategy {
             // FORCE Gradle to use latest dynamic versions.
             cacheDynamicVersionsFor 0, 'seconds'
         }
     }
+     */
 
 }
 
 // Dependencies for supporting tools
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
-    cordaCli "net.corda.cli.host:corda-cli:$cordaCliVersion"
-    cordaCliMgmPlugin "net.corda.cli.deployment:mgm-cli-plugin:$cordaCliPluginsVersion"
-    cordaCliPackagePlugin "net.corda.cli.deployment:package-cli-plugin:$cordaCliPluginsVersion"
     myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
-    myCordaCliInstaller "net.corda.cli.deployment:corda-cli-installer:$combinedWorkerVersion"
 }
 
 
@@ -79,6 +67,14 @@ def cordaCliBinDir = "${System.getProperty('user.home')}/.corda/cli"
 def cordaCliDir = "$cordaBinDir/corda-cli"
 def cordaJDBCDir = "$cordaBinDir/jdbcDrivers"
 def CORDA_CLI_PLUGINS_DIR = "${cordaCliDir}/plugins"
+def signingCertAlias="gradle-plugin-default-key"
+def signingCertFName = "$rootDir/config/gradle-plugin-default-key.pem"
+def keystoreAlias = "my-signing-key"
+def keystoreFName = "$devEnvWorkspace/signingkeys.pfx"
+def keystoreCertFName = "$devEnvWorkspace/signingkey1.pem"
+
+// Need to read things from cordapp plugin
+def cpiName =  'cpi name'
 
 tasks.register("getPostgresJDBC") {
     group = pluginGroupName
@@ -90,17 +86,17 @@ tasks.register("getPostgresJDBC") {
     }
 }
 
-tasks.register('listCli'){
-    group = pluginGroupName
-    print("Corda-Cli configuration:")
-    configurations.cordaCli.each { println(it) }
-    print("MGM configuration:")
-    configurations.cordaCliMgmPlugin.each { println(it) }
-    print("Package configuration:")
-    configurations.cordaCliPackagePlugin.each { println(it) }
 
+/*
+tasks.register('getCliInstaller') {
+    def cliInstallerUrl = "https://staging.download.corda.net/maven/20ede3c6-29c0-11ed-966d-b7c36748b9f6-DevPreview-2-RC02/net/corda/cli/deployment/corda-cli-installer-script/5.0.0.0-DevPreview-2-RC02/corda-cli-installer-script-5.0.0.0-DevPreview-2-RC02.sh"
+    def installerFilePath = "$devEnvWorkspace/cordaCliInstaller"
+    def corda = createCsdeRpcInterface()
+    corda.downloadFile(cliInstallerUrl, installerFilePath)
+    File installer = new File("$installerFilePath")
+    installer.setExecutable(true)
 }
-
+*/
 
 tasks.register('projInit') {
     group = pluginGroupName
@@ -110,83 +106,96 @@ tasks.register('projInit') {
 }
 
 
-tasks.register("getCordaCli") {
-    group = pluginGroupName
-    //dependsOn('getCordaCliMgmPlugin', 'getCordaCliPackagePlugin')
-    doLast {
-        delete {
-            delete cordaCliDir
-        }
-        copy {
-            from configurations.cordaCli
-            into "$cordaCliDir"
-        }
-        copy {
-            from configurations.cordaCliPackagePlugin
-            into "$cordaCliDir/plugins"
-        }
-        copy {
-            from configurations.cordaCliMgmPlugin
-            into "$cordaCliDir/plugins"
-        }
-        copy {
-            from configurations.myCordaCliInstaller.asFileTree.each {
-                from(zipTree(it))
-            }
-            into "$cordaBinDir/cordaCliZip"
-        }
-    }
-}
+//tasks.register("getCordaCli") {
+//    group = pluginGroupName
+//    //dependsOn('getCordaCliMgmPlugin', 'getCordaCliPackagePlugin')
+//    doLast {
+//        delete {
+//            delete cordaCliDir
+//        }
+//
+//        copy {
+//            from configurations.cordaCli
+//            into "$cordaCliDir"
+//        }
+//        copy {
+//            from configurations.cordaCliPackagePlugin
+//            into "$cordaCliDir/plugins"
+//        }
+//        copy {
+//            from configurations.cordaCliMgmPlugin
+//            into "$cordaCliDir/plugins"
+//        }
+//
+//
+//        /*
+//        copy {
+//            from configurations.myCordaCliZip.asFileTree.each {
+//                from(zipTree(it))
+//            }
+//            into "$cordaBinDir/cordaCliZip"
+//        }
+//
+//         */
+//    }
+//}
 
-
-// tasks.register("installCordaCli") {
-//    def args = new LinkedList<String>()
+//tasks.register("installCordaCli") {
 //    /*
+//    def args = new LinkedList<String>()
 //    if (System.properties['os.name'].toLowerCase().contains('windows')) {
 //        arg
 //    } else {
 //        println "it's not Windows"
 //    }
-//
-//
-//     */
 //    args.add("$cordaCliZipDir/install.sh")
-//
+//     */
+//    File installer = new File("$cordaCliZipDir/install.sh")
+//    installer.setExecutable(true)
 //    exec {
-//        commandLine args
+//        commandLine "$cordaCliZipDir/install.sh"
 //    }
-//
 //}
+
 
 
 tasks.register("createGroupPolicy") {
     group = pluginGroupName
-    dependsOn('projInit', 'getCordaCli')
+    dependsOn('projInit')
     doLast {
+
         def groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json")
         def devnetFName = new String("$rootDir/config/dev-net.json")
         File groupPolicyFile = new File(groupPolicyFName)
         File devnetFile = new File(devnetFName)
         if(!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
-            println("Creating a GroupPolicy")
-            javaexec {
-                classpath = configurations.cordaCli
-                jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
-                standardOutput = new FileOutputStream(groupPolicyFName)
-                LinkedList<String> myArgs = new LinkedList<String>()
-                myArgs.add("mgm")
-                myArgs.add("groupPolicy")
-                def jsonFile = file(devnetFName)
-                def slurper = new groovy.json.JsonSlurper()
-                def parsedJson = slurper.parseText(jsonFile.text)
-                parsedJson.identities.forEach {
-                    myArgs.add("--name")
-                    myArgs.add(it)
-                }
 
-                myArgs.add("--endpoint-protocol=1")
-                myArgs.add("--endpoint=http://localhost:1080")
-                args myArgs
+            println("Creating a GroupPolicy")
+
+            LinkedList<String> cmdArgs = new LinkedList<String>()
+            if (System.properties['os.name'].toLowerCase().contains('windows')) {
+                cmdArgs.add("$cordaCliBinDir/corda-cli.cmd")
+            }
+            else {
+                cmdArgs.add("$cordaCliBinDir/corda-cli.sh")
+            }
+            cmdArgs.add("mgm")
+            cmdArgs.add("groupPolicy")
+            def jsonFile = file(devnetFName)
+            def slurper = new groovy.json.JsonSlurper()
+            def parsedJson = slurper.parseText(jsonFile.text)
+            parsedJson.identities.forEach {
+                cmdArgs.add("--name")
+                cmdArgs.add("$it")
+            }
+
+            cmdArgs.add("--endpoint-protocol=1")
+            cmdArgs.add("--endpoint=http://localhost:1080")
+
+            println("cmdArgs=$cmdArgs")
+            exec {
+                standardOutput = new FileOutputStream(groupPolicyFName)
+                commandLine cmdArgs
             }
         }
         else {
@@ -205,13 +214,13 @@ tasks.register("getDevCordaLite", Copy) {
 tasks.register('createKeystore') {
     group = pluginGroupName
     doLast {
-        File keystoreFile = new File("$devEnvWorkspace/signingkeys.pfx")
+        File keystoreFile = new File(keystoreFName)
         if(!keystoreFile.exists()) {
             println('createKeystore - creating keystore')
             exec {
                 commandLine "keytool", "-genkeypair",
-                        "-alias", "my-signing-key",
-                        "-keystore", "$devEnvWorkspace/signingkeys.pfx",
+                        "-alias", keystoreAlias,
+                        "-keystore", keystoreFName,
                         "-storepass", "keystore password",
                         "-dname", "CN=CPI Example - My Signing Key, O=CorpOrgCorp, L=London, C=GB",
                         "-keyalg", "RSA",
@@ -221,12 +230,22 @@ tasks.register('createKeystore') {
             // Need to add the default signing key to the keystore
             exec {
                 commandLine "keytool", "-importcert",
-                        "-keystore", "$devEnvWorkspace/signingkeys.pfx",
+                        "-keystore", keystoreFName,
                         "-storepass", "keystore password",
                         "-noprompt",
-                        "-alias", "gradle-plugin-default-key",
-                        "-file", "$rootDir/config/gradle-plugin-default-key.pem"
+                        "-alias", signingCertAlias,
+                        "-file", signingCertFName
             }
+            // keytool -exportcert -rfc -alias "signing key 1" -keystore signingkeys.pfx -storepass "keystore password" -file signingkey1.pem
+            exec {
+                commandLine "keytool",
+                        "-exportcert", "-rfc", "-alias", keystoreAlias,
+                        "-keystore", keystoreFName,
+                        "-storepass", "keystore password",
+                        "-file", keystoreCertFName
+            }
+            def iface = createCsdeRpcInterface()
+
         }
         else {
             println('createKeystore - keystore already created; nothing to do.')
@@ -250,19 +269,54 @@ tasks.register('buildCPI') {
         // Create a file collection using a closure
         def collection = layout.files { srcDir.listFiles() }
         def cpbs = collection.filter { it.getName().endsWith(".cpb") }
+        /*
         javaexec {
             classpath = configurations.cordaCli
             jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
             args 'package', 'create-cpi',
                     '--cpb', cpbs.singleFile.absolutePath,
                     '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
-                    '--cpi-name', 'cpi name',
-                    '--cpi-version', '1.0.0.0-SNAPSHOT',
+                    '--cpi-name', cpiName,
+                    '--cpi-version', project.version,
                     '--file', cpiFile,
                     '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
                     '--storepass', 'keystore password',
                     '--key', 'my-signing-key'
+
         }
+         */
+
+        LinkedList<String> cmdArgs = new LinkedList<String>()
+        if (System.properties['os.name'].toLowerCase().contains('windows')) {
+            cmdArgs.add("$cordaCliBinDir/corda-cli.cmd")
+        }
+        else {
+            cmdArgs.add("$cordaCliBinDir/corda-cli.sh")
+        }
+        cmdArgs.add( 'package')
+        cmdArgs.add('create-cpi')
+        cmdArgs.add('--cpb')
+        cmdArgs.add(cpbs.singleFile.absolutePath)
+        cmdArgs.add('--group-policy')
+        cmdArgs.add("${devEnvWorkspace}/GroupPolicy.json")
+        cmdArgs.add('--cpi-name')
+        cmdArgs.add(cpiName)
+        cmdArgs.add('--cpi-version')
+        cmdArgs.add('1.0.0.0-SNAPSHOT')
+        cmdArgs.add('--file')
+        cmdArgs.add(cpiFile)
+        cmdArgs.add('--keystore')
+        cmdArgs.add("${devEnvWorkspace}/signingkeys.pfx")
+        cmdArgs.add('--storepass')
+        cmdArgs.add('keystore password')
+        cmdArgs.add('--key')
+        cmdArgs.add('my-signing-key')
+
+        println("cmdArgs=$cmdArgs")
+        exec {
+            commandLine cmdArgs
+        }
+
     }
 }
 
@@ -271,8 +325,9 @@ tasks.register("deployCPI") {
     dependsOn('buildCPI')
     doLast {
         def corda = createCsdeRpcInterface()
-
-        corda.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi")
+        corda.uploadCertificate(signingCertAlias, signingCertFName)
+        corda.uploadCertificate(keystoreAlias, keystoreCertFName)
+        corda.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi", cpiName, project.version)
     }
 }
 
@@ -505,24 +560,57 @@ public class CsdeRpcInterface {
         out.println("*** *** ***");
     }
 
-    public void listVNodes() {
+    //
+    public void downloadFile(String url, String targetPath) {
+        File result = Unirest.get(url)
+                .asFile(targetPath)
+                .getBody();
+    }
+
+    public kong.unirest.HttpResponse<kong.unirest.JsonNode> getVNodeInfo() {
         Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse = Unirest.get(baseURL + "/api/v1/virtualnode/")
+        return Unirest.get(baseURL + "/api/v1/virtualnode/")
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+    }
+
+    public void listVNodes() {
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = getVNodeInfo();
+        out.println("CPIs:\n" + vnodeResponse.getBody().toPrettyString());
+    }
+
+    public kong.unirest.HttpResponse<kong.unirest.JsonNode> getCpiInfo() {
+        Unirest.config().verifySsl(false);
+        return Unirest.get(baseURL + "/api/v1/cpi/")
                 .basicAuth(rpcUser, rpcPasswd)
                 .asJson();
 
-        out.println("CPIs:\n" + cpiResponse.getBody().toPrettyString());
     }
 
     public void listCPIs() {
-        Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse = Unirest.get(baseURL + "/api/v1/cpi/")
-                .basicAuth(rpcUser, rpcPasswd)
-                .asJson();
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo();
+        kong.unirest.json.JSONArray jArray = cpiResponse.getBody().getObject().get("cpis");
 
-        out.println("CPIs:\n" + cpiResponse.getBody().toPrettyString());
+        for(Object o: jArray){
+            if(o instanceof kong.unirest.json.JSONObject) {
+                kong.unirest.json.JSONObject idObj = ((kong.unirest.json.JSONObject) o).getJSONObject('id');
+                out.print("cpiName=" + idObj.get('cpiName'));
+                out.println(", cpiVersion=" + idObj.get('cpiVersion'));
+            }
+        }
     }
 
+    public void uploadCertificate(String certAlias, String certFName) {
+        Unirest.config().verifySsl(false);
+        // curl --insecure -u admin:admin -X PUT -F alias="gradle-plugin-default-key" -F certificate=@gradle-plugin-default-key.pem https://localhost:8888/api/v1/certificates/codesigner
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.put(baseURL + "/api/v1/certificates/codesigner/")
+                .field("alias", certAlias)
+                .field("certificate", new File(certFName))
+                .basicAuth(rpcUser, rpcPasswd)
+                .asJson();
+        println("Certificate/key upload, alias "+certAlias+" certificate/key file "+certFName);
+        println(uploadResponse.getBody().toPrettyString());
+    }
 
    public void forceuploadCPI(String cpiFName) throws FileNotFoundException {
         // curl --insecure -u admin:admin  -s -F upload=@$CPI https://localhost:8888/api/v1/cpi/
@@ -597,46 +685,59 @@ public class CsdeRpcInterface {
         return statusResponse;
     }
 
-    public void deployCPI(String cpiFName) throws FileNotFoundException {
+    public void deployCPI(String cpiFName, String cpiName, String cpiVersion) throws FileNotFoundException {
         Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")
-                .field("upload", new File(cpiFName))
-                .basicAuth(rpcUser, rpcPasswd)
-                .asJson();
 
-        kong.unirest.JsonNode body = uploadResponse.getBody();
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo()
+        kong.unirest.json.JSONArray jArray = cpiResponse.getBody().getObject().get("cpis");
 
-        int status = uploadResponse.getStatus();
-
-        out.println("Upload Status:" + status);
-        out.println("Pretty print the body\n" + body.toPrettyString());
-
-        // We expect the id field to be a string.
-        if(status == 200) {
-            String id = (String) body.getObject().get("id");
-            out.println("get id:\n" +id);
-
-            kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
-
-            if(statusResponse.getStatus()==409
-                    && statusResponse.getBody().getObject().getJSONObject("details").get("code").toString().equals("CONFLICT"))
-            {
-                out.println("Try a force cpi upload");
-                forceuploadCPI(cpiFName);
+        int matches = jArray.toList().stream().filter(o -> {
+            if(o instanceof kong.unirest.json.JSONObject){
+                kong.unirest.json.JSONObject idObj = ((kong.unirest.json.JSONObject) o).getJSONObject('id');
+                return (idObj.get('cpiName').toString().equals(cpiName)
+                        && idObj.get('cpiVersion').toString().equals(cpiVersion));
             }
             else {
-                if (statusResponse.getStatus() == 200) {
-                    PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadStatusFName));
-                    cpiUploadStatus.print(statusResponse.getBody());
-                    out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
-                } else {
-                    reportError(statusResponse);
-                }
+                return false;
             }
-        }
-        else{
-            reportError(uploadResponse);
-        }
+        }).count();
+        println("Matching CPIS="+matches);
+
+
+       if(matches == 0) {
+           kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")
+                   .field("upload", new File(cpiFName))
+                   .basicAuth(rpcUser, rpcPasswd)
+                   .asJson();
+
+           kong.unirest.JsonNode body = uploadResponse.getBody();
+
+           int status = uploadResponse.getStatus();
+
+           out.println("Upload Status:" + status);
+           out.println("Pretty print the body\n" + body.toPrettyString());
+
+           // We expect the id field to be a string.
+           if (status == 200) {
+               String id = (String) body.getObject().get("id");
+               out.println("get id:\n" + id);
+
+               kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
+               if (statusResponse.getStatus() == 200) {
+                   PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadStatusFName));
+                   cpiUploadStatus.print(statusResponse.getBody());
+                   out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
+               } else {
+                   reportError(statusResponse);
+               }
+           } else {
+               reportError(uploadResponse);
+           }
+       }
+        else {
+           out.println("CPI already uploaded doing a 'force' upload.");
+           forceuploadCPI(cpiFName);
+       }
     }
 
     public void createAndRegVNodes() throws IOException{

@@ -57,6 +57,7 @@ class MessageReturner : ResponderFlow {
 
         val initiatorData = session.receive(InitiatorMsg::class.java).unwrap { it }
         log.info("MB: in Responder: $initiatorData")
+        // session.send(ResponderMsg("Responder returned: ${initiatorData.message}"))
         session.send(ResponderMsg("Responder returned: ${initiatorData.message}"))
     }
 }
