@@ -9,6 +9,16 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 
+
+// Request data block for starting a flow, eg usig Swagger UI:
+/*
+ {
+     "clientRequestId": "mbr1",
+     "flowClassName": "com.r3.messagebounce.MessageSender",
+     "requestData": "{ "recipientX500": "O=Blueberry, L=London, C=GB", "message" : "Hello from Apricot" }"
+ }
+*/
+
 @InitiatingFlow("pass-a-message-protocol")
 class MessageSender : RPCStartableFlow {
 
@@ -37,7 +47,7 @@ class MessageSender : RPCStartableFlow {
             session.sendAndReceive(
                 ResponderMsg::class.java,
                 InitiatorMsg(startRPCFlowArgs.message)
-            ).unwrap { it }
+            )
 
         val flowResults = RPCFlowResults(vNodeResponse.message)
         return jsonMarshallingService.format(flowResults)
@@ -55,7 +65,7 @@ class MessageReturner : ResponderFlow {
     override fun call(session: FlowSession) {
         log.info("MB: ReturnMessage flow started.")
 
-        val initiatorData = session.receive(InitiatorMsg::class.java).unwrap { it }
+        val initiatorData = session.receive(InitiatorMsg::class.java)
         log.info("MB: in Responder: $initiatorData")
         // session.send(ResponderMsg("Responder returned: ${initiatorData.message}"))
         session.send(ResponderMsg("Responder returned: ${initiatorData.message}"))

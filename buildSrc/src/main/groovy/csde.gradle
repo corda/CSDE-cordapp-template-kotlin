@@ -27,29 +27,6 @@ configurations {
         canBeConsumed = false
         canBeResolved = true
     }
-   /*
-    cordaCli{
-        canBeConsumed = false
-        canBeResolved= true
-    }
-
-    cordaCliMgmPlugin {
-        canBeConsumed = false
-        canBeResolved = true
-    }
-
-    cordaCliPackagePlugin {
-        canBeConsumed = false
-        canBeResolved = true
-    }
-
-    all {
-        resolutionStrategy {
-            // FORCE Gradle to use latest dynamic versions.
-            cacheDynamicVersionsFor 0, 'seconds'
-        }
-    }
-     */
 
 }
 
@@ -86,78 +63,12 @@ tasks.register("getPostgresJDBC") {
     }
 }
 
-
-/*
-tasks.register('getCliInstaller') {
-    def cliInstallerUrl = "https://staging.download.corda.net/maven/20ede3c6-29c0-11ed-966d-b7c36748b9f6-DevPreview-2-RC02/net/corda/cli/deployment/corda-cli-installer-script/5.0.0.0-DevPreview-2-RC02/corda-cli-installer-script-5.0.0.0-DevPreview-2-RC02.sh"
-    def installerFilePath = "$devEnvWorkspace/cordaCliInstaller"
-    def corda = createCsdeRpcInterface()
-    corda.downloadFile(cliInstallerUrl, installerFilePath)
-    File installer = new File("$installerFilePath")
-    installer.setExecutable(true)
-}
-*/
-
 tasks.register('projInit') {
     group = pluginGroupName
     doLast {
          mkdir devEnvWorkspace
     }
 }
-
-
-//tasks.register("getCordaCli") {
-//    group = pluginGroupName
-//    //dependsOn('getCordaCliMgmPlugin', 'getCordaCliPackagePlugin')
-//    doLast {
-//        delete {
-//            delete cordaCliDir
-//        }
-//
-//        copy {
-//            from configurations.cordaCli
-//            into "$cordaCliDir"
-//        }
-//        copy {
-//            from configurations.cordaCliPackagePlugin
-//            into "$cordaCliDir/plugins"
-//        }
-//        copy {
-//            from configurations.cordaCliMgmPlugin
-//            into "$cordaCliDir/plugins"
-//        }
-//
-//
-//        /*
-//        copy {
-//            from configurations.myCordaCliZip.asFileTree.each {
-//                from(zipTree(it))
-//            }
-//            into "$cordaBinDir/cordaCliZip"
-//        }
-//
-//         */
-//    }
-//}
-
-//tasks.register("installCordaCli") {
-//    /*
-//    def args = new LinkedList<String>()
-//    if (System.properties['os.name'].toLowerCase().contains('windows')) {
-//        arg
-//    } else {
-//        println "it's not Windows"
-//    }
-//    args.add("$cordaCliZipDir/install.sh")
-//     */
-//    File installer = new File("$cordaCliZipDir/install.sh")
-//    installer.setExecutable(true)
-//    exec {
-//        commandLine "$cordaCliZipDir/install.sh"
-//    }
-//}
-
-
 
 tasks.register("createGroupPolicy") {
     group = pluginGroupName
@@ -199,7 +110,7 @@ tasks.register("createGroupPolicy") {
             }
         }
         else {
-            println("createPolicyTask: everything up to date; not to do")
+            println("createPolicyTask: everything up to date; nothing to do")
         }
 
     }
@@ -269,22 +180,6 @@ tasks.register('buildCPI') {
         // Create a file collection using a closure
         def collection = layout.files { srcDir.listFiles() }
         def cpbs = collection.filter { it.getName().endsWith(".cpb") }
-        /*
-        javaexec {
-            classpath = configurations.cordaCli
-            jvmArgs = ["-Dpf4j.pluginsDir=$CORDA_CLI_PLUGINS_DIR"]
-            args 'package', 'create-cpi',
-                    '--cpb', cpbs.singleFile.absolutePath,
-                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
-                    '--cpi-name', cpiName,
-                    '--cpi-version', project.version,
-                    '--file', cpiFile,
-                    '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
-                    '--storepass', 'keystore password',
-                    '--key', 'my-signing-key'
-
-        }
-         */
 
         LinkedList<String> cmdArgs = new LinkedList<String>()
         if (System.properties['os.name'].toLowerCase().contains('windows')) {
@@ -364,20 +259,6 @@ tasks.register('deployCordapp') {
     dependsOn("createAndRegVNodes")
 }
 
-tasks.register("startDB") {
-    group = pluginGroupName
-    doLast {
-        new ProcessBuilder(
-                "docker",
-                "run", "-d", "--rm",
-                "-p", "5432:5432",
-                "--name", dbContainerName,
-                "-e", "POSTGRES_DB=cordacluster",
-                "-e", "POSTGRES_USER=postgres",
-                "-e", "POSTGRES_PASSWORD=password",
-                "postgres:latest").start()
-    }
-}
 
 tasks.register("startCordaLite") {
     group = pluginGroupName
@@ -449,41 +330,6 @@ tasks.register("stopCordaLite") {
 
 
 
-//@CompileStatic
-//class CliPluginPackagerExtension {
-//    @Inject
-//    CliPluginPackagerExtension(ObjectFactory objects, String defaultPluginId) {
-//        cliPluginId = objects.property(String).convention(defaultPluginId)
-//        cliPluginClass = objects.property(String)
-//        cliPluginProvider = objects.property(String).convention("R3 Ltd")
-//        cliPluginDescription = objects.property(String)
-//    }
-//
-//    final Property<String> cliPluginId
-//    final Property<String> cliPluginClass
-//    final Property<String> cliPluginProvider
-//    final Property<String> cliPluginDescription
-//}
-// CliPluginPackagerExtension cliPlugin = extensions.create("cliPlugin", CliPluginPackagerExtension, project.name)
-// Then in the consuming build.gradle file:
-//cliPlugin {
-//    cliPluginClass = 'net.corda.cli.plugins.packaging.PackagePluginWrapper'
-//    cliPluginDescription = 'Plugin for CPB and CPI operations.'
-//}
-
-/*
-abstract class CsdeExtension {
-    abstract Property<String> getRpcUser();
-    abstract Property<String> getRpcPasswd();
-    abstract Property<String> getBaseUrl();
-    abstract Property<String> getWorkingSpace();
-
-    CsdeExtension() {
-        workingSpace.convention(project.rootDir + "workspace")
-    }
-
-}
-*/
 def createCsdeRpcInterface() {
     return new CsdeRpcInterface(cordaClusterURL, cordaRpcUser, cordaRpcPasswd, devEnvWorkspace)
 }
@@ -602,7 +448,6 @@ public class CsdeRpcInterface {
 
     public void uploadCertificate(String certAlias, String certFName) {
         Unirest.config().verifySsl(false);
-        // curl --insecure -u admin:admin -X PUT -F alias="gradle-plugin-default-key" -F certificate=@gradle-plugin-default-key.pem https://localhost:8888/api/v1/certificates/codesigner
         kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.put(baseURL + "/api/v1/certificates/codesigner/")
                 .field("alias", certAlias)
                 .field("certificate", new File(certFName))
@@ -613,11 +458,6 @@ public class CsdeRpcInterface {
     }
 
    public void forceuploadCPI(String cpiFName) throws FileNotFoundException {
-        // curl --insecure -u admin:admin  -s -F upload=@$CPI https://localhost:8888/api/v1/cpi/
-        //
-        //                 commandLine "curl", "--insecure", "-u", "admin:admin", "-s",
-        //                        "-F", "upload=@$cpi",
-        //                        "${cordaClusterURL}/api/v1/maintenance/virtualnode/forcecpiupload/"
         Unirest.config().verifySsl(false);
         kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonResponse = Unirest.post(baseURL + "/api/v1/maintenance/virtualnode/forcecpiupload/")
                 .field("upload", new File(cpiFName))

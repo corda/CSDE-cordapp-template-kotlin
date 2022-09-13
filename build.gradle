@@ -79,11 +79,11 @@ repositories {
         url = "$artifactoryContextUrl/"
     }
 
+
+    /*
     maven {
         url = "$artifactoryContextUrlRC01/"
     }
-
-    /*
     // R3 Internal repositories
     // Repository the provides kotlin-stdlib-jdk8-osgi created by R3.
     // Final location to be decided.

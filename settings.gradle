@@ -7,11 +7,11 @@ pluginManagement {
            url = "$artifactoryContextUrl/"
         }
 
+
+       /*
         maven {
             url = "$artifactoryContextUrlRC01/"
         }
-
-       /*
         // R3 internal repositories
         maven {
             url "${artifactoryContextUrl}/corda-dev"
@@ -60,5 +60,4 @@ pluginManagement {
 // Root project name, used in naming the project as a whole and used in naming objects built by the project.
 rootProject.name = 'cordapp-hello-corda'
 
-println( "username= ${System.getenv('CORDA_ARTIFACTORY_USERNAME')}")
 
