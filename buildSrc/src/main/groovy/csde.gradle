@@ -197,7 +197,7 @@ tasks.register('buildCPI') {
         cmdArgs.add('--cpi-name')
         cmdArgs.add(cpiName)
         cmdArgs.add('--cpi-version')
-        cmdArgs.add('1.0.0.0-SNAPSHOT')
+        cmdArgs.add(project.version)
         cmdArgs.add('--file')
         cmdArgs.add(cpiFile)
         cmdArgs.add('--keystore')
@@ -534,6 +534,7 @@ public class CsdeRpcInterface {
         int matches = jArray.toList().stream().filter(o -> {
             if(o instanceof kong.unirest.json.JSONObject){
                 kong.unirest.json.JSONObject idObj = ((kong.unirest.json.JSONObject) o).getJSONObject('id');
+
                 return (idObj.get('cpiName').toString().equals(cpiName)
                         && idObj.get('cpiVersion').toString().equals(cpiVersion));
             }

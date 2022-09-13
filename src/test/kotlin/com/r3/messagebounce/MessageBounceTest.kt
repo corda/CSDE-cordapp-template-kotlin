@@ -46,4 +46,3 @@ class MessageSenderTests {
         assertThat(response, `is`("{\"message\":\"Responder returned: here's my message\"}"))
     }
 }
-
