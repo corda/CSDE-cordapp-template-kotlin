@@ -18,7 +18,7 @@ class MyFirstFlow: RPCStartableFlow {
 @Suspendable
     override fun call(requestBody: RPCRequestData): String {
 
-        log.info("MFF: a Log message")
+        log.info("MFF: MyFirstFlow.call() called")
 
 
         return "Hello Alice"
