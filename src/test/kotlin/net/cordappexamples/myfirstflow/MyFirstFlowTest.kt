@@ -1,4 +1,4 @@
-package net.cordapp.myfirstflow
+package net.cordappexamples.myfirstflow
 
 import net.corda.simulator.HoldingIdentity
 import net.corda.simulator.RequestData

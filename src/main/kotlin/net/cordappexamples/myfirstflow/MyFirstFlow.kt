@@ -1,4 +1,4 @@
-package net.cordapp.myfirstflow
+package net.cordappexamples.myfirstflow
 
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.messaging.FlowSession
