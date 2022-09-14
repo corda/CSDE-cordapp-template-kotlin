@@ -30,8 +30,15 @@ class MyFirstFlow: RPCStartableFlow {
 @InitiatedBy(protocol = "my-first-flow")
 class MyFirstFlowResponder: ResponderFlow {
 
+    private companion object {
+        val log = contextLogger()
+    }
+
+
     @Suspendable
     override fun call(session: FlowSession) {
+
+        log.info("MFF: MyFirstResponderFlow.call() called")
 
     }
 }
