@@ -2,45 +2,9 @@ pluginManagement {
     // Declare the repositories where plugins are stored.
     repositories {
         gradlePluginPortal()
-        // S3 repositories for Release Candidates
         maven {
            url = "$artifactoryContextUrl/"
         }
-
-
-       /*
-        maven {
-            url = "$artifactoryContextUrlRC01/"
-        }
-        // R3 internal repositories
-        maven {
-            url "${artifactoryContextUrl}/corda-dev"
-            content {
-                includeGroupByRegex 'net\\.corda\\.plugins(\\..*)?'
-            }
-        }
-        maven {
-            url = "$artifactoryContextUrl/corda-os-maven-unstable"
-            credentials {
-                username = settings.ext.find('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
-                password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
-            }
-        }
-        maven {
-            url = "$artifactoryContextUrl/corda-os-maven-unstable-local"
-            credentials {
-                username = settings.ext.find('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
-                password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
-            }
-        }
-        maven {
-            url = "$artifactoryContextUrl/corda-dev"
-            credentials {
-                username = settings.ext.find('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
-                password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
-            }
-        }
-*/
 
 
     }
@@ -58,6 +22,4 @@ pluginManagement {
 }
 
 // Root project name, used in naming the project as a whole and used in naming objects built by the project.
-rootProject.name = 'cordapp-hello-corda'
-
-
+rootProject.name = 'please-name-me'
