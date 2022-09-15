@@ -1,9 +1,10 @@
-package net.cordappexamples.myfirstflow
+package com.r3.corda.csdetemplate.myfirstflow
 
 import net.corda.simulator.HoldingIdentity
 import net.corda.simulator.RequestData
 import net.corda.simulator.Simulator
 import net.corda.v5.base.types.MemberX500Name
+import net.corda.v5.base.util.contextLogger
 import org.junit.jupiter.api.Test
 
 class MyFirstFlowTest {
@@ -40,13 +41,6 @@ class MyFirstFlowTest {
         val flowResponse = aliceVN.callFlow(requestData)
 
         // Check that the flow has returned the expected string
-        assert(flowResponse == "Hello Alice")
-
-
-
-
+        assert(flowResponse == "Hello Alice best wishes from Bob")
     }
-
-
-
 }
