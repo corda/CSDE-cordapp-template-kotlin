@@ -1,11 +1,9 @@
 import javax.security.auth.x500.X500Principal
+import net.corda.v5.base.types.MemberX500Name
 
-import kong.unirest.HttpResponse
-import kong.unirest.JsonNode
 import kong.unirest.Unirest
 import kong.unirest.json.JSONObject
 import org.jetbrains.annotations.NotNull
-
 
 import static java.lang.Thread.sleep
 
@@ -38,7 +36,6 @@ dependencies {
 
 
 def pluginGroupName = "CSDE"
-def pluginImplGroupName = "other"
 def cordaBinDir= "${System.getProperty('user.home')}/.corda/corda5"
 def cordaCliZipDir = "$cordaBinDir/cordaCliZip"
 def cordaCliBinDir = "${System.getProperty('user.home')}/.corda/cli"
@@ -55,7 +52,7 @@ def keystoreCertFName = "$devEnvWorkspace/signingkey1.pem"
 def cpiName =  'cpi name'
 
 tasks.register("getPostgresJDBC") {
-    group = pluginImplGroupName
+    group = pluginGroupName
     doLast {
         copy {
             from configurations.myPostgresJDBC
@@ -65,66 +62,63 @@ tasks.register("getPostgresJDBC") {
 }
 
 tasks.register('projInit') {
-    group = pluginImplGroupName
+    group = pluginGroupName
     doLast {
          mkdir devEnvWorkspace
     }
 }
 
 tasks.register("createGroupPolicy") {
-    group = pluginImplGroupName
+    group = pluginGroupName
     dependsOn('projInit')
     doLast {
+            def csdeIface = new CsdeRpcInterface()
 
-        def groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json")
-        def devnetFName = new String("$rootDir/config/dev-net.json")
-        File groupPolicyFile = new File(groupPolicyFName)
-        File devnetFile = new File(devnetFName)
-        if(!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
+            def groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json")
+            def devnetFName = new String("$rootDir/config/dev-net.json")
+            File groupPolicyFile = new File(groupPolicyFName)
+            File devnetFile = new File(devnetFName)
+            if (!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
+                def configX500Ids = csdeIface.getConfigX500Ids()
 
-            println("Creating a GroupPolicy")
+                println("Creating a GroupPolicy")
 
-            LinkedList<String> cmdArgs = new LinkedList<String>()
-            if (System.properties['os.name'].toLowerCase().contains('windows')) {
-                cmdArgs.add("$cordaCliBinDir/corda-cli.cmd")
+                LinkedList<String> cmdArgs = new LinkedList<String>()
+                if (System.properties['os.name'].toLowerCase().contains('windows')) {
+                    cmdArgs.add("$cordaCliBinDir/corda-cli.cmd")
+                } else {
+                    cmdArgs.add("$cordaCliBinDir/corda-cli.sh")
+                }
+                cmdArgs.add("mgm")
+                cmdArgs.add("groupPolicy")
+                configX500Ids.forEach {
+                    cmdArgs.add("--name")
+                    cmdArgs.add("$it")
+                }
+
+                cmdArgs.add("--endpoint-protocol=1")
+                cmdArgs.add("--endpoint=http://localhost:1080")
+
+                println("cmdArgs=$cmdArgs")
+                exec {
+                    standardOutput = new FileOutputStream(groupPolicyFName)
+                    commandLine cmdArgs
+                }
+            } else {
+                println("createPolicyTask: everything up to date; nothing to do")
             }
-            else {
-                cmdArgs.add("$cordaCliBinDir/corda-cli.sh")
-            }
-            cmdArgs.add("mgm")
-            cmdArgs.add("groupPolicy")
-            def jsonFile = file(devnetFName)
-            def slurper = new groovy.json.JsonSlurper()
-            def parsedJson = slurper.parseText(jsonFile.text)
-            parsedJson.identities.forEach {
-                cmdArgs.add("--name")
-                cmdArgs.add("$it")
-            }
-
-            cmdArgs.add("--endpoint-protocol=1")
-            cmdArgs.add("--endpoint=http://localhost:1080")
-
-            println("cmdArgs=$cmdArgs")
-            exec {
-                standardOutput = new FileOutputStream(groupPolicyFName)
-                commandLine cmdArgs
-            }
-        }
-        else {
-            println("createPolicyTask: everything up to date; nothing to do")
-        }
 
     }
 }
 
 tasks.register("getDevCordaLite", Copy) {
-    group = pluginImplGroupName
+    group = pluginGroupName
     from configurations.combinedWorker
     into cordaBinDir
 }
 
 tasks.register('createKeystore') {
-    group = pluginImplGroupName
+    group = pluginGroupName
     doLast {
         File keystoreFile = new File(keystoreFName)
         if(!keystoreFile.exists()) {
@@ -168,7 +162,7 @@ tasks.register('createKeystore') {
 
 
 tasks.register('buildCPI') {
-    group = pluginImplGroupName
+    group = pluginGroupName
     dependsOn('build', 'createGroupPolicy', 'createKeystore')
     // dependsOn('build')
 
@@ -208,7 +202,6 @@ tasks.register('buildCPI') {
         cmdArgs.add('--key')
         cmdArgs.add('my-signing-key')
 
-        println("cmdArgs=$cmdArgs")
         exec {
             commandLine cmdArgs
         }
@@ -217,7 +210,7 @@ tasks.register('buildCPI') {
 }
 
 tasks.register("deployCPI") {
-    group = pluginImplGroupName
+    group = pluginGroupName
     dependsOn('buildCPI')
     doLast {
         def corda = createCsdeRpcInterface()
@@ -228,7 +221,7 @@ tasks.register("deployCPI") {
 }
 
 tasks.register("createAndRegVNodes") {
-    group = pluginImplGroupName
+    group = pluginGroupName
     dependsOn('deployCPI')
     doLast {
         def corda = createCsdeRpcInterface()
@@ -238,6 +231,7 @@ tasks.register("createAndRegVNodes") {
 
 
 tasks.register('listVNodes') {
+    group = pluginGroupName
     doLast {
         def corda = createCsdeRpcInterface()
         corda.listVNodes()
@@ -247,8 +241,15 @@ tasks.register('listVNodes') {
 
 tasks.register('listCPIs') {
     doLast {
-        def thing = new CsdeRpcInterface()
-        thing.listCPIs()
+        def csdeIface = new CsdeRpcInterface()
+        csdeIface.listCPIs()
+    }
+}
+
+tasks.register('X500things') {
+    doLast {
+        def csdeIface = new CsdeRpcInterface()
+        csdeIface.useMemberX500Name()
     }
 }
 
@@ -325,6 +326,7 @@ tasks.register("stopCordaLite") {
         }
 
         new ProcessBuilder("docker", "stop", dbContainerName).start()
+
     }
 }
 
@@ -332,6 +334,10 @@ tasks.register("stopCordaLite") {
 
 def createCsdeRpcInterface() {
     return new CsdeRpcInterface(cordaClusterURL, cordaRpcUser, cordaRpcPasswd, devEnvWorkspace)
+}
+
+public class CsdeException extends Exception {
+
 }
 
 public class CsdeRpcInterface {
@@ -346,6 +352,7 @@ public class CsdeRpcInterface {
     private String X500ConfigFile = "config/dev-net.json";
 
     public CsdeRpcInterface() {
+        // CsdeExtension ext = extensions.getByName("csde") as CsdeExtension;
     }
 
     public CsdeRpcInterface (String inBaseUrl, String inRpcUser, String inRpcPasswd, String inWorkspaceDir) {
@@ -361,18 +368,19 @@ public class CsdeRpcInterface {
             sleep(retryWaitMs);
         }
         catch(InterruptedException e) {
-            throw new UnsupportedOperationException("Interupts not supported.", e);
+            throw new UnsupportedOperationException("Interrupts not supported.", e);
         }
     }
 
-    public LinkedList<String> getX500Identities() throws IOException {
+    public LinkedList<String> getConfigX500Ids() throws IOException {
         LinkedList<String> x500Ids = new LinkedList<String>();
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
         FileInputStream in = new FileInputStream(X500ConfigFile);
         com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
         for( com.fasterxml.jackson.databind.JsonNode identity:  jsonNode.get("identities")) {
-            x500Ids.add(identity.toString());
+            String idAsString = identity.toString();
+            x500Ids.add(idAsString.substring(1,idAsString.length()-1));
         }
         return x500Ids;
     }
@@ -401,6 +409,7 @@ public class CsdeRpcInterface {
         out.println("*** *** ***");
     }
 
+    //
     public void downloadFile(String url, String targetPath) {
         File result = Unirest.get(url)
                 .asFile(targetPath)
@@ -414,9 +423,24 @@ public class CsdeRpcInterface {
                 .asJson();
     }
 
+    public void listVNodesVerbose() {
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = getVNodeInfo();
+        out.println("VNodes:\n" + vnodeResponse.getBody().toPrettyString());
+    }
+
+    // X500Name, cpiname, shorthash,
     public void listVNodes() {
         kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = getVNodeInfo();
-        out.println("CPIs:\n" + vnodeResponse.getBody().toPrettyString());
+
+        kong.unirest.json.JSONArray virtualNodesJson = vnodeResponse.getBody().getObject().get("virtualNodes");
+        out.println("X500 Name\tHolding identity short hash");
+        for(Object o: virtualNodesJson){
+            if(o instanceof kong.unirest.json.JSONObject) {
+                kong.unirest.json.JSONObject idObj = ((kong.unirest.json.JSONObject) o).getJSONObject('holdingIdentity');
+                out.print("\"" + idObj.get('x500Name') + "\"");
+                out.println("\t\"" + idObj.get('shortHash') + "\"");
+            }
+        }
     }
 
     public kong.unirest.HttpResponse<kong.unirest.JsonNode> getCpiInfo() {
@@ -578,33 +602,48 @@ public class CsdeRpcInterface {
     public void createAndRegVNodes() throws IOException{
         Unirest.config().verifySsl(false);
         String cpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName );
-        LinkedList<String> x500Ids = getX500Identities();
+
+        LinkedList<String> x500Ids = getConfigX500Ids();
         LinkedList<String> OKHoldingShortIds = new LinkedList<String>();
 
-        out.println("Creating V-Nodes for CPI "+ cpiCheckSum +" and X500 identities:");
-        for(String x500id: x500Ids) {
-            out.println(x500id);
+        // For each identity check that it already exists.
+        Set<MemberX500Name> existingX500 = new HashSet<>();
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeListResponse = getVNodeInfo();
+
+        kong.unirest.json.JSONArray virtualNodesJson = vnodeListResponse.getBody().getObject().get("virtualNodes");
+        for(Object o: virtualNodesJson){
+            if(o instanceof kong.unirest.json.JSONObject) {
+                kong.unirest.json.JSONObject idObj = ((kong.unirest.json.JSONObject) o).getJSONObject('holdingIdentity');
+                String x500id = idObj.get('x500Name')
+                existingX500.add(MemberX500Name.parse( x500id) );
+            }
         }
 
         // Create the VNodes
         for(String x500id: x500Ids) {
-            out.println("x500id=" + x500id + " cpi checksum=" + cpiCheckSum);
-            kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonNode = Unirest.post(baseURL + "/api/v1/virtualnode")
-                    .body("{ \"request\" : { \"cpiFileChecksum\": " + cpiCheckSum + ", \"x500Name\": " + x500id + "  } }")
-                    .basicAuth(rpcUser, rpcPasswd)
-                    .asJson();
+            if(!existingX500.contains(MemberX500Name.parse(x500id) )) {
+                out.println("Creating VNode for x500id=\"" + x500id + "\" cpi checksum=" + cpiCheckSum);
+                kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonNode = Unirest.post(baseURL + "/api/v1/virtualnode")
+                        .body("{ \"request\" : { \"cpiFileChecksum\": " + cpiCheckSum + ", \"x500Name\": \"" + x500id + "\" } }")
+                        .basicAuth(rpcUser, rpcPasswd)
+                        .asJson();
+                // Logging.
 
-            // need to check this and report errors.
-            // 200 - OK
-            // 409 - Vnode already exists
-            if(jsonNode.getStatus() != 409) {
-                if (jsonNode.getStatus() != 200) {
-                    reportError(jsonNode);
-                } else {
-                    JSONObject thing = jsonNode.getBody().getObject().getJSONObject("holdingIdentity");
-                    String shortHash =  (String) thing.get("shortHash");
-                    OKHoldingShortIds.add(shortHash);
+                // need to check this and report errors.
+                // 200 - OK
+                // 409 - Vnode already exists
+                if (jsonNode.getStatus() != 409) {
+                    if (jsonNode.getStatus() != 200) {
+                        reportError(jsonNode);
+                    } else {
+                        JSONObject thing = jsonNode.getBody().getObject().getJSONObject("holdingIdentity");
+                        String shortHash = (String) thing.get("shortHash");
+                        OKHoldingShortIds.add(shortHash);
+                    }
                 }
+            }
+            else {
+                out.println("Not creating a vnode for \"" + x500id + "\", vnode already exists.")
             }
         }
 
