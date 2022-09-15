@@ -36,6 +36,7 @@ dependencies {
 
 
 def pluginGroupName = "CSDE"
+def pluginImplGroupName = "other"
 def cordaBinDir= "${System.getProperty('user.home')}/.corda/corda5"
 def cordaCliZipDir = "$cordaBinDir/cordaCliZip"
 def cordaCliBinDir = "${System.getProperty('user.home')}/.corda/cli"
@@ -52,7 +53,7 @@ def keystoreCertFName = "$devEnvWorkspace/signingkey1.pem"
 def cpiName =  'cpi name'
 
 tasks.register("getPostgresJDBC") {
-    group = pluginGroupName
+    group = pluginImplGroupName
     doLast {
         copy {
             from configurations.myPostgresJDBC
@@ -62,14 +63,14 @@ tasks.register("getPostgresJDBC") {
 }
 
 tasks.register('projInit') {
-    group = pluginGroupName
+    group = pluginImplGroupName
     doLast {
          mkdir devEnvWorkspace
     }
 }
 
 tasks.register("createGroupPolicy") {
-    group = pluginGroupName
+    group = pluginImplGroupName
     dependsOn('projInit')
     doLast {
             def csdeIface = new CsdeRpcInterface()
@@ -112,13 +113,13 @@ tasks.register("createGroupPolicy") {
 }
 
 tasks.register("getDevCordaLite", Copy) {
-    group = pluginGroupName
+    group = pluginImplGroupName
     from configurations.combinedWorker
     into cordaBinDir
 }
 
 tasks.register('createKeystore') {
-    group = pluginGroupName
+    group = pluginImplGroupName
     doLast {
         File keystoreFile = new File(keystoreFName)
         if(!keystoreFile.exists()) {
@@ -210,7 +211,7 @@ tasks.register('buildCPI') {
 }
 
 tasks.register("deployCPI") {
-    group = pluginGroupName
+    group = pluginImplGroupName
     dependsOn('buildCPI')
     doLast {
         def corda = createCsdeRpcInterface()
@@ -221,7 +222,7 @@ tasks.register("deployCPI") {
 }
 
 tasks.register("createAndRegVNodes") {
-    group = pluginGroupName
+    group = pluginImplGroupName
     dependsOn('deployCPI')
     doLast {
         def corda = createCsdeRpcInterface()
@@ -231,7 +232,7 @@ tasks.register("createAndRegVNodes") {
 
 
 tasks.register('listVNodes') {
-    group = pluginGroupName
+    group = pluginImplGroupName
     doLast {
         def corda = createCsdeRpcInterface()
         corda.listVNodes()
@@ -240,16 +241,10 @@ tasks.register('listVNodes') {
 }
 
 tasks.register('listCPIs') {
+    group = pluginImplGroupName
     doLast {
         def csdeIface = new CsdeRpcInterface()
         csdeIface.listCPIs()
-    }
-}
-
-tasks.register('X500things') {
-    doLast {
-        def csdeIface = new CsdeRpcInterface()
-        csdeIface.useMemberX500Name()
     }
 }
 
