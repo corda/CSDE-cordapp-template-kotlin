@@ -1,4 +1,4 @@
-package com.r3.corda.csdetemplate.myfirstflow
+package com.r3.developers.csdetemplate
 
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
@@ -10,17 +10,16 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 
+// todo: test against Corda
 
-// A Class to hold the arguments required to start the flow
+// A class to hold the arguments required to start the flow
 class MyFirstFlowStartArgs(val otherMember: MemberX500Name, val message: String)
-
 
 
 // A class which will contain a message, It must be marked with @CordaSerializable for Corda
 // to be able to send from one virtual node to another.
 @CordaSerializable
 class Message(val sender: MemberX500Name, val message: String)
-
 
 
 // MyFirstFlow is an initiating flow, it's corresponding responder flow is called MyFirstFlowResponder (defined below)
@@ -147,3 +146,10 @@ class MyFirstFlowResponder: ResponderFlow {
         session.send(response)
     }
 }
+/*
+{
+    "clientRequestId": "r1",
+    "flowClassName": "com.r3.developers.csdetemplate.MyFirstFlow",
+    "requestData": {"otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB","message":"Hello Bob"}
+}
+ */

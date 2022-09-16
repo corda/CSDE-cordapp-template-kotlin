@@ -12,12 +12,13 @@ import net.corda.v5.base.util.contextLogger
 
 // Request data block for starting a flow, eg usig Swagger UI:
 /*
+{
     "clientRequestId": "mbr1",
     "flowClassName": "com.r3.messagebounce.MessageSender",
     "requestData": {
         "recipientX500": "O=Blueberry, L=London, C=GB",
         "message" : "Hello from Apricot"
-        }
+}
 */
 
 @InitiatingFlow("pass-a-message-protocol")
