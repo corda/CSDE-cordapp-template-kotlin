@@ -295,7 +295,13 @@ tasks.register("stopCombinedWorker") {
 }
 
 tasks.register("reset") {
-
+    group = pluginGroupName
+    dependsOn("clean")
+    doLast {
+       csdeHelper.reset();
+        delete { delete devEnvWorkspace }
+        delete { delete cordaBinDir }
+    }
 }
 
 
@@ -711,7 +717,7 @@ public class CsdeRpcInterface {
         }
     }
 
-    /*
+
     public void reset() {
 
         // Now any existing processes
@@ -719,14 +725,14 @@ public class CsdeRpcInterface {
             new ProcessBuilder("Powershell", "-Command", "Stop-Process", "-Id", Long.toString(pid), "-PassThru").start();
             new ProcessBuilder("Powershell", "-Command", "Stop-Process", "-Name", Long.toString(pid), "-PassThru").start();
         } else {
-            new ProcessBuilder("pkill", "-f", combinedWorkerBinRe)).start();
+            new ProcessBuilder("pkill", "-f", combinedWorkerBinRe).start();
         }
 
         // Attempt to stop the docker conatainer
         Process proc = new ProcessBuilder("docker", "stop", dbContainerName).start();
 
-        // Delete workspace dir
+        // Delete workspace dir - done in gradle task
     }
 
-     */
+
 }
