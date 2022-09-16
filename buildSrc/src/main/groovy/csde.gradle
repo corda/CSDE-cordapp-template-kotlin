@@ -1,4 +1,3 @@
-import javax.security.auth.x500.X500Principal
 import net.corda.v5.base.types.MemberX500Name
 
 import kong.unirest.Unirest
@@ -32,6 +31,7 @@ configurations {
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
     myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
+    implementation "org.codehaus.groovy:groovy-json:3.0.9"
 }
 
 
@@ -42,15 +42,43 @@ def cordaCliZipDir = "$cordaBinDir/cordaCliZip"
 def cordaCliBinDir = "${System.getProperty('user.home')}/.corda/cli"
 def cordaCliDir = "$cordaBinDir/corda-cli"
 def cordaJDBCDir = "$cordaBinDir/jdbcDrivers"
-def CORDA_CLI_PLUGINS_DIR = "${cordaCliDir}/plugins"
 def signingCertAlias="gradle-plugin-default-key"
 def signingCertFName = "$rootDir/config/gradle-plugin-default-key.pem"
 def keystoreAlias = "my-signing-key"
 def keystoreFName = "$devEnvWorkspace/signingkeys.pfx"
 def keystoreCertFName = "$devEnvWorkspace/signingkey1.pem"
+def combiWorkerPidCacheFile = "$devEnvWorkspace/CordaPID.dat"
+def combinedWorkerBinRe = "corda-combined-worker-.*\\.jar"
 
 // Need to read things from cordapp plugin
 def cpiName =  'cpi name'
+
+/*
+def createCsdeRpcInterface() {
+    return new CsdeRpcInterface(project,
+            cordaClusterURL.toString(),
+            cordaRpcUser,
+            cordaRpcPasswd,
+            devEnvWorkspace,
+            new String("${System.getProperty("java.home")}/bin"),
+            dbContainerName,
+            cordaJDBCDir.toString()
+    );
+}
+
+ */
+
+def csdeHelper = new CsdeRpcInterface(project,
+        cordaClusterURL.toString(),
+        cordaRpcUser,
+        cordaRpcPasswd,
+        devEnvWorkspace,
+        new String("${System.getProperty("java.home")}/bin"),
+        dbContainerName,
+        cordaJDBCDir,
+        combiWorkerPidCacheFile,
+        combinedWorkerBinRe
+);
 
 tasks.register("getPostgresJDBC") {
     group = pluginImplGroupName
@@ -120,6 +148,7 @@ tasks.register("getDevCordaLite", Copy) {
 
 tasks.register('createKeystore') {
     group = pluginImplGroupName
+    dependsOn('projInit')
     doLast {
         File keystoreFile = new File(keystoreFName)
         if(!keystoreFile.exists()) {
@@ -165,7 +194,6 @@ tasks.register('createKeystore') {
 tasks.register('buildCPI') {
     group = pluginGroupName
     dependsOn('build', 'createGroupPolicy', 'createKeystore')
-    // dependsOn('build')
 
     doLast{
         def cpiFile= "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
@@ -214,10 +242,9 @@ tasks.register("deployCPI") {
     group = pluginImplGroupName
     dependsOn('buildCPI')
     doLast {
-        def corda = createCsdeRpcInterface()
-        corda.uploadCertificate(signingCertAlias, signingCertFName)
-        corda.uploadCertificate(keystoreAlias, keystoreCertFName)
-        corda.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi", cpiName, project.version)
+        csdeHelper.uploadCertificate(signingCertAlias, signingCertFName)
+        csdeHelper.uploadCertificate(keystoreAlias, keystoreCertFName)
+        csdeHelper.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi", cpiName, project.version)
     }
 }
 
@@ -225,29 +252,23 @@ tasks.register("createAndRegVNodes") {
     group = pluginImplGroupName
     dependsOn('deployCPI')
     doLast {
-        def corda = createCsdeRpcInterface()
-        corda.createAndRegVNodes()
+        csdeHelper.createAndRegVNodes()
     }
 }
 
-
 tasks.register('listVNodes') {
-    group = pluginImplGroupName
+    group = pluginGroupName
     doLast {
-        def corda = createCsdeRpcInterface()
-        corda.listVNodes()
+        csdeHelper.listVNodes()
     }
-
 }
 
 tasks.register('listCPIs') {
-    group = pluginImplGroupName
+    group = pluginGroupName
     doLast {
-        def csdeIface = new CsdeRpcInterface()
-        csdeIface.listCPIs()
+        csdeHelper.listCPIs()
     }
 }
-
 
 // Empty task, just acts as the Task user entry point task.
 tasks.register('deployCordapp') {
@@ -255,107 +276,84 @@ tasks.register('deployCordapp') {
     dependsOn("createAndRegVNodes")
 }
 
-
-tasks.register("startCordaLite") {
+// Deal with already running -> do nothing
+//
+tasks.register("startCombinedWorker") {
     group = pluginGroupName
     dependsOn('getDevCordaLite', 'getPostgresJDBC')
     doLast {
-
         mkdir devEnvWorkspace
-
-        def combiWorkerJar = configurations.combinedWorker.singleFile
-
-        new ProcessBuilder(
-                "docker",
-                "run", "-d", "--rm",
-                "-p", "5432:5432",
-                "--name", dbContainerName,
-                "-e", "POSTGRES_DB=cordacluster",
-                "-e", "POSTGRES_USER=postgres",
-                "-e", "POSTGRES_PASSWORD=password",
-                "postgres:latest").start()
-        Thread::sleep(10000)
-
-        def javaBinDir = "${System.getProperty("java.home")}/bin"
-        def procBuild = new ProcessBuilder("${javaBinDir}/java",
-                "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
-                "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
-                "-jar",
-                "$combiWorkerJar",
-                "--instanceId=0",
-                "-mbus.busType=DATABASE",
-                "-spassphrase=password",
-                "-ssalt=salt",
-                "-spassphrase=password",
-                "-ssalt=salt",
-                "-ddatabase.user=user",
-                "-ddatabase.pass=password",
-                "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
-                "-ddatabase.jdbc.directory=$cordaJDBCDir")
-
-
-        procBuild.redirectErrorStream(true)
-        Process proc = procBuild.start()
-
-        def pidStore = new PrintStream(new FileOutputStream("$devEnvWorkspace/CordaPID.dat"))
-        pidStore.print(proc.pid())
-        println("Corda Process-id=${proc.pid()}")
+        csdeHelper.startCorda();
     }
 }
 
-tasks.register("stopCordaLite") {
+tasks.register("stopCombinedWorker") {
     group = pluginGroupName
     doLast {
-        def sc = new Scanner(new File("$devEnvWorkspace/CordaPID.dat"))
-        def pid = sc.nextLong()
-        println("pid to kill=$pid")
-
-        if (System.properties['os.name'].toLowerCase().contains('windows')) {
-            exec {
-                commandLine "Powershell", "-Command", "Stop-Process", "-Id", pid, "-PassThru"
-            }
-        } else {
-            exec {
-             commandLine "kill", "-9", pid
-            }
-        }
-
-        new ProcessBuilder("docker", "stop", dbContainerName).start()
-
+        csdeHelper.stopCorda()
     }
 }
 
+tasks.register("reset") {
 
-
-def createCsdeRpcInterface() {
-    return new CsdeRpcInterface(cordaClusterURL, cordaRpcUser, cordaRpcPasswd, devEnvWorkspace)
 }
+
+
+
 
 public class CsdeException extends Exception {
 
 }
 
+public class NoPidFile extends Exception {
+
+    public NoPidFile(String message){
+        super(message);
+    }
+}
+
 public class CsdeRpcInterface {
+    private Project project;
     private String baseURL = "https://localhost:8888";
-    //private String baseURL = "http://localhost:2008";
     private String rpcUser = "admin";
     private String rpcPasswd = "admin";
     private String workspaceDir = "workspace";
     static private int retryWaitMs = 1000;
     static PrintStream out = System.out;
-    private String CPIUploadStatusFName = "CPIFileStatus.json";
-    private String X500ConfigFile = "config/dev-net.json";
+    static private String CPIUploadStatusFName = "CPIFileStatus.json";
+    static private String X500ConfigFile = "config/dev-net.json";
+    //private File combinedWorkerJar;
+    static private String javaBinDir;
+    static private String cordaPidCache = "CordaPIDCache.dat";
+    static private String dbContainerName;
+    private String JDBCDir;
+    private String combinedWorkerBinRe;
 
     public CsdeRpcInterface() {
-        // CsdeExtension ext = extensions.getByName("csde") as CsdeExtension;
     }
 
-    public CsdeRpcInterface (String inBaseUrl, String inRpcUser, String inRpcPasswd, String inWorkspaceDir) {
+    public CsdeRpcInterface (Project inProject,
+                             String inBaseUrl,
+                             String inRpcUser,
+                             String inRpcPasswd,
+                             String inWorkspaceDir,
+    String inJavaBinDir,
+    String inDbContainerName,
+    String inJDBCDir,
+    String inCordaPidCache,
+    String inCombinedWorkerBinRe
+    ) {
+        project = inProject;
         baseURL = inBaseUrl;
         rpcUser = inRpcUser;
         rpcPasswd = inRpcPasswd;
         workspaceDir = inWorkspaceDir;
+        javaBinDir = inJavaBinDir;
+        cordaPidCache = inCordaPidCache;
+        dbContainerName = inDbContainerName;
+        JDBCDir = inJDBCDir;
         CPIUploadStatusFName = workspaceDir +"/"+ CPIUploadStatusFName;
+        combinedWorkerBinRe = inCombinedWorkerBinRe;
     }
 
     static private void rpcWait(int millis) {
@@ -404,7 +402,6 @@ public class CsdeRpcInterface {
         out.println("*** *** ***");
     }
 
-    //
     public void downloadFile(String url, String targetPath) {
         File result = Unirest.get(url)
                 .asFile(targetPath)
@@ -654,4 +651,82 @@ public class CsdeRpcInterface {
 
     }
 
+    public void startCorda() {
+        PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPidCache));
+        File combinedWorkerJar = project.configurations.getByName("combinedWorker").singleFile;
+
+        new ProcessBuilder(
+                "docker",
+                "run", "-d", "--rm",
+                "-p", "5432:5432",
+                "--name", dbContainerName,
+                "-e", "POSTGRES_DB=cordacluster",
+                "-e", "POSTGRES_USER=postgres",
+                "-e", "POSTGRES_PASSWORD=password",
+                "postgres:latest").start();
+        Thread::sleep(10000);
+
+        def procBuild = new ProcessBuilder(javaBinDir + "/java",
+                "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
+                "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
+                "-jar",
+                combinedWorkerJar.toString(),
+                "--instanceId=0",
+                "-mbus.busType=DATABASE",
+                "-spassphrase=password",
+                "-ssalt=salt",
+                "-spassphrase=password",
+                "-ssalt=salt",
+                "-ddatabase.user=user",
+                "-ddatabase.pass=password",
+                "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
+                "-ddatabase.jdbc.directory="+JDBCDir);
+
+
+        procBuild.redirectErrorStream(true);
+        Process proc = procBuild.start();
+        pidStore.print(proc.pid());
+        out.println("Corda Process-id=${proc.pid()}");
+    }
+
+    public void stopCorda() {
+        File cordaPIDFile = new File(cordaPidCache);
+        if(cordaPIDFile.exists()) {
+            Scanner sc = new Scanner(cordaPIDFile);
+            long pid = sc.nextLong();
+            out.println("pid to kill=" + pid);
+
+            if (System.properties['os.name'].toLowerCase().contains('windows')) {
+                new ProcessBuilder("Powershell", "-Command", "Stop-Process", "-Id", Long.toString(pid), "-PassThru").start();
+            } else {
+                new ProcessBuilder("kill", "-9", Long.toString(pid)).start();
+            }
+
+            Process proc = new ProcessBuilder("docker", "stop", dbContainerName).start();
+
+            cordaPIDFile.delete();
+        }
+        else {
+            throw new NoPidFile("Cannot stop the Combined worker\nCached processed ID file " + cordaPidCache + " missing.\nWas the combined worker not started?");
+        }
+    }
+
+    /*
+    public void reset() {
+
+        // Now any existing processes
+        if (System.properties['os.name'].toLowerCase().contains('windows')) {
+            new ProcessBuilder("Powershell", "-Command", "Stop-Process", "-Id", Long.toString(pid), "-PassThru").start();
+            new ProcessBuilder("Powershell", "-Command", "Stop-Process", "-Name", Long.toString(pid), "-PassThru").start();
+        } else {
+            new ProcessBuilder("pkill", "-f", combinedWorkerBinRe)).start();
+        }
+
+        // Attempt to stop the docker conatainer
+        Process proc = new ProcessBuilder("docker", "stop", dbContainerName).start();
+
+        // Delete workspace dir
+    }
+
+     */
 }
