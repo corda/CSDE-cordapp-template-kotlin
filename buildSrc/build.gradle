@@ -19,7 +19,6 @@ dependencies {
     implementation "com.konghq:unirest-objectmapper-jackson:$unirestVersion"
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion"
-// implementation "com.fasterxml.jackson.module:jackson-module-java:$jacksonVersion"
+
     implementation "net.corda:corda-base:$cordaApiVersion"
 }
-import javax.security.auth.x500.X500Principal
