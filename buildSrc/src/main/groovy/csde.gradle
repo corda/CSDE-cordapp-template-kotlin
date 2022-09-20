@@ -357,14 +357,15 @@ public class CsdeRpcInterface {
     }
 
 
-    public void reportError(@NotNull kong.unirest.HttpResponse<kong.unirest.JsonNode> response) throws CsdeException{
-        String errMessage = "*** *** ***\nStatus="
-        + response.getStatus()
-        +"\n*** Headers ***\n"
-        + response.getHeaders()
-        +"\n*** Body ***\n"
-        + response.getBody()+"\n*** *** ***\n";
-        throw new CsdeException(errMessage);
+    public void reportError(@NotNull kong.unirest.HttpResponse<kong.unirest.JsonNode> response) throws CsdeException {
+
+        out.println("*** *** ***");
+        out.println("Unexpected response from Corda");
+        out.println("Status="+ response.getStatus());
+        out.println("*** Headers ***\n"+ response.getHeaders());
+        out.println("*** Body ***\n"+ response.getBody());
+        out.println("*** *** ***");
+        throw new CsdeException("Error: unexpected response from Corda.");
     }
 
     public void downloadFile(String url, String targetPath) {
