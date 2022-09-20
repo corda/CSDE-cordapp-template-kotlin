@@ -1,4 +1,5 @@
-package net.cordappexamples.myfirstflow
+package com.r3.developers.csdetemplate
+
 
 import net.corda.simulator.HoldingIdentity
 import net.corda.simulator.RequestData
@@ -40,13 +41,6 @@ class MyFirstFlowTest {
         val flowResponse = aliceVN.callFlow(requestData)
 
         // Check that the flow has returned the expected string
-        assert(flowResponse == "Hello Alice")
-
-
-
-
+        assert(flowResponse == "Hello Alice best wishes from Bob")
     }
-
-
-
 }
