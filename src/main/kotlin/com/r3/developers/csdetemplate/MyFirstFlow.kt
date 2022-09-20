@@ -10,10 +10,8 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 
-// todo: test against Corda
-
 // A class to hold the arguments required to start the flow
-class MyFirstFlowStartArgs(val otherMember: MemberX500Name, val message: String)
+class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
 
 
 // A class which will contain a message, It must be marked with @CordaSerializable for Corda
@@ -70,19 +68,18 @@ class MyFirstFlow: RPCStartableFlow {
         // Obtain the MemberX500Name of counterparty
         val otherMember = flowArgs.otherMember
 
-        // Start a flow session with the otherMember using the FlowMessaging service
-        // The otherMember's Virtual Node will run the corresponding MyFirstFlowResponder responder flow
-        val session = flowMessaging.initiateFlow(otherMember)
-
-
         // Get our identity from the MemberLookup service.
         val ourIdentity = memberLookup.myInfo().name
 
         // Create the message payload using the MessageClass we defined.
-        val message = Message(otherMember, "Hello from $ourIdentity")
+        val message = Message(otherMember, "Hello from $ourIdentity.")
 
         // Log the message to be sent.
         log.info("MFF: message.message: ${message.message}")
+
+        // Start a flow session with the otherMember using the FlowMessaging service
+        // The otherMember's Virtual Node will run the corresponding MyFirstFlowResponder responder flow
+        val session = flowMessaging.initiateFlow(otherMember)
 
         // Send the Payload using the send method on the session to the MyFirstFlowResponder Responder flow
         session.send(message)
@@ -137,7 +134,7 @@ class MyFirstFlowResponder: ResponderFlow {
 
         // Create a response to greet the sender
         val response = Message(ourIdentity,
-            "Hello ${session.counterparty.commonName} best wishes from ${ourIdentity.commonName}")
+            "Hello ${session.counterparty.commonName}, best wishes from ${ourIdentity.commonName}")
 
         // Log the response to be sent.
         log.info("MFF: response.message: ${response.message}")
@@ -147,6 +144,7 @@ class MyFirstFlowResponder: ResponderFlow {
     }
 }
 /*
+RequestBody for triggering the flow via http-rpc:
 {
     "clientRequestId": "r1",
     "flowClassName": "com.r3.developers.csdetemplate.MyFirstFlow",

@@ -1,6 +1,5 @@
 package com.r3.developers.csdetemplate
 
-
 import net.corda.simulator.HoldingIdentity
 import net.corda.simulator.RequestData
 import net.corda.simulator.Simulator
@@ -28,7 +27,7 @@ class MyFirstFlowTest {
         val bobVN = simulator.createVirtualNode(bobHoldingID, MyFirstFlowResponder::class.java)
 
         // Create an instance of the MyFirstFlowStartArgs which contains the request arguments for starting the flow
-        val myFirstFlowStartArgs = MyFirstFlowStartArgs(bobX500, "Hello Bob")
+        val myFirstFlowStartArgs = MyFirstFlowStartArgs(bobX500)
 
         // Create a requestData object
         val requestData = RequestData.create(
@@ -41,6 +40,6 @@ class MyFirstFlowTest {
         val flowResponse = aliceVN.callFlow(requestData)
 
         // Check that the flow has returned the expected string
-        assert(flowResponse == "Hello Alice best wishes from Bob")
+        assert(flowResponse == "Hello Alice, best wishes from Bob")
     }
 }
