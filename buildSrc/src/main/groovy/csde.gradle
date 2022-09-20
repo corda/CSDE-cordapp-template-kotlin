@@ -38,7 +38,7 @@ dependencies {
 def pluginGroupName = "CSDE"
 def pluginImplGroupName = "other"
 def cordaBinDir= "${System.getProperty('user.home')}/.corda/corda5"
-def cordaCliZipDir = "$cordaBinDir/cordaCliZip"
+//def cordaCliZipDir = "$cordaBinDir/cordaCliZip"
 def cordaCliBinDir = "${System.getProperty('user.home')}/.corda/cli"
 def cordaCliDir = "$cordaBinDir/corda-cli"
 def cordaJDBCDir = "$cordaBinDir/jdbcDrivers"
@@ -52,21 +52,6 @@ def combinedWorkerBinRe = "corda-combined-worker-.*\\.jar"
 
 // Need to read things from cordapp plugin
 def cpiName =  'cpi name'
-
-/*
-def createCsdeRpcInterface() {
-    return new CsdeRpcInterface(project,
-            cordaClusterURL.toString(),
-            cordaRpcUser,
-            cordaRpcPasswd,
-            devEnvWorkspace,
-            new String("${System.getProperty("java.home")}/bin"),
-            dbContainerName,
-            cordaJDBCDir.toString()
-    );
-}
-
- */
 
 def csdeHelper = new CsdeRpcInterface(project,
         cordaClusterURL.toString(),
@@ -265,7 +250,7 @@ tasks.register('listVNodes') {
 }
 
 tasks.register('listCPIs') {
-    group = pluginGroupName
+    group = pluginImplGroupName
     doLast {
         csdeHelper.listCPIs()
     }
@@ -277,9 +262,7 @@ tasks.register('deployCordapp') {
     dependsOn("createAndRegVNodes")
 }
 
-// Deal with already running -> do nothing
-//
-tasks.register("startCombinedWorker") {
+tasks.register("startCorda") {
     group = pluginGroupName
     dependsOn('getDevCordaLite', 'getPostgresJDBC')
     doLast {
@@ -288,48 +271,20 @@ tasks.register("startCombinedWorker") {
     }
 }
 
-tasks.register("stopCombinedWorker") {
+tasks.register("stopCorda") {
     group = pluginGroupName
     doLast {
         csdeHelper.stopCorda()
     }
 }
 
-tasks.register("reset") {
-    group = pluginGroupName
-    dependsOn("clean")
-    doLast {
-       csdeHelper.reset();
-        // Important to do this after csdeHelper.reset()
-        delete { delete devEnvWorkspace }
-        delete { delete cordaBinDir }
-    }
-}
-
-tasks.register("thing") {
-    // invoke-CimMethod -Query "SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%corda-combined%'" -MethodName "Terminate"
-    //
-    // Process proc = new ProcessBuilder("powershell.exe", "-Command", "Get-CimInstance -Query \"SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%corda-combined%'\"").start();
-    Process proc = new ProcessBuilder("powershell.exe", "-Command", "Get-CimInstance -Query \\`\"SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%jar%'\\`\"").start();
-    //Process proc = new ProcessBuilder("powershell.exe", "-Command", "\"get-cimInstance win32_process | select-object ProcessName, ProcessId, CommandLine\"").start();
-    // Process proc
-    //Process proc = new ProcessBuilder("powershell.exe", "-C", "echo foo").start();
-    BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-    String line = "";
-    while( (line = reader.readLine()) != null ) {
-        System.out.println(line);
-    }
-
-    System.out.println("dollar sign \$foo");
-}
-
-
 public class CsdeException extends Exception {
-
+    public CsdeException(String message){
+        super(message);
+    }
 }
 
 public class NoPidFile extends Exception {
-
     public NoPidFile(String message){
         super(message);
     }
@@ -345,7 +300,6 @@ public class CsdeRpcInterface {
     static PrintStream out = System.out;
     static private String CPIUploadStatusFName = "CPIFileStatus.json";
     static private String X500ConfigFile = "config/dev-net.json";
-    //private File combinedWorkerJar;
     static private String javaBinDir;
     static private String cordaPidCache = "CordaPIDCache.dat";
     static private String dbContainerName;
@@ -360,11 +314,11 @@ public class CsdeRpcInterface {
                              String inRpcUser,
                              String inRpcPasswd,
                              String inWorkspaceDir,
-    String inJavaBinDir,
-    String inDbContainerName,
-    String inJDBCDir,
-    String inCordaPidCache,
-    String inCombinedWorkerBinRe
+                             String inJavaBinDir,
+                             String inDbContainerName,
+                             String inJDBCDir,
+                             String inCordaPidCache,
+                             String inCombinedWorkerBinRe
     ) {
         project = inProject;
         baseURL = inBaseUrl;
@@ -416,13 +370,14 @@ public class CsdeRpcInterface {
     }
 
 
-    public void reportError(@NotNull kong.unirest.HttpResponse<kong.unirest.JsonNode> response){
-        out.println("*** *** ***");
-        out.println("Should throw execption:");
-        out.println("Status="+ response.getStatus());
-        out.println("*** Headers ***\n"+ response.getHeaders());
-        out.println("*** Body ***\n"+ response.getBody());
-        out.println("*** *** ***");
+    public void reportError(@NotNull kong.unirest.HttpResponse<kong.unirest.JsonNode> response) throws CsdeException{
+        String errMessage = "*** *** ***\nStatus="
+        + response.getStatus()
+        +"\n*** Headers ***\n"
+        + response.getHeaders()
+        +"\n*** Body ***\n"
+        + response.getBody()+"\n*** *** ***\n";
+        throw new CsdeException(errMessage);
     }
 
     public void downloadFile(String url, String targetPath) {
@@ -490,7 +445,7 @@ public class CsdeRpcInterface {
         println(uploadResponse.getBody().toPrettyString());
     }
 
-   public void forceuploadCPI(String cpiFName) throws FileNotFoundException {
+   public void forceuploadCPI(String cpiFName) throws FileNotFoundException, CsdeException {
         Unirest.config().verifySsl(false);
         kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonResponse = Unirest.post(baseURL + "/api/v1/maintenance/virtualnode/forcecpiupload/")
                 .field("upload", new File(cpiFName))
@@ -558,7 +513,7 @@ public class CsdeRpcInterface {
         return statusResponse;
     }
 
-    public void deployCPI(String cpiFName, String cpiName, String cpiVersion) throws FileNotFoundException {
+    public void deployCPI(String cpiFName, String cpiName, String cpiVersion) throws FileNotFoundException, CsdeException {
         Unirest.config().verifySsl(false);
 
         kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo()
@@ -614,7 +569,7 @@ public class CsdeRpcInterface {
        }
     }
 
-    public void createAndRegVNodes() throws IOException{
+    public void createAndRegVNodes() throws IOException, CsdeException{
         Unirest.config().verifySsl(false);
         String cpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName );
 
@@ -730,44 +685,8 @@ public class CsdeRpcInterface {
             cordaPIDFile.delete();
         }
         else {
-            throw new NoPidFile("Cannot stop the Combined worker\nCached processed ID file " + cordaPidCache + " missing.\nWas the combined worker not started?");
+            throw new NoPidFile("Cannot stop the Combined worker\nCached process ID file " + cordaPidCache + " missing.\nWas the combined worker not started?");
         }
-    }
-
-
-    public void reset() {
-
-        // Now any existing processes
-        if (System.properties['os.name'].toLowerCase().contains('windows')) {
-            // Potential command:
-            // get-cimInstance win32_process | select-object ProcessName, ProcessId, CommandLine
-            //new ProcessBuilder("Powershell", "-Command", "Stop-Process", "-Id", Long.toString(pid), "-PassThru").start();
-            // new ProcessBuilder("Powershell", "-Command", "Stop-Process", "-Name", Long.toString(pid), "-PassThru").start();
-            //Runtime.exec("get-cimInstance win32_process | select-object ProcessName, ProcessId, CommandLine");
-            //Runtime.getRuntime().exec(new String("get-cimInstance win32_process"));
-            //
-            //    Get-CimInstance -Query "SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%corda-combined-worker%'"
-            //
-            //
-            //
-            // * This command example will be of use:
-            //   Invoke-CimMethod -Query 'select * from Win32_Process where name like "notepad%"' -MethodName "Terminate"
-            // * This command should terminate our combined-worker process
-            //    Invoke-CimMethod -Query "SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%corda-combined-worker%'" -MethodName "Terminate"
-            //
-            // Process proc = new ProcessBuilder("powershell.exe", "-Command", "Invoke-CimMethod -Query \\`\"SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%jar%'\\`\" -MethodName \"Terminate\"").start();
-            //new ProcessBuilder("powershell.exe -Command dir").start();
-            //new ProcessBuilder("powershell.exe", "get-cimInstance", "win32_process").start();
-            //println("windows!");
-            stopCorda();
-        } else {
-            new ProcessBuilder("pkill", "-f", combinedWorkerBinRe).start();
-        }
-
-        // Attempt to stop the docker conatainer
-        Process proc = new ProcessBuilder("docker", "stop", dbContainerName).start();
-
-        // Delete workspace dir - done in gradle task
     }
 
 }
