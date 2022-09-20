@@ -97,30 +97,6 @@ tasks.register("createGroupPolicy") {
 
                 println("Creating a GroupPolicy")
 
-                /*
-                LinkedList<String> cmdArgs = new LinkedList<String>()
-                if (System.properties['os.name'].toLowerCase().contains('windows')) {
-                    cmdArgs.add("$cordaCliBinDir/corda-cli.cmd")
-                } else {
-                    cmdArgs.add("$cordaCliBinDir/corda-cli.sh")
-                }
-                cmdArgs.add("mgm")
-                cmdArgs.add("groupPolicy")
-                configX500Ids.forEach {
-                    cmdArgs.add("--name")
-                    cmdArgs.add("$it")
-                }
-
-                cmdArgs.add("--endpoint-protocol=1")
-                cmdArgs.add("--endpoint=http://localhost:1080")
-
-                println("cmdArgs=$cmdArgs")
-                exec {
-                    standardOutput = new FileOutputStream(groupPolicyFName)
-                    commandLine cmdArgs
-                }
-
-                 */
                 javaexec {
                     classpath = files("$cordaCliBinDir/corda-cli.jar")
                     jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
@@ -216,38 +192,6 @@ tasks.register('buildCPI') {
         // Create a file collection using a closure
         def collection = layout.files { srcDir.listFiles() }
         def cpbs = collection.filter { it.getName().endsWith(".cpb") }
-
-        /*
-        LinkedList<String> cmdArgs = new LinkedList<String>()
-        if (System.properties['os.name'].toLowerCase().contains('windows')) {
-            cmdArgs.add("$cordaCliBinDir/corda-cli.cmd")
-        }
-        else {
-            cmdArgs.add("$cordaCliBinDir/corda-cli.sh")
-        }
-        cmdArgs.add( 'package')
-        cmdArgs.add('create-cpi')
-        cmdArgs.add('--cpb')
-        cmdArgs.add(cpbs.singleFile.absolutePath)
-        cmdArgs.add('--group-policy')
-        cmdArgs.add("${devEnvWorkspace}/GroupPolicy.json")
-        cmdArgs.add('--cpi-name')
-        cmdArgs.add(cpiName)
-        cmdArgs.add('--cpi-version')
-        cmdArgs.add(project.version)
-        cmdArgs.add('--file')
-        cmdArgs.add(cpiFile)
-        cmdArgs.add('--keystore')
-        cmdArgs.add("${devEnvWorkspace}/signingkeys.pfx")
-        cmdArgs.add('--storepass')
-        cmdArgs.add('keystore password')
-        cmdArgs.add('--key')
-        cmdArgs.add('my-signing-key')
-
-        exec {
-            commandLine cmdArgs
-        }
-         */
 
         javaexec {
             classpath = files("$cordaCliBinDir/corda-cli.jar")
