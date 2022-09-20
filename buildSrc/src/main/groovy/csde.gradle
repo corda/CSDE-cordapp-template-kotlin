@@ -170,15 +170,6 @@ tasks.register('createKeystore') {
 }
 
 
-tasks.register("reportenv") {
-    doLast {
-        println("new thing")
-        exec {
-            commandLine "bash", "-c", "$cordaCliBinDir/report-env.sh"
-        }
-    }
-}
-
 tasks.register('buildCPI') {
     group = pluginGroupName
     dependsOn('build', 'createGroupPolicy', 'createKeystore')
@@ -553,12 +544,7 @@ public class CsdeRpcInterface {
        }
         else {
            out.println("CPI already uploaded doing a 'force' upload.");
-           try {
-               forceuploadCPI(cpiFName);
-           }
-           catch(Exception e){
-
-           }
+           forceuploadCPI(cpiFName);
        }
     }
 
