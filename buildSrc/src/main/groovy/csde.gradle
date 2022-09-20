@@ -87,17 +87,17 @@ tasks.register("createGroupPolicy") {
     group = pluginImplGroupName
     dependsOn('projInit')
     doLast {
-            def csdeIface = new CsdeRpcInterface()
 
             def groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json")
             def devnetFName = new String("$rootDir/config/dev-net.json")
             File groupPolicyFile = new File(groupPolicyFName)
             File devnetFile = new File(devnetFName)
             if (!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
-                def configX500Ids = csdeIface.getConfigX500Ids()
+                def configX500Ids = csdeHelper.getConfigX500Ids()
 
                 println("Creating a GroupPolicy")
 
+                /*
                 LinkedList<String> cmdArgs = new LinkedList<String>()
                 if (System.properties['os.name'].toLowerCase().contains('windows')) {
                     cmdArgs.add("$cordaCliBinDir/corda-cli.cmd")
@@ -119,6 +119,25 @@ tasks.register("createGroupPolicy") {
                     standardOutput = new FileOutputStream(groupPolicyFName)
                     commandLine cmdArgs
                 }
+
+                 */
+                javaexec {
+                    classpath = files("$cordaCliBinDir/corda-cli.jar")
+                    jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
+                    standardOutput = new FileOutputStream(groupPolicyFName)
+                    LinkedList<String> myArgs = new LinkedList<String>()
+                    myArgs.add("mgm")
+                    myArgs.add("groupPolicy")
+                    configX500Ids.forEach {
+                        myArgs.add("--name")
+                        myArgs.add(it)
+                    }
+
+                    myArgs.add("--endpoint-protocol=1")
+                    myArgs.add("--endpoint=http://localhost:1080")
+                    args myArgs
+                }
+
             } else {
                 println("createPolicyTask: everything up to date; nothing to do")
             }
@@ -166,8 +185,6 @@ tasks.register('createKeystore') {
                         "-storepass", "keystore password",
                         "-file", keystoreCertFName
             }
-            def iface = createCsdeRpcInterface()
-
         }
         else {
             println('createKeystore - keystore already created; nothing to do.')
@@ -176,6 +193,15 @@ tasks.register('createKeystore') {
     }
 }
 
+
+tasks.register("reportenv") {
+    doLast {
+        println("new thing")
+        exec {
+            commandLine "bash", "-c", "$cordaCliBinDir/report-env.sh"
+        }
+    }
+}
 
 tasks.register('buildCPI') {
     group = pluginGroupName
@@ -191,6 +217,7 @@ tasks.register('buildCPI') {
         def collection = layout.files { srcDir.listFiles() }
         def cpbs = collection.filter { it.getName().endsWith(".cpb") }
 
+        /*
         LinkedList<String> cmdArgs = new LinkedList<String>()
         if (System.properties['os.name'].toLowerCase().contains('windows')) {
             cmdArgs.add("$cordaCliBinDir/corda-cli.cmd")
@@ -220,8 +247,23 @@ tasks.register('buildCPI') {
         exec {
             commandLine cmdArgs
         }
+         */
 
+        javaexec {
+            classpath = files("$cordaCliBinDir/corda-cli.jar")
+            jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
+            args 'package', 'create-cpi',
+                    '--cpb', cpbs.singleFile.absolutePath,
+                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
+                    '--cpi-name', cpiName,
+                    '--cpi-version', project.version,
+                    '--file', cpiFile,
+                    '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
+                    '--storepass', 'keystore password',
+                    '--key', 'my-signing-key'
+        }
     }
+
 }
 
 tasks.register("deployCPI") {
@@ -298,7 +340,8 @@ public class CsdeRpcInterface {
     private String workspaceDir = "workspace";
     static private int retryWaitMs = 1000;
     static PrintStream out = System.out;
-    static private String CPIUploadStatusFName = "CPIFileStatus.json";
+    static private String CPIUploadStatusBaseName = "CPIFileStatus.json";
+    static private String CPIUploadStatusFName;
     static private String X500ConfigFile = "config/dev-net.json";
     static private String javaBinDir;
     static private String cordaPidCache = "CordaPIDCache.dat";
@@ -329,7 +372,7 @@ public class CsdeRpcInterface {
         cordaPidCache = inCordaPidCache;
         dbContainerName = inDbContainerName;
         JDBCDir = inJDBCDir;
-        CPIUploadStatusFName = workspaceDir +"/"+ CPIUploadStatusFName;
+        CPIUploadStatusFName = workspaceDir +"/"+ CPIUploadStatusBaseName;
         combinedWorkerBinRe = inCombinedWorkerBinRe;
     }
 
@@ -565,7 +608,12 @@ public class CsdeRpcInterface {
        }
         else {
            out.println("CPI already uploaded doing a 'force' upload.");
-           forceuploadCPI(cpiFName);
+           try {
+               forceuploadCPI(cpiFName);
+           }
+           catch(Exception e){
+
+           }
        }
     }
 
