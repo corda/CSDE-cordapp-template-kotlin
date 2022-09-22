@@ -1,7 +1,5 @@
 package com.r3.csde;
 
-import com.r3.csde.CsdeException;
-import com.r3.csde.NoPidFile;
 import kong.unirest.json.JSONArray;
 import org.gradle.api.Project;
 import net.corda.v5.base.types.MemberX500Name;
@@ -226,14 +224,12 @@ public class CsdeRpcInterface {
 
     public kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadStatus(String requestId) {
         kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = null;
-        int tries=0;
         do {
             rpcWait(1000);
             statusResponse = Unirest
                     .get(baseURL + "/api/v1/cpi/status/" + requestId + "/")
                     .basicAuth(rpcUser, rpcPasswd)
                     .asJson();
-            tries++;
             out.println("Upload status="+statusResponse.getStatus()+", status query response:\n"+statusResponse.getBody().toPrettyString());
         }
         while(uploadStatusRetry(statusResponse));
@@ -247,17 +243,17 @@ public class CsdeRpcInterface {
         kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo();
         kong.unirest.json.JSONArray jArray = (JSONArray) cpiResponse.getBody().getObject().get("cpis");
 
-        int matches = (int) jArray.toList().stream().filter(o -> {
-            if(o instanceof JSONObject){
-                JSONObject idObj = ((JSONObject) o).getJSONObject("id");
 
-                return (idObj.get("cpiName").toString().equals(cpiName)
-                        && idObj.get("cpiVersion").toString().equals(cpiVersion));
+        int matches = 0;
+        for(Object o: jArray.toList() ) {
+            if(o instanceof JSONObject) {
+                JSONObject idObj = ((JSONObject) o).getJSONObject("id");
+                if((idObj.get("cpiName").toString().equals(cpiName)
+                        && idObj.get("cpiVersion").toString().equals(cpiVersion))) {
+                    matches++;
+                }
             }
-            else {
-                return false;
-            }
-        }).count();
+        }
         out.println("Matching CPIS="+matches);
 
 
