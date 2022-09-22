@@ -31,17 +31,17 @@ dependencies {
 
 def pluginGroupName = "CSDE"
 def pluginImplGroupName = "other"
-def cordaBinDir= "${System.getProperty('user.home')}/.corda/corda5"
-//def cordaCliZipDir = "$cordaBinDir/cordaCliZip"
-def cordaCliBinDir = "${System.getProperty('user.home')}/.corda/cli"
-def cordaCliDir = "$cordaBinDir/corda-cli"
-def cordaJDBCDir = "$cordaBinDir/jdbcDrivers"
+def cordaBinDir= System.getProperty('user.home') + "/.corda/corda5"
+def cordaCliBinDir = System.getProperty('user.home') + "/.corda/cli"
+def cordaJDBCDir = cordaBinDir + "/jdbcDrivers"
 def signingCertAlias="gradle-plugin-default-key"
-def signingCertFName = "$rootDir/config/gradle-plugin-default-key.pem"
+// Get error if this is not a autotyped object
+// def signingCertFName = "$rootDir/config/gradle-plugin-default-key.pem"
+def signingCertFName = rootDir.toString() + "/config/gradle-plugin-default-key.pem"
 def keystoreAlias = "my-signing-key"
-def keystoreFName = "$devEnvWorkspace/signingkeys.pfx"
-def keystoreCertFName = "$devEnvWorkspace/signingkey1.pem"
-def combiWorkerPidCacheFile = "$devEnvWorkspace/CordaPID.dat"
+def keystoreFName = devEnvWorkspace + "/signingkeys.pfx"
+def keystoreCertFName = devEnvWorkspace + "/signingkey1.pem"
+def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
 def combinedWorkerBinRe = "corda-combined-worker-.*\\.jar"
 
 // Need to read things from cordapp plugin
@@ -57,7 +57,7 @@ def csdeHelper = new CsdeRpcInterface(project,
         cordaJDBCDir,
         combiWorkerPidCacheFile,
         combinedWorkerBinRe
-);
+)
 
 
 tasks.register("getPostgresJDBC") {
@@ -105,7 +105,7 @@ tasks.register("createGroupPolicy") {
 
                     myArgs.add("--endpoint-protocol=1")
                     myArgs.add("--endpoint=http://localhost:1080")
-                    args myArgs
+                    args = myArgs
                 }
 
             } else {
@@ -169,7 +169,7 @@ tasks.register('buildCPI') {
     dependsOn('build', 'createGroupPolicy', 'createKeystore')
 
     doLast{
-        def cpiFile= "${buildDir}/${project.archivesBaseName}-${project.version}.cpi"
+        def cpiFile= buildDir + "/" + project.archivesBaseName + "-" + project.version + ".cpi"
         delete { delete cpiFile }
         File srcDir
         srcDir = file('build/libs')
@@ -181,7 +181,7 @@ tasks.register('buildCPI') {
         javaexec {
             classpath = files("$cordaCliBinDir/corda-cli.jar")
             jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
-            args 'package', 'create-cpi',
+            args = ['package', 'create-cpi',
                     '--cpb', cpbs.singleFile.absolutePath,
                     '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
                     '--cpi-name', cpiName,
@@ -189,7 +189,7 @@ tasks.register('buildCPI') {
                     '--file', cpiFile,
                     '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
                     '--storepass', 'keystore password',
-                    '--key', 'my-signing-key'
+                    '--key', 'my-signing-key' ]
         }
     }
 
