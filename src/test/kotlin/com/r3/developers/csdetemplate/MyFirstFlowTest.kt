@@ -23,8 +23,9 @@ class MyFirstFlowTest {
         val bobHoldingID = HoldingIdentity.Companion.create(bobX500)
 
         // Create Alice and Bob's virtual nodes, including the Class's of the flows which will be registered on each node.
+        // We don't assign Bob's virtual node to a val because we don't need it for this particular test.
         val aliceVN = simulator.createVirtualNode(aliceHoldingID, MyFirstFlow::class.java)
-        val bobVN = simulator.createVirtualNode(bobHoldingID, MyFirstFlowResponder::class.java)
+        simulator.createVirtualNode(bobHoldingID, MyFirstFlowResponder::class.java)
 
         // Create an instance of the MyFirstFlowStartArgs which contains the request arguments for starting the flow
         val myFirstFlowStartArgs = MyFirstFlowStartArgs(bobX500)
