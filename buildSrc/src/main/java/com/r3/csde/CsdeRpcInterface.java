@@ -41,8 +41,7 @@ public class CsdeRpcInterface {
                              String inJavaBinDir,
                              String inDbContainerName,
                              String inJDBCDir,
-                             String inCordaPidCache,
-                             String inCombinedWorkerBinRe
+                             String inCordaPidCache
     ) {
         project = inProject;
         baseURL = inBaseUrl;
@@ -54,7 +53,7 @@ public class CsdeRpcInterface {
         dbContainerName = inDbContainerName;
         JDBCDir = inJDBCDir;
         CPIUploadStatusFName = workspaceDir +"/"+ CPIUploadStatusBaseName;
-        combinedWorkerBinRe = inCombinedWorkerBinRe;
+
     }
 
 
@@ -89,7 +88,7 @@ public class CsdeRpcInterface {
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
         FileInputStream in = new FileInputStream(CPIUploadStatusFName);
         com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
-        // out.println("CPI File status data:\n"+ jsonNode.toPrettyString());
+
 
         String checksum = jsonNode.get("cpiFileChecksum").toString();
         if(checksum == null || checksum.equals("null")) {
@@ -298,7 +297,7 @@ public class CsdeRpcInterface {
         String cpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName );
 
         LinkedList<String> x500Ids = getConfigX500Ids();
-        LinkedList<String> OKHoldingShortIds = new LinkedList<String>();
+        LinkedList<String> OKHoldingShortIds = new LinkedList<>();
 
         // For each identity check that it already exists.
         Set<MemberX500Name> existingX500 = new HashSet<>();
