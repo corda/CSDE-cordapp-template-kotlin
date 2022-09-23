@@ -33,8 +33,8 @@ cordapp {
     // and earliest versions of the Corda platform that the CorDapp will run on respectively.
     // Enforced versioning has not implemented yet so we need to pass in a dummy value for now.
     // The platform version will correspond to and be roughly equivalent to the Corda API version.
-    targetPlatformVersion platformVersion as Integer
-    minimumPlatformVersion platformVersion as Integer
+    targetPlatformVersion platformVersion.toInteger()
+    minimumPlatformVersion platformVersion.toInteger()
 
     // The cordapp section contains either a workflow or contract subsection depending on the type of component.
     // Declares the type and metadata of the CPK (this CPB has one CPK).
