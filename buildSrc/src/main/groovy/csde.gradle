@@ -42,7 +42,7 @@ def keystoreAlias = "my-signing-key"
 def keystoreFName = devEnvWorkspace + "/signingkeys.pfx"
 def keystoreCertFName = devEnvWorkspace + "/signingkey1.pem"
 def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
-def combinedWorkerBinRe = "corda-combined-worker-.*\\.jar"
+
 
 // Need to read things from cordapp plugin
 def cpiName =  'cpi name'
@@ -55,8 +55,7 @@ def csdeHelper = new CsdeRpcInterface(project,
         new String("${System.getProperty("java.home")}/bin"),
         dbContainerName,
         cordaJDBCDir,
-        combiWorkerPidCacheFile,
-        combinedWorkerBinRe
+        combiWorkerPidCacheFile
 )
 
 
@@ -157,7 +156,7 @@ tasks.register('createKeystore') {
             }
         }
         else {
-            println('createKeystore - keystore already created; nothing to do.')
+            println('createKeystore:  keystore already created; nothing to do.')
         }
 
     }
