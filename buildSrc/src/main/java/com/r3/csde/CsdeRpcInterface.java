@@ -388,7 +388,7 @@ public class CsdeRpcInterface {
         procBuild.redirectErrorStream(true);
         Process proc = procBuild.start();
         pidStore.print(proc.pid());
-        out.println("Corda Process-id=${proc.pid()}");
+        out.println("Corda Process-id="+proc.pid());
     }
 
     public void stopCorda() throws IOException, NoPidFile {
