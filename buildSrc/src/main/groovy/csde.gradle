@@ -249,5 +249,9 @@ tasks.register("stopCorda") {
     }
 }
 
-
+tasks.register("runningCorda") {
+    doLast{
+        csdeHelper.getRunningCorda();
+    }
+}
 

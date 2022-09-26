@@ -353,9 +353,50 @@ public class CsdeRpcInterface {
 
     }
 
+    /*
+    private void checkForRunningProcess(String procRe) {
+
+    }
+    */
+
+    public void getRunningCorda() throws IOException {
+        // Check for existing combined-worker processes
+        // Need combinedworker  re
+        Process proc;
+        String combinedWorkerRe = "corda-combined-worker";
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+            // Get-CimInstance -Query "SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%corda-combined-worker%'"
+            String command = "Get-CimInstance -Query \"SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%"
+                    + combinedWorkerRe + "%jar%'\"";
+            proc = new ProcessBuilder("Powershell", "-Command", command).start();
+        } else {
+            proc = new ProcessBuilder("pgrep", "-f", combinedWorkerRe+".*jar").start();
+        }
+        BufferedReader queryProcOutput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+        String line;
+        try {
+            while ((line = queryProcOutput.readLine()) != null) {
+            out.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        /*
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+
+        } else {
+        }
+*/
+
+    }
+
     public void startCorda() throws IOException {
         PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPidCache));
         File combinedWorkerJar = project.getConfigurations().getByName("combinedWorker").getSingleFile();
+
+
+
+
 
         new ProcessBuilder(
                 "docker",
