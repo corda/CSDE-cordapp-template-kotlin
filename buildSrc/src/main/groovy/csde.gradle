@@ -31,7 +31,7 @@ dependencies {
 
 def pluginGroupName = "CSDE"
 def pluginImplGroupName = "other"
-def cordaBinDir= System.getProperty('user.home') + "/.corda/corda5"
+// def cordaBinDir= System.getProperty('user.home') + "/.corda/corda5"
 def cordaCliBinDir = System.getProperty('user.home') + "/.corda/cli"
 def cordaJDBCDir = cordaBinDir + "/jdbcDrivers"
 def signingCertAlias="gradle-plugin-default-key"
