@@ -2,8 +2,10 @@ pluginManagement {
     // Declare the repositories where plugins are stored.
     repositories {
         gradlePluginPortal()
-        maven {
-            url = "$artifactoryContextUrl/"
+        mavenCentral {
+            content {
+                includeGroupByRegex 'net\\.corda(\\..*)?'
+            }
         }
     }
 
