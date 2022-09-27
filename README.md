@@ -18,6 +18,4 @@ The CSDE is obtained by cloning this CSDE-Cordapp-Template-Kotlin to your local 
 
 Note, the CSDE is experimental, we may or may not release it as part of Corda 5.0, in part based on developer feedback using it.  
 
-To find out how to use the CSDE please refer to the getting started section in the Corda 5 Developer Preview 2 documentation. 
-
-** add link when available **
+To find out how to use the CSDE please refer to the getting started section in the Corda 5 Developer Preview 2 documentation at https://docs.r3.com/
