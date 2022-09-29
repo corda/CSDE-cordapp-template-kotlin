@@ -368,6 +368,7 @@ public class CsdeRpcInterface {
             // Get-CimInstance -Query "SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%corda-combined-worker%'"
             String command = "Get-CimInstance -Query \"SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%"
                     + combinedWorkerRe + "%jar%'\"";
+            out.println("Running:" + command);
             proc = new ProcessBuilder("Powershell", "-Command", command).start();
         } else {
             proc = new ProcessBuilder("pgrep", "-f", combinedWorkerRe+".*jar").start();
