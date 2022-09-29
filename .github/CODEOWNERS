@@ -1,0 +1,12 @@
+
+# Jenkins files should be audited by BLT
+# Any changes to source code to be reviewed by dev ex
+
+
+.ci/**             @corda/blt
+
+*.gradle           @corda/C5-developer-experience
+gradle.properties  @corda/C5-developer-experience
+
+*.kt               @corda/C5-developer-experience
+*.java             @corda/C5-developer-experience

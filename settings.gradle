@@ -2,8 +2,10 @@ pluginManagement {
     // Declare the repositories where plugins are stored.
     repositories {
         gradlePluginPortal()
-        maven {
-           url = "$artifactoryContextUrl/"
+        mavenCentral {
+            content {
+                includeGroupByRegex 'net\\.corda(\\..*)?'
+            }
         }
     }
 
@@ -20,4 +22,4 @@ pluginManagement {
 }
 
 // Root project name, used in naming the project as a whole and used in naming objects built by the project.
-rootProject.name = 'please-name-me'
+rootProject.name = 'csde-cordapp-template-kotlin'

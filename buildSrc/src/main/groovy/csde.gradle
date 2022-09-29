@@ -42,7 +42,7 @@ def keystoreAlias = "my-signing-key"
 def keystoreFName = devEnvWorkspace + "/signingkeys.pfx"
 def keystoreCertFName = devEnvWorkspace + "/signingkey1.pem"
 def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
-def combinedWorkerBinRe = "corda-combined-worker-.*\\.jar"
+
 
 // Need to read things from cordapp plugin
 def cpiName =  'cpi name'
@@ -55,8 +55,7 @@ def csdeHelper = new CsdeRpcInterface(project,
         new String("${System.getProperty("java.home")}/bin"),
         dbContainerName,
         cordaJDBCDir,
-        combiWorkerPidCacheFile,
-        combinedWorkerBinRe
+        combiWorkerPidCacheFile
 )
 
 
@@ -89,7 +88,7 @@ tasks.register("createGroupPolicy") {
             if (!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
                 def configX500Ids = csdeHelper.getConfigX500Ids()
 
-                println("Creating a GroupPolicy")
+                println("createGroupPolicy: Creating a GroupPolicy")
 
                 javaexec {
                     classpath = files("$cordaCliBinDir/corda-cli.jar")
@@ -109,7 +108,7 @@ tasks.register("createGroupPolicy") {
                 }
 
             } else {
-                println("createPolicyTask: everything up to date; nothing to do")
+                println("createPolicyTask: everything up to date; nothing to do.")
             }
 
     }
@@ -127,7 +126,7 @@ tasks.register('createKeystore') {
     doLast {
         File keystoreFile = new File(keystoreFName)
         if(!keystoreFile.exists()) {
-            println('createKeystore - creating keystore')
+            println('createKeystore: Create a keystore')
             exec {
                 commandLine "keytool", "-genkeypair",
                         "-alias", keystoreAlias,
@@ -157,7 +156,7 @@ tasks.register('createKeystore') {
             }
         }
         else {
-            println('createKeystore - keystore already created; nothing to do.')
+            println('createKeystore:  keystore already created; nothing to do.')
         }
 
     }
