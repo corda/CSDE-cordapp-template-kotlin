@@ -7,10 +7,8 @@ import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import java.io.*;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
+
 import static java.lang.Thread.sleep;
 
 public class CsdeRpcInterface {
@@ -365,10 +363,17 @@ public class CsdeRpcInterface {
         String combinedWorkerRe = "corda-combined-worker";
         if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             // Get-CimInstance -Query "SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%corda-combined-worker%'"
-            String command = "Get-CimInstance -Query \"SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%"
-                    + combinedWorkerRe + "%jar%'\"";
+            //  invoke-CimMethod -Query "SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%corda-combined-worker%'" -MethodName "Terminate"
+            //String command = "Get-CimInstance -Query \"SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%"
+            //        + combinedWorkerRe + "%jar%'\"";
+            String command = "Invoke-CimMethod -Query \"SELECT * from Win32_Process WHERE name LIKE 'java.exe' and Commandline like '%" + combinedWorkerRe + "%jar%'\" -MethodName \"Terminate\"";
+
+            // Need to convert string to UTF-16LE encoding, following command is probably wrong.
+            String commandBase64 = Base64.getEncoder().encodeToString(command.getBytes("UTF-16LE"));
             out.println("Running:" + command);
-            proc = new ProcessBuilder("Powershell", "-Command", command).start();
+            ProcessBuilder pb = new ProcessBuilder("Powershell", "-EncodedCommand", commandBase64);
+            //pb.redirectErrorStream(true);
+            proc = pb.start();
         } else {
             proc = new ProcessBuilder("pgrep", "-f", combinedWorkerRe+".*jar").start();
         }
@@ -390,13 +395,16 @@ public class CsdeRpcInterface {
 
     }
 
-    public void startCorda() throws IOException {
+    public void startCorda() throws IOException, NoPidFile {
         PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPidCache));
         File combinedWorkerJar = project.getConfigurations().getByName("combinedWorker").getSingleFile();
-
-
-
-
+        long pid = getCachedPID();
+        // We want to detect running processes here.
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+            new ProcessBuilder("Powershell", "-Command", "Stop-Process", "-Id", Long.toString(pid), "-PassThru").start();
+        } else {
+            new ProcessBuilder("kill", "-9", Long.toString(pid)).start();
+        }
 
         new ProcessBuilder(
                 "docker",
@@ -432,11 +440,27 @@ public class CsdeRpcInterface {
         out.println("Corda Process-id="+proc.pid());
     }
 
-    public void stopCorda() throws IOException, NoPidFile {
+    private long getCachedPID() throws FileNotFoundException, NoPidFile {
         File cordaPIDFile = new File(cordaPidCache);
+        long pid = -1;
         if(cordaPIDFile.exists()) {
             Scanner sc = new Scanner(cordaPIDFile);
-            long pid = sc.nextLong();
+            pid = sc.nextLong();
+        }
+        else {
+            throw new NoPidFile("Cannot read the Combined worker process ID from the cache file. " + cordaPidCache + " is missing.\nWas the combined worker not started?");
+        }
+        return pid;
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private void deletePIDCache() {
+        File cordaPIDFile = new File(cordaPidCache);
+        cordaPIDFile.delete();
+    }
+
+    public void stopCorda() throws IOException, NoPidFile {
+            long pid = getCachedPID();
             out.println("pid to kill=" + pid);
 
             if (System.getProperty("os.name").toLowerCase().contains("windows")) {
@@ -446,12 +470,7 @@ public class CsdeRpcInterface {
             }
 
             Process proc = new ProcessBuilder("docker", "stop", dbContainerName).start();
-
-            cordaPIDFile.delete();
-        }
-        else {
-            throw new NoPidFile("Cannot stop the Combined worker\nCached process ID file " + cordaPidCache + " missing.\nWas the combined worker not started?");
-        }
+            deletePIDCache();
     }
 
 }
