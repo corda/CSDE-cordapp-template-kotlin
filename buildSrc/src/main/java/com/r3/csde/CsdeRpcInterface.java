@@ -14,24 +14,20 @@ import java.util.Set;
 import static java.lang.Thread.sleep;
 
 public class CsdeRpcInterface {
-    private Project project;
-    private String baseURL = "https://localhost:8888";
-    private String rpcUser = "admin";
-    private String rpcPasswd = "admin";
-    private String workspaceDir = "workspace";
-    static private int retryWaitMs = 1000;
+    private final Project project;
+    private final String baseURL;
+    private final String rpcUser;
+    private final String rpcPasswd;
+    private static final int retryWaitMs = 1000;
     static PrintStream out = System.out;
-    static private String CPIUploadStatusBaseName = "CPIFileStatus.json";
-    static private String CPIUploadStatusFName;
-    static private String X500ConfigFile = "config/dev-net.json";
-    static private String javaBinDir;
-    static private String cordaPidCache = "CordaPIDCache.dat";
-    static private String dbContainerName;
-    private String JDBCDir;
-    private String combinedWorkerBinRe;
+    private static final String CPIUploadStatusBaseName = "CPIFileStatus.json";
+    private static String CPIUploadStatusFName;
+    private static final String X500ConfigFile = "config/dev-net.json";
+    private static String javaBinDir;
+    private static String cordaPidCache = "CordaPIDCache.dat";
+    private static String dbContainerName;
+    private final String JDBCDir;
 
-    public CsdeRpcInterface() {
-    }
 
     public CsdeRpcInterface (Project inProject,
                              String inBaseUrl,
@@ -47,12 +43,11 @@ public class CsdeRpcInterface {
         baseURL = inBaseUrl;
         rpcUser = inRpcUser;
         rpcPasswd = inRpcPasswd;
-        workspaceDir = inWorkspaceDir;
         javaBinDir = inJavaBinDir;
         cordaPidCache = inCordaPidCache;
         dbContainerName = inDbContainerName;
         JDBCDir = inJDBCDir;
-        CPIUploadStatusFName = workspaceDir +"/"+ CPIUploadStatusBaseName;
+        CPIUploadStatusFName = inWorkspaceDir +"/"+ CPIUploadStatusBaseName;
 
     }
 
@@ -64,10 +59,6 @@ public class CsdeRpcInterface {
         catch(InterruptedException e) {
             throw new UnsupportedOperationException("Interrupts not supported.", e);
         }
-    }
-
-    static private void rpcWait() {
-        rpcWait(retryWaitMs);
     }
 
     public LinkedList<String> getConfigX500Ids() throws IOException {
@@ -109,6 +100,7 @@ public class CsdeRpcInterface {
         throw new CsdeException("Error: unexpected response from Corda.");
     }
 
+    @SuppressWarnings("unused")
     public void downloadFile(String url, String targetPath) {
         Unirest.get(url)
                 .asFile(targetPath)
@@ -122,12 +114,14 @@ public class CsdeRpcInterface {
                 .asJson();
     }
 
+    @SuppressWarnings("unused")
     public void listVNodesVerbose() {
         kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = getVNodeInfo();
         out.println("VNodes:\n" + vnodeResponse.getBody().toPrettyString());
     }
 
     // X500Name, cpiname, shorthash,
+    @SuppressWarnings("unused")
     public void listVNodes() {
         kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = getVNodeInfo();
 
@@ -150,6 +144,7 @@ public class CsdeRpcInterface {
 
     }
 
+    @SuppressWarnings("unused")
     public void listCPIs() {
         kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo();
         kong.unirest.json.JSONArray jArray = (JSONArray) cpiResponse.getBody().getObject().get("cpis");
@@ -163,6 +158,7 @@ public class CsdeRpcInterface {
         }
     }
 
+    @SuppressWarnings("unused")
     public void uploadCertificate(String certAlias, String certFName) {
         Unirest.config().verifySsl(false);
         kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.put(baseURL + "/api/v1/certificates/codesigner/")
@@ -210,7 +206,7 @@ public class CsdeRpcInterface {
         else if (status == 400){
             JSONObject details = response.getBody().getObject().getJSONObject("details");
             if( details != null ){
-                String code = (String) details.getString("code");
+                String code = details.getString("code");
                 return !code.equals("BAD_REQUEST");
             }
             else {
@@ -222,7 +218,7 @@ public class CsdeRpcInterface {
     }
 
     public kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadStatus(String requestId) {
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = null;
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse;
         do {
             rpcWait(1000);
             statusResponse = Unirest
@@ -236,6 +232,7 @@ public class CsdeRpcInterface {
         return statusResponse;
     }
 
+    @SuppressWarnings("unused")
     public void deployCPI(String cpiFName, String cpiName, String cpiVersion) throws FileNotFoundException, CsdeException {
         Unirest.config().verifySsl(false);
 
@@ -292,6 +289,7 @@ public class CsdeRpcInterface {
         }
     }
 
+    @SuppressWarnings("unused")
     public void createAndRegVNodes() throws IOException, CsdeException{
         Unirest.config().verifySsl(false);
         String cpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName );
@@ -352,6 +350,7 @@ public class CsdeRpcInterface {
 
     }
 
+    @SuppressWarnings("unused")
     public void startCorda() throws IOException {
         PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPidCache));
         File combinedWorkerJar = project.getConfigurations().getByName("combinedWorker").getSingleFile();
@@ -390,6 +389,7 @@ public class CsdeRpcInterface {
         out.println("Corda Process-id="+proc.pid());
     }
 
+    @SuppressWarnings("unused")
     public void stopCorda() throws IOException, NoPidFile {
         File cordaPIDFile = new File(cordaPidCache);
         if(cordaPIDFile.exists()) {
@@ -403,7 +403,7 @@ public class CsdeRpcInterface {
                 new ProcessBuilder("kill", "-9", Long.toString(pid)).start();
             }
 
-            Process proc = new ProcessBuilder("docker", "stop", dbContainerName).start();
+           new ProcessBuilder("docker", "stop", dbContainerName).start();
 
             cordaPIDFile.delete();
         }
