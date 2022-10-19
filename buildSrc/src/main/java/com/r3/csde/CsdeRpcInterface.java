@@ -18,7 +18,6 @@ public class CsdeRpcInterface {
     private final String baseURL;
     private final String rpcUser;
     private final String rpcPasswd;
-    private static final int retryWaitMs = 1000;
     static PrintStream out = System.out;
     private static final String CPIUploadStatusBaseName = "CPIFileStatus.json";
     private static String CPIUploadStatusFName;
@@ -100,24 +99,11 @@ public class CsdeRpcInterface {
         throw new CsdeException("Error: unexpected response from Corda.");
     }
 
-    @SuppressWarnings("unused")
-    public void downloadFile(String url, String targetPath) {
-        Unirest.get(url)
-                .asFile(targetPath)
-                .getBody();
-    }
-
     public kong.unirest.HttpResponse<kong.unirest.JsonNode> getVNodeInfo() {
         Unirest.config().verifySsl(false);
         return Unirest.get(baseURL + "/api/v1/virtualnode/")
                 .basicAuth(rpcUser, rpcPasswd)
                 .asJson();
-    }
-
-    @SuppressWarnings("unused")
-    public void listVNodesVerbose() {
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = getVNodeInfo();
-        out.println("VNodes:\n" + vnodeResponse.getBody().toPrettyString());
     }
 
     // X500Name, cpiname, shorthash,

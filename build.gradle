@@ -8,6 +8,7 @@ plugins {
     // This includes a CorDapp DSL that allows the developer to supply metadata for the CorDapp
     // required by Corda.
     id 'net.corda.plugins.cordapp-cpb2'
+    id 'net.corda.plugins.cordapp-cpk2'
     id 'net.corda.cordapp.cordapp-configuration'
 
     id 'org.jetbrains.kotlin.plugin.jpa'
@@ -15,8 +16,9 @@ plugins {
     id 'java'
     id 'maven-publish'
 
-    id 'csde'
+    // id 'csde'
 }
+apply plugin: com.r3.csde.CsdeJavaPlugin
 
 group 'com.r3.hellocorda'
 version '1.0-SNAPSHOT'
@@ -33,15 +35,15 @@ cordapp {
     // and earliest versions of the Corda platform that the CorDapp will run on respectively.
     // Enforced versioning has not implemented yet so we need to pass in a dummy value for now.
     // The platform version will correspond to and be roughly equivalent to the Corda API version.
-    targetPlatformVersion platformVersion.toInteger()
-    minimumPlatformVersion platformVersion.toInteger()
+    targetPlatformVersion = platformVersion.toInteger()
+    minimumPlatformVersion = platformVersion.toInteger()
 
     // The cordapp section contains either a workflow or contract subsection depending on the type of component.
     // Declares the type and metadata of the CPK (this CPB has one CPK).
     workflow {
-        name "ModuleNameHere"
-        versionId 1
-        vendor "VendorNameHere"
+        name = "ModuleNameHere"
+        versionId = 1
+        vendor = "VendorNameHere"
     }
 }
 
@@ -134,7 +136,7 @@ test {
 publishing {
     publications {
             maven(MavenPublication) {
-                artifactId "corda-CSDE-kotlin-sample"
+                artifactId = "corda-CSDE-kotlin-sample"
                 groupId project.group
                 artifact jar
             }
