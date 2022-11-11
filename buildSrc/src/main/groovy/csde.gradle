@@ -2,7 +2,6 @@ import com.r3.csde.CsdeRpcInterface
 
 plugins {
     id 'java-library'
-    id 'checkstyle'
     id 'groovy'
     id 'java'
 }
