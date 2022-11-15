@@ -165,7 +165,7 @@ public class CsdeRpcInterface {
 
     public void uploadCertificate(String certAlias, String certFName) {
         Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.put(baseURL + "/api/v1/certificates/codesigner/")
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.put(baseURL + "/api/v1/certificates/code-signer/cluster")
                 .field("alias", certAlias)
                 .field("certificate", new File(certFName))
                 .basicAuth(rpcUser, rpcPasswd)
