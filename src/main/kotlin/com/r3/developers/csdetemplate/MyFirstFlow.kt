@@ -42,7 +42,7 @@ class MyFirstFlow: RPCStartableFlow {
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
 
-    // MemberLookup looks for information about members of the Virtual Network which
+    // MemberLookup looks for information about members of the virtual network which
     // this CorDapp is operates in.
     @CordaInject
     lateinit var memberLookup: MemberLookup
