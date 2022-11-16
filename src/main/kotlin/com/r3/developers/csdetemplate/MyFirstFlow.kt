@@ -25,7 +25,7 @@ class Message(val sender: MemberX500Name, val message: String)
 // MyFirstFlow should inherit from RPCStartableFlow, which tells Corda it can be started via an RPC call
 class MyFirstFlow: RPCStartableFlow {
 
-    // It is useful to be able to log messages from the flows for debugging.
+    // Log messages from the flows for debugging.
     private companion object {
         val log = contextLogger()
     }
@@ -33,17 +33,17 @@ class MyFirstFlow: RPCStartableFlow {
     // Corda has a set of injectable services which are injected into the flow at runtime.
     // Flows declare them with @CordaInjectable, then the flows have access to their services.
 
-    // JsonMarshallingService provides a Service for manipulating json
+    // JsonMarshallingService provides a service for manipulating json
     @CordaInject
     lateinit var jsonMarshallingService: JsonMarshallingService
 
-    // FlowMessaging provides a service for establishing flow sessions between Virtual Nodes and
-    // sending and receiving payloads between them
+    // FlowMessaging establishes flow sessions between Virtual Nodes which
+    // sends and receives payloads between them.
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
 
-    // MemberLookup provides a service for looking up information about members of the Virtual Network which
-    // this CorDapp is operating in.
+    // MemberLookup looks for information about members of the Virtual Network which
+    // this CorDapp is operates in.
     @CordaInject
     lateinit var memberLookup: MemberLookup
 
@@ -55,10 +55,10 @@ class MyFirstFlow: RPCStartableFlow {
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
 
-        // Useful logging to follow what's happening in the console or logs
+        // Follow what happens in the console or logs
         log.info("MFF: MyFirstFlow.call() called")
 
-        // Show the requestBody in the logs - this can be used to help establish the format for starting a flow on corda
+        // Show the requestBody in the logs - establishes the format for starting a flow on corda
         log.info("MFF: requestBody: ${requestBody.getRequestBody()}")
 
         // Deserialize the Json requestBody into the MyfirstFlowStartArgs class using the JsonSerialisation Service
@@ -70,7 +70,7 @@ class MyFirstFlow: RPCStartableFlow {
         // Get our identity from the MemberLookup service.
         val ourIdentity = memberLookup.myInfo().name
 
-        // Create the message payload using the MessageClass we defined.
+        // Create the message payload uses the MessageClass we defined.
         val message = Message(otherMember, "Hello from $ourIdentity.")
 
         // Log the message to be sent.
@@ -86,7 +86,7 @@ class MyFirstFlow: RPCStartableFlow {
         // Receive a response from the Responder flow
         val response = session.receive(Message::class.java)
 
-        // The return value of a RPCStartableFlow must always be a String, this string will be passed
+        // The return value of a RPCStartableFlow must always be a String, this string will pass
         // back as the REST RPC response when the status of the flow is queried on Corda, or as the return
         // value from the flow when testing using the Simulator
         return response.message
