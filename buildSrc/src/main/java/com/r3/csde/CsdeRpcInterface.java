@@ -204,7 +204,7 @@ public class CsdeRpcInterface {
         kong.unirest.JsonNode body = response.getBody();
         // Do not retry if successful.
         if(status == 200) {
-            // Retry until we get an "OK", it may move to "Validating upload", "Persisting CPI".
+            // Retry until you get an "OK", it may move to "Validating upload", "Persisting CPI".
             return !(body.getObject().get("status").equals("OK"));
         }
         else if (status == 400){
