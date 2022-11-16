@@ -33,7 +33,7 @@ class MyFirstFlow: RPCStartableFlow {
     // Corda has a set of injectable services which are injected into the flow at runtime.
     // Flows declare them with @CordaInjectable, then the flows have access to their services.
 
-    // JsonMarshallingService provides a service for manipulating json
+    // JsonMarshallingService provides a service for manipulating JSON
     @CordaInject
     lateinit var jsonMarshallingService: JsonMarshallingService
 
