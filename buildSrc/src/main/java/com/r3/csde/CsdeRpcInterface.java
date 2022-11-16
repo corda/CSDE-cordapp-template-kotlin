@@ -269,7 +269,7 @@ public class CsdeRpcInterface {
             out.println("Upload Status:" + status);
             out.println("Pretty print the body\n" + body.toPrettyString());
 
-            // Expect the id field to be a string.
+            // Expect the ID field to be a string.
             if (status == 200) {
                 String id = (String) body.getObject().get("id");
                 out.println("get id:\n" + id);
