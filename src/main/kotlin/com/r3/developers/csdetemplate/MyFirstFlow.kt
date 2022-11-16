@@ -58,7 +58,7 @@ class MyFirstFlow: RPCStartableFlow {
         // Follow what happens in the console or logs.
         log.info("MFF: MyFirstFlow.call() called")
 
-        // Show the requestBody in the logs - establishes the format for starting a flow on corda
+        // Show the requestBody in the logs - establishes the format for starting a flow on Corda.
         log.info("MFF: requestBody: ${requestBody.getRequestBody()}")
 
         // Deserialize the Json requestBody into the MyfirstFlowStartArgs class using the JsonSerialisation Service
