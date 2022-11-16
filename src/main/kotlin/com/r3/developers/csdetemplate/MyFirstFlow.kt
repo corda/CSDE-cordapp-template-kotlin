@@ -14,8 +14,7 @@ import net.corda.v5.base.util.contextLogger
 class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
 
 
-// A class which will contain a message, It must be marked with @CordaSerializable for Corda
-// to be able to send from one virtual node to another.
+// A class contains a message, mark it with @CordaSerializable for Corda to send one virtual node to another.
 @CordaSerializable
 class Message(val sender: MemberX500Name, val message: String)
 
