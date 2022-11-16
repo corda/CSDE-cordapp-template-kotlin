@@ -31,7 +31,7 @@ def javaVersion = VERSION_11
 cordapp {
     // "targetPlatformVersion" and "minimumPlatformVersion" are intended to specify the preferred
     // and earliest versions of the Corda platform that the CorDapp will run on respectively.
-    // Enforced versioning has not been implemented yet, enter a dummy value for now.
+    // Enforced versioning has not been implemented yet, so enter a dummy value for now.
     // The platform version will correspond to and be roughly equivalent to the Corda API version.
     targetPlatformVersion platformVersion.toInteger()
     minimumPlatformVersion platformVersion.toInteger()
@@ -54,7 +54,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         languageVersion = '1.7'
         // Specify the Kotlin libraries that code is compatible with
         apiVersion = '1.7'
-        // Use a version of Kotlin that will be compatible with the Corda API.
+        // Use a version of Kotlin that is compatible with the Corda API.
         // Currently that is developed in Kotlin 1.7 so picking the same version ensures compatibility with that.
 
         // Specify the version of Java to target.
@@ -79,7 +79,7 @@ repositories {
 
 // Declare dependencies for the modules we will use.
 // A cordaProvided declaration is required for anything that we use that the Corda API provides.
-// Required to build CorDapp modules as OSGi bundles that CPI and CPB files are built on dependencies.
+// This is required to allow us to build CorDapp modules as OSGi bundles that CPI and CPB files are then built upon.
 dependencies {
     // We need a version of kotlin-stdlib-jdk8 built as an OSGi bundle, this is "kotlin-stdlib-jdk8-osgi".
     // R3 builds kotlin-stdlib-jdk8-osgi from Kotlin's kotlin-stdlib-jdk8.
@@ -88,7 +88,7 @@ dependencies {
     //   There is no kotlin-stdlib-jdk11, but one is not needed even though we are targetting Java 11.
     cordaProvided 'net.corda.kotlin:kotlin-stdlib-jdk8-osgi'
 
-    // Declare a "platform" to use the correct set of dependency versions for the version the 
+    // Declare a "platform" to use the correct set of dependency versions for the version that the 
     // Corda API specifies
     cordaProvided platform("net.corda:corda-api:$cordaApiVersion")
 
