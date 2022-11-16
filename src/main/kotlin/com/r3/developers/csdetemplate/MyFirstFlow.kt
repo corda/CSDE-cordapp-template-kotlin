@@ -37,7 +37,7 @@ class MyFirstFlow: RPCStartableFlow {
     @CordaInject
     lateinit var jsonMarshallingService: JsonMarshallingService
 
-    // FlowMessaging establishes flow sessions between Virtual Nodes which
+    // FlowMessaging establishes flow sessions between virtual nodes which
     // sends and receives payloads between them.
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
