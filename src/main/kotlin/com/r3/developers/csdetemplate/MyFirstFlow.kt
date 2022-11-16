@@ -55,7 +55,7 @@ class MyFirstFlow: RPCStartableFlow {
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
 
-        // Follow what happens in the console or logs
+        // Follow what happens in the console or logs.
         log.info("MFF: MyFirstFlow.call() called")
 
         // Show the requestBody in the logs - establishes the format for starting a flow on corda
