@@ -104,14 +104,26 @@ public class CsdeRpcInterface {
 
                 String svcX500Id = jsonNodeToString(notary.get("serviceX500Name"));
 
-                for (com.fasterxml.jackson.databind.JsonNode representative : notary.get("representatives")) {
+                com.fasterxml.jackson.databind.JsonNode repsForThisService = notary.get("representatives");
+
+                if (repsForThisService.isEmpty()) {
+                    throw new ConfigurationException(
+                            "Notary service \"" + svcX500Id + "\" must have at least one representative.");
+                } else if (repsForThisService.size() > 1) {
+                    // Temporary restriction while the MGM only supports a 1-1 association
+                    throw new ConfigurationException(
+                            "Notary service \"" + svcX500Id + "\" can only have a single representative at this time.");
+                }
+
+                for (com.fasterxml.jackson.databind.JsonNode representative : repsForThisService) {
 
                     String repAsString = jsonNodeToString(representative);
 
                     if (identities.contains(repAsString)) {
                         notaryRepresentatives.put(repAsString, svcX500Id);
                     } else {
-                        throw new ConfigurationException("Notary representative \"" + repAsString + "\" is not a valid identity");
+                        throw new ConfigurationException(
+                                "Notary representative \"" + repAsString + "\" is not a valid identity");
                     }
                 }
             }
