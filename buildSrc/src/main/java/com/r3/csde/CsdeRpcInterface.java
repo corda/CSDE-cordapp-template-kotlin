@@ -1,5 +1,7 @@
 package com.r3.csde;
 
+import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
 import kong.unirest.json.JSONArray;
 import org.gradle.api.Project;
 import net.corda.v5.base.types.MemberX500Name;
@@ -11,11 +13,15 @@ import javax.naming.ConfigurationException;
 import java.io.*;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 import static java.lang.Thread.sleep;
 
 public class CsdeRpcInterface {
@@ -364,16 +370,29 @@ public class CsdeRpcInterface {
             }
         }
 
+        Map<String, CompletableFuture<HttpResponse<JsonNode>>> responses = new LinkedHashMap<>();
+
         // Create the VNodes
         for(String x500id: x500Ids) {
             if(!existingX500.contains(MemberX500Name.parse(x500id) )) {
                 out.println("Creating VNode for x500id=\"" + x500id + "\" cpi checksum=" + cpiCheckSum);
-                kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonNode = Unirest.post(baseURL + "/api/v1/virtualnode")
+                responses.put(x500id, Unirest
+                        .post(baseURL + "/api/v1/virtualnode")
                         .body("{ \"request\" : { \"cpiFileChecksum\": " + cpiCheckSum + ", \"x500Name\": \"" + x500id + "\" } }")
                         .basicAuth(rpcUser, rpcPasswd)
-                        .asJson();
-                // Logging.
+                        .asJsonAsync()
+                );
+            }
+            else {
+                out.println("Not creating a vnode for \"" + x500id + "\", vnode already exists.");
+            }
+        }
 
+        out.println("Waiting for VNode creation results...");
+
+        for (Map.Entry<String, CompletableFuture<HttpResponse<JsonNode>>> response: responses.entrySet()) {
+            try {
+                HttpResponse<JsonNode> jsonNode = response.getValue().get();
                 // need to check this and report errors.
                 // 200 - OK
                 // 409 - Vnode already exists
@@ -383,26 +402,39 @@ public class CsdeRpcInterface {
                     } else {
                         JSONObject thing = jsonNode.getBody().getObject().getJSONObject("holdingIdentity");
                         String shortHash = (String) thing.get("shortHash");
-                        OKHoldingX500AndShortIds.put(x500id, shortHash);
+                        OKHoldingX500AndShortIds.put(response.getKey(), shortHash);
                     }
                 }
-            }
-            else {
-                out.println("Not creating a vnode for \"" + x500id + "\", vnode already exists.");
+            } catch (ExecutionException | InterruptedException e) {
+                throw new CsdeException("Unexpected exception while waiting for response to " +
+                        "membership submission for holding identity" + response.getKey());
             }
         }
 
         // Register the VNodes
+        responses.clear();
+
         for(String okId: OKHoldingX500AndShortIds.keySet()) {
-            kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = Unirest
+            responses.put(okId, Unirest
                     .post(baseURL + "/api/v1/membership/" +  OKHoldingX500AndShortIds.get(okId))
                     .body(getMemberRegistrationBody(okId))
                     .basicAuth(rpcUser, rpcPasswd)
-                    .asJson();
-
-            out.println("Vnode membership submission:\n" + vnodeResponse.getBody().toPrettyString());
+                    .asJsonAsync( response ->
+                            out.println("Vnode membership submission for \"" + okId + "\"" +
+                                    System.lineSeparator() + response.getBody().toPrettyString()))
+            );
         }
 
+        out.println("Vnode membership requests submitted, waiting for acknowledgement from MGM...");
+
+        for (Map.Entry<String, CompletableFuture<HttpResponse<JsonNode>>> response: responses.entrySet()) {
+            try {
+                response.getValue().get();
+            } catch (ExecutionException | InterruptedException e) {
+                throw new CsdeException("Unexpected exception while waiting for response to " +
+                        "membership submission for holding identity" + response.getKey());
+            }
+        }
     }
 
     public void startCorda() throws IOException {
