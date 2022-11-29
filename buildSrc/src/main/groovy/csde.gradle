@@ -25,7 +25,6 @@ configurations {
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
     myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
-    implementation "org.codehaus.groovy:groovy-json:3.0.9"
 }
 
 

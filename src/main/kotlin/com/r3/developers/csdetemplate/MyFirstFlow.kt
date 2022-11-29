@@ -20,7 +20,7 @@ class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
 class Message(val sender: MemberX500Name, val message: String)
 
 
-// MyFirstFlow is an initiating flow, it's corresponding responder flow is called MyFirstFlowResponder (defined below)
+// MyFirstFlow is an initiating flow, its corresponding responder flow is called MyFirstFlowResponder (defined below)
 // to link the two sides of the flow together they need to have the same protocol.
 @InitiatingFlow(protocol = "my-first-flow")
 // MyFirstFlow should inherit from RPCStartableFlow, which tells Corda it can be started via an RPC call
@@ -50,7 +50,7 @@ class MyFirstFlow: RPCStartableFlow {
 
 
 
-    // When a flow is invoked it's call() method is called.
+    // When a flow is invoked its call() method is called.
     // call() methods must be marked as @Suspendable, this allows Corda to pause mid-execution to wait
     // for a response from the other flows and services
     @Suspendable
@@ -62,7 +62,7 @@ class MyFirstFlow: RPCStartableFlow {
         // Show the requestBody in the logs - this can be used to help establish the format for starting a flow on corda
         log.info("MFF: requestBody: ${requestBody.getRequestBody()}")
 
-        // Deserialize the Json requestBody into the MyfirstFlowStartArgs class using the JsonSerialisation Service
+        // Deserialize the Json requestBody into the MyFirstFlowStartArgs class using the JsonSerialisation Service
         val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, MyFirstFlowStartArgs::class.java)
 
         // Obtain the MemberX500Name of counterparty
@@ -72,7 +72,7 @@ class MyFirstFlow: RPCStartableFlow {
         val ourIdentity = memberLookup.myInfo().name
 
         // Create the message payload using the MessageClass we defined.
-        val message = Message(otherMember, "Hello from $ourIdentity.")
+        val message = Message(ourIdentity, "Hello from $ourIdentity.")
 
         // Log the message to be sent.
         log.info("MFF: message.message: ${message.message}")
@@ -94,7 +94,7 @@ class MyFirstFlow: RPCStartableFlow {
     }
 }
 
-// MyFirstFlowResponder is a responder flow, it's corresponding initiating flow is called MyFirstFlow (defined above)
+// MyFirstFlowResponder is a responder flow, its corresponding initiating flow is called MyFirstFlow (defined above)
 // to link the two sides of the flow together they need to have the same protocol.
 @InitiatedBy(protocol = "my-first-flow")
 // Responder flows must inherit from ResponderFlow
@@ -112,7 +112,7 @@ class MyFirstFlowResponder: ResponderFlow {
 
 
     // Responder flows are invoked when an initiating flow makes a call via a session set up with the Virtual
-    // node hosting the Responder flow. When a responder flow is invoked it's call() method is called.
+    // node hosting the Responder flow. When a responder flow is invoked its call() method is called.
     // call() methods must be marked as @Suspendable, this allows Corda to pause mid-execution to wait
     // for a response from the other flows and services/
     // The Call method has the flow session passed in as a parameter by Corda so the session is available to
