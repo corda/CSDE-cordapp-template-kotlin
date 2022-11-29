@@ -13,18 +13,16 @@ import net.corda.v5.base.util.contextLogger
 // A class to hold the arguments required to start the flow
 class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
 
-
 // A class which will contain a message, It must be marked with @CordaSerializable for Corda
 // to be able to send from one virtual node to another.
 @CordaSerializable
 class Message(val sender: MemberX500Name, val message: String)
 
-
 // MyFirstFlow is an initiating flow, its corresponding responder flow is called MyFirstFlowResponder (defined below)
 // to link the two sides of the flow together they need to have the same protocol.
 @InitiatingFlow(protocol = "my-first-flow")
 // MyFirstFlow should inherit from RPCStartableFlow, which tells Corda it can be started via an RPC call
-class MyFirstFlow: RPCStartableFlow {
+class MyFirstFlow : RPCStartableFlow {
 
     // It is useful to be able to log messages from the flows for debugging.
     private companion object {
@@ -47,8 +45,6 @@ class MyFirstFlow: RPCStartableFlow {
     // this CorDapp is operating in.
     @CordaInject
     lateinit var memberLookup: MemberLookup
-
-
 
     // When a flow is invoked its call() method is called.
     // call() methods must be marked as @Suspendable, this allows Corda to pause mid-execution to wait
@@ -98,7 +94,7 @@ class MyFirstFlow: RPCStartableFlow {
 // to link the two sides of the flow together they need to have the same protocol.
 @InitiatedBy(protocol = "my-first-flow")
 // Responder flows must inherit from ResponderFlow
-class MyFirstFlowResponder: ResponderFlow {
+class MyFirstFlowResponder : ResponderFlow {
 
     // It is useful to be able to log messages from the flows for debugging.
     private companion object {
@@ -109,7 +105,6 @@ class MyFirstFlowResponder: ResponderFlow {
     // this CorDapp is operating in.
     @CordaInject
     lateinit var memberLookup: MemberLookup
-
 
     // Responder flows are invoked when an initiating flow makes a call via a session set up with the Virtual
     // node hosting the Responder flow. When a responder flow is invoked its call() method is called.
@@ -133,8 +128,10 @@ class MyFirstFlowResponder: ResponderFlow {
         val ourIdentity = memberLookup.myInfo().name
 
         // Create a response to greet the sender
-        val response = Message(ourIdentity,
-            "Hello ${session.counterparty.commonName}, best wishes from ${ourIdentity.commonName}")
+        val response = Message(
+            ourIdentity,
+            "Hello ${session.counterparty.commonName}, best wishes from ${ourIdentity.commonName}"
+        )
 
         // Log the response to be sent.
         log.info("MFF: response.message: ${response.message}")
