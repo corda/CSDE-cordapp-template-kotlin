@@ -110,8 +110,8 @@ dependencies {
     cordaProvided 'org.slf4j:slf4j-api'
 
     // Dependencies Required By Test Tooling
-    testImplementation "net.corda:corda-simulator-api:$combinedWorkerVersion"
-    testRuntimeOnly "net.corda:corda-simulator-runtime:$combinedWorkerVersion"
+    testImplementation "net.corda:corda-simulator-api:$testUtilsVersion"
+    testRuntimeOnly "net.corda:corda-simulator-runtime:$testUtilsVersion"
 
     // 3rd party libraries
     // Required
