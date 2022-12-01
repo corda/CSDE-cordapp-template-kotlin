@@ -30,8 +30,8 @@ dependencies {
 
 def pluginGroupName = "CSDE"
 def pluginImplGroupName = "other"
-def cordaBinDir= System.getProperty('user.home') + "/.corda/corda5"
-def cordaCliBinDir = System.getProperty('user.home') + "/.corda/cli"
+def cordaBinDir = System.getenv("CSDE_CORDA_BIN") ?: System.getProperty('user.home') + "/.corda/corda5"
+def cordaCliBinDir =  System.getenv("CSDE_CORDA_CLI") ?:System.getProperty('user.home') + "/.corda/cli"
 def cordaJDBCDir = cordaBinDir + "/jdbcDrivers"
 def signingCertAlias="gradle-plugin-default-key"
 // Get error if this is not a autotyped object
