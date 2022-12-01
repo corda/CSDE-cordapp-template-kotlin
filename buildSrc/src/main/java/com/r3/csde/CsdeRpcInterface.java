@@ -18,7 +18,7 @@ public class CsdeRpcInterface {
     private String baseURL = "https://localhost:8888";
     private String rpcUser = "admin";
     private String rpcPasswd = "admin";
-    private String workspaceDir = "workspace";
+    private String workspaceDir = "./workspace";
     static private int retryWaitMs = 1000;
     static PrintStream out = System.out;
     static private String CPIUploadStatusBaseName = "CPIFileStatus.json";
