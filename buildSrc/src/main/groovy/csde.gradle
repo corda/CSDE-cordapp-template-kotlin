@@ -18,12 +18,23 @@ configurations {
         canBeResolved = true
     }
 
+    notaryServerCPB {
+        canBeConsumed = false
+        canBeResolved = true
+    }
 }
 
 // Dependencies for supporting tools
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
     myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
+    notaryServerCPB("com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-server:$cordaNotaryPluginsVersion") {
+        artifact {
+            classifier = 'package'
+            extension = 'cpb'
+        }
+    }
+
     implementation "org.codehaus.groovy:groovy-json:3.0.9"
 }
 
@@ -33,6 +44,7 @@ def pluginImplGroupName = "other"
 def cordaBinDir= System.getProperty('user.home') + "/.corda/corda5"
 def cordaCliBinDir = System.getProperty('user.home') + "/.corda/cli"
 def cordaJDBCDir = cordaBinDir + "/jdbcDrivers"
+def cordaNotaryServerDir = System.getProperty('user.home') + "/.corda/notaryserver"
 def signingCertAlias="gradle-plugin-default-key"
 // Get error if this is not a autotyped object
 // def signingCertFName = "$rootDir/config/gradle-plugin-default-key.pem"
@@ -44,7 +56,8 @@ def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
 
 
 // Need to read things from cordapp plugin
-def cpiName =  'cpi name'
+def appCpiName =  'cpi name'
+def notaryCpiName =  'CSDE Notary Server CPI'
 
 def csdeHelper = new CsdeRpcInterface(project,
         cordaClusterURL.toString(),
@@ -119,6 +132,12 @@ tasks.register("getDevCordaLite", Copy) {
     into cordaBinDir
 }
 
+tasks.register("getNotaryServerCPB", Copy) {
+    group = pluginImplGroupName
+    from configurations.notaryServerCPB
+    into cordaNotaryServerDir
+}
+
 tasks.register('createKeystore') {
     group = pluginImplGroupName
     dependsOn('projInit')
@@ -162,29 +181,54 @@ tasks.register('createKeystore') {
 }
 
 
-tasks.register('buildCPI') {
+tasks.register('buildCPIs') {
     group = pluginGroupName
-    dependsOn('build', 'createGroupPolicy', 'createKeystore')
+    dependsOn('build', 'createGroupPolicy', 'createKeystore', 'getNotaryServerCPB')
 
     doLast{
-        def cpiFile= buildDir.toString() + "/" + project.archivesBaseName + "-" + project.version + ".cpi"
-        delete { delete cpiFile }
+        // Application CPI
+        def appCpiFile = buildDir.toString() + "/" + project.archivesBaseName + "-" + project.version + ".cpi"
+        delete { delete appCpiFile }
         File srcDir
         srcDir = file('build/libs')
 
         // Create a file collection using a closure
-        def collection = layout.files { srcDir.listFiles() }
-        def cpbs = collection.filter { it.getName().endsWith(".cpb") }
+        def appCollection = layout.files { srcDir.listFiles() }
+        def appCpbs = appCollection.filter { it.getName().endsWith(".cpb") }
 
         javaexec {
             classpath = files("$cordaCliBinDir/corda-cli.jar")
             jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
             args = ['package', 'create-cpi',
-                    '--cpb', cpbs.singleFile.absolutePath,
+                    '--cpb', appCpbs.singleFile.absolutePath,
                     '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
-                    '--cpi-name', cpiName,
+                    '--cpi-name', appCpiName,
                     '--cpi-version', project.version,
-                    '--file', cpiFile,
+                    '--file', appCpiFile,
+                    '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
+                    '--storepass', 'keystore password',
+                    '--key', 'my-signing-key' ]
+        }
+
+        // Notary CPI
+        def notaryCpiFile = buildDir.toString() + "/" +
+                notaryCpiName.replace(' ', '-').toLowerCase() + "-" + project.version + ".cpi"
+        delete { delete notaryCpiFile }
+
+        // Create a file collection using a closure
+        def notaryCpbs = layout
+                .files { file(cordaNotaryServerDir).listFiles() }
+                .filter { it.getName().endsWith(".cpb") }
+
+        javaexec {
+            classpath = files("$cordaCliBinDir/corda-cli.jar")
+            jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
+            args = ['package', 'create-cpi',
+                    '--cpb', notaryCpbs.singleFile.absolutePath,
+                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
+                    '--cpi-name', notaryCpiName,
+                    '--cpi-version', project.version,
+                    '--file', notaryCpiFile,
                     '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
                     '--storepass', 'keystore password',
                     '--key', 'my-signing-key' ]
@@ -193,19 +237,24 @@ tasks.register('buildCPI') {
 
 }
 
-tasks.register("deployCPI") {
+tasks.register("deployCPIs") {
     group = pluginImplGroupName
-    dependsOn('buildCPI')
+    dependsOn('buildCPIs')
     doLast {
         csdeHelper.uploadCertificate(signingCertAlias, signingCertFName)
         csdeHelper.uploadCertificate(keystoreAlias, keystoreCertFName)
-        csdeHelper.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi", cpiName, project.version)
+        csdeHelper.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi", appCpiName, project.version)
+        csdeHelper.deployCPI(
+                "${buildDir}/${notaryCpiName.replace(' ', '-').toLowerCase()}-${project.version}.cpi",
+                notaryCpiName,
+                project.version,
+                "-NotaryServer")
     }
 }
 
 tasks.register("createAndRegVNodes") {
     group = pluginImplGroupName
-    dependsOn('deployCPI')
+    dependsOn('deployCPIs')
     doLast {
         csdeHelper.createAndRegVNodes()
     }
@@ -246,6 +295,3 @@ tasks.register("stopCorda") {
         csdeHelper.stopCorda()
     }
 }
-
-
-

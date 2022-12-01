@@ -139,15 +139,23 @@ public class CsdeRpcInterface {
     }
 
     static public String getLastCPIUploadChkSum(@NotNull String CPIUploadStatusFName) throws IOException, NullPointerException {
+        return getLastCPIUploadChkSum(CPIUploadStatusFName, "");
+    }
+
+    static public String getLastCPIUploadChkSum(@NotNull String CPIUploadStatusFName,
+                                                String uploadStatusQualifier) throws IOException, NullPointerException {
+
+        String qualifiedCPIUploadStatusFName =
+                CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json");
 
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        FileInputStream in = new FileInputStream(CPIUploadStatusFName);
+        FileInputStream in = new FileInputStream(qualifiedCPIUploadStatusFName);
         com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
-
 
         String checksum = jsonNode.get("cpiFileChecksum").toString();
         if(checksum == null || checksum.equals("null")) {
-            throw new NullPointerException("Missing cpiFileChecksum in file " + CPIUploadStatusFName+ " with contents:" + jsonNode);
+            throw new NullPointerException("Missing cpiFileChecksum in file " +
+                    qualifiedCPIUploadStatusFName + " with contents:" + jsonNode);
         }
         return checksum;
     }
@@ -232,6 +240,10 @@ public class CsdeRpcInterface {
     }
 
     public void forceuploadCPI(String cpiFName) throws FileNotFoundException, CsdeException {
+        forceuploadCPI(cpiFName, "");
+    }
+
+    public void forceuploadCPI(String cpiFName, String uploadStatusQualifier) throws FileNotFoundException, CsdeException {
         Unirest.config().verifySsl(false);
         kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonResponse = Unirest.post(baseURL + "/api/v1/maintenance/virtualnode/forcecpiupload/")
                 .field("upload", new File(cpiFName))
@@ -244,7 +256,8 @@ public class CsdeRpcInterface {
             kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
 
             if (statusResponse.getStatus() == 200) {
-                PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadStatusFName));
+                PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
+                        CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));
                 cpiUploadStatus.print(statusResponse.getBody());
                 out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
             } else {
@@ -294,6 +307,13 @@ public class CsdeRpcInterface {
     }
 
     public void deployCPI(String cpiFName, String cpiName, String cpiVersion) throws FileNotFoundException, CsdeException {
+        deployCPI(cpiFName, cpiName, cpiVersion, "");
+    }
+
+    public void deployCPI(String cpiFName,
+                          String cpiName,
+                          String cpiVersion,
+                          String uploadStatusQualifier) throws FileNotFoundException, CsdeException {
         Unirest.config().verifySsl(false);
 
         kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo();
@@ -333,7 +353,8 @@ public class CsdeRpcInterface {
 
                 kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
                 if (statusResponse.getStatus() == 200) {
-                    PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadStatusFName));
+                    PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
+                            CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));
                     cpiUploadStatus.print(statusResponse.getBody());
                     out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
                 } else {
@@ -351,7 +372,8 @@ public class CsdeRpcInterface {
 
     public void createAndRegVNodes() throws IOException, CsdeException, ConfigurationException{
         Unirest.config().verifySsl(false);
-        String cpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName );
+        String appCpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName );
+        String notaryCpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName, "-NotaryServer" );
 
         LinkedList<String> x500Ids = getConfigX500Ids();
         // Map of X500 name to short hash
@@ -375,6 +397,8 @@ public class CsdeRpcInterface {
         // Create the VNodes
         for(String x500id: x500Ids) {
             if(!existingX500.contains(MemberX500Name.parse(x500id) )) {
+                String cpiCheckSum = getNotaryRepresentatives().containsKey(x500id) ?  notaryCpiCheckSum : appCpiCheckSum;
+
                 out.println("Creating VNode for x500id=\"" + x500id + "\" cpi checksum=" + cpiCheckSum);
                 responses.put(x500id, Unirest
                         .post(baseURL + "/api/v1/virtualnode")
