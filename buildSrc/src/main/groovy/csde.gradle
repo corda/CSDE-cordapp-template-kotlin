@@ -46,7 +46,7 @@ def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
 
 
 // Need to read things from cordapp plugin
-def cpiName =  'cpi name'
+def cpiName =  project.name
 
 def csdeHelper = new CsdeRpcInterface(project,
         cordaClusterURL.toString(),
