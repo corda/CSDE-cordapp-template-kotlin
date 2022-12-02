@@ -7,10 +7,9 @@ import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import java.io.*;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import static java.lang.Thread.sleep;
 
 public class CsdeRpcInterface {
@@ -127,19 +126,56 @@ public class CsdeRpcInterface {
         out.println("VNodes:\n" + vnodeResponse.getBody().toPrettyString());
     }
 
-    // X500Name, cpiname, shorthash,
+    // X500Name, shorthash,
     public void listVNodes() {
         kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = getVNodeInfo();
 
         kong.unirest.json.JSONArray virtualNodesJson = (JSONArray) vnodeResponse.getBody().getObject().get("virtualNodes");
-        out.println("X500 Name\tHolding identity short hash");
-        for(Object o: virtualNodesJson){
-            if(o instanceof kong.unirest.json.JSONObject) {
+
+        List<List<String>> lines = new LinkedList<>();
+        for (Object o : virtualNodesJson) {
+            if (o instanceof kong.unirest.json.JSONObject) {
                 kong.unirest.json.JSONObject idObj = ((kong.unirest.json.JSONObject) o).getJSONObject("holdingIdentity");
-                out.print("\"" + idObj.get("x500Name") + "\"");
-                out.println("\t\"" + idObj.get("shortHash") + "\"");
+                String x500Name = idObj.get("x500Name").toString();
+                String shortHash = idObj.get("shortHash").toString();
+                lines.add(Arrays.asList(x500Name, shortHash));
             }
         }
+        List<String> title = Arrays.asList("X500 Name", "Holding identity short hash");
+        List<Integer> titleSizes = Arrays.asList(60, 30);
+        printTable(titleSizes, title, lines);
+    }
+
+    public void printTable(List<Integer> titleSizes, List<String> title, List<List<String>> lines) {
+        int width = titleSizes.stream().reduce(0, Integer::sum);
+        String separator = "-".repeat(width + 1);
+        out.println(separator);
+        out.println(formatLine(titleSizes, title));
+        out.println(separator);
+        for (List<String> line : lines) {
+            out.println(formatLine(titleSizes, line));
+        }
+        out.println(separator);
+    }
+
+    public String formatLine(List<Integer> titleSizes, List<String> line) {
+        StringBuilder sb = new StringBuilder();
+        int delta = 0;
+        for (int i = 0; i < titleSizes.size(); i++) {
+            String s = line.get(i);
+            sb.append("| ").append(s);
+            delta += titleSizes.get(i) - (2 + s.length());
+
+            if (delta > 0) {
+                sb.append(" ".repeat(delta));
+                delta = 0;
+            } else {
+                sb.append(" ");
+                delta -= 1;
+            }
+        }
+        sb.append("|");
+        return sb.toString();
     }
 
     public kong.unirest.HttpResponse<kong.unirest.JsonNode> getCpiInfo() {
