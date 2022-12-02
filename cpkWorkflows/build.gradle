@@ -1,0 +1,64 @@
+import static org.gradle.api.JavaVersion.VERSION_11
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'net.corda.plugins.cordapp-cpk2'
+    id 'java'
+    id 'maven-publish'
+}
+
+group 'com.r3.hellocorda'
+version '1.0-SNAPSHOT'
+
+def javaVersion = VERSION_11
+
+dependencies {
+    cordaProvided platform("net.corda:corda-api:$cordaApiVersion")
+
+    cordaProvided 'net.corda:corda-application'
+    cordaProvided 'net.corda.kotlin:kotlin-stdlib-jdk8-osgi'
+
+    cordaProvided 'net.corda:corda-ledger-consensual'
+
+    cordapp 'com.r3.hellocorda:corda-CSDE-kotlin-contracts:1.0-SNAPSHOT'
+
+    // Dependencies Required By Test Tooling
+    testImplementation "net.corda:corda-simulator-api:$testUtilsVersion"
+    testRuntimeOnly "net.corda:corda-simulator-runtime:$testUtilsVersion"
+
+    // Unit Tests
+    testImplementation "org.slf4j:slf4j-simple:2.0.0"
+    testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
+    testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
+}
+
+cordapp {
+    targetPlatformVersion platformVersion.toInteger()
+    minimumPlatformVersion platformVersion.toInteger()
+
+    contract {
+        name = 'A Contract CPK for playing around'
+        versionId = 1
+        licence = 'Test-Licence'
+        vendor = 'R3'
+    }
+}
+
+repositories {
+    // All dependencies are held in Maven Central
+    mavenCentral()
+    mavenLocal()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId "corda-CSDE-kotlin-workflows"
+            groupId project.group
+            artifact jar
+        }
+    }
+}

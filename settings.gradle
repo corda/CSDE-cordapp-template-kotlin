@@ -23,3 +23,7 @@ pluginManagement {
 
 include 'CorDapp1'
 include 'CorDapp2'
+include 'cpkContracts'
+include 'cpkWorkflows'
+include 'cpbDoorCode'
+include 'cdaDoorCode'
