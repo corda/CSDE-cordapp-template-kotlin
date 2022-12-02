@@ -133,7 +133,7 @@ test {
 publishing {
     publications {
             maven(MavenPublication) {
-                artifactId "corda-CSDE-kotlin-sample"
+                artifactId "corda-CSDE-kotlin-sample1"
                 groupId project.group
                 artifact jar
             }

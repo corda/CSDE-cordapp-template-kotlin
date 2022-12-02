@@ -1,7 +1,7 @@
 {
 "identities" : [
- "CN=Alice, OU=Test Dept, O=R3, L=London, C=GB",
- "CN=Bob, OU=Test Dept, O=R3, L=London, C=GB",
- "CN=Daniel, OU=Test Dept, O=R3, L=London, C=GB"
+ "CN=Daniel, OU=Test Dept, O=R3, L=London, C=GB",
+ "CN=Emma, OU=Test Dept, O=R3, L=London, C=GB",
+ "CN=Felix, OU=Test Dept, O=R3, L=London, C=GB"
  ]
 }
