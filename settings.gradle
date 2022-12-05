@@ -13,7 +13,7 @@ pluginManagement {
             }
         }
 
-/*
+
         // R3 internal repositories
         maven {
             url "${artifactoryContextUrl}/corda-dev"
@@ -42,7 +42,7 @@ pluginManagement {
                 password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
             }
         }
-*/
+
    }
 
     //  The plugin dependencies with versions of the plugins congruent with the specified CorDapp plugin version,

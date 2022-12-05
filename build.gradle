@@ -80,7 +80,6 @@ repositories {
     }
 
 
-/*
     // Internal artifactory repos for dev
     // R3 Internal repositories
     // Repository the provides kotlin-stdlib-jdk8-osgi created by R3.
@@ -123,7 +122,6 @@ repositories {
             password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
         }
     }
-*/
 }
 
 // Declare dependencies for the modules we will use.

@@ -44,7 +44,7 @@ def pluginImplGroupName = "other"
 def cordaBinDir = System.getenv("CSDE_CORDA_BIN") ?: System.getProperty('user.home') + "/.corda/corda5"
 def cordaCliBinDir =  System.getenv("CSDE_CORDA_CLI") ?:System.getProperty('user.home') + "/.corda/cli"
 def cordaJDBCDir = cordaBinDir + "/jdbcDrivers"
-def cordaNotaryServerDir = System.getProperty('user.home') + "/.corda/notaryserver"
+def cordaNotaryServerDir = cordaBinDir + "/notaryserver"
 def signingCertAlias="gradle-plugin-default-key"
 // Get error if this is not a autotyped object
 // def signingCertFName = "$rootDir/config/gradle-plugin-default-key.pem"
@@ -196,6 +196,11 @@ tasks.register('buildCPIs') {
         def appCollection = layout.files { srcDir.listFiles() }
         def appCpbs = appCollection.filter { it.getName().endsWith(".cpb") }
 
+        println("appCpbs:")
+        appCpbs.forEach {
+            println(it)
+        }
+
         javaexec {
             classpath = files("$cordaCliBinDir/corda-cli.jar")
             jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
@@ -220,6 +225,10 @@ tasks.register('buildCPIs') {
                 .files { file(cordaNotaryServerDir).listFiles() }
                 .filter { it.getName().endsWith(".cpb") }
 
+        println("notaryCpbs:")
+        notaryCpbs.forEach {
+            println(it)
+        }
         javaexec {
             classpath = files("$cordaCliBinDir/corda-cli.jar")
             jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
