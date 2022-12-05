@@ -57,10 +57,10 @@ class MySecondFlow: RPCStartableFlow {
     override fun call(requestBody: RPCRequestData): String {
 
         // Useful logging to follow what's happening in the console or logs
-        log.info("MFF: MySecondFlow.call() called")
+        log.info("MSF: MySecondFlow.call() called")
 
         // Show the requestBody in the logs - this can be used to help establish the format for starting a flow on corda
-        log.info("MFF: requestBody: ${requestBody.getRequestBody()}")
+        log.info("MSF: requestBody: ${requestBody.getRequestBody()}")
 
         // Deserialize the Json requestBody into the MysecondFlowStartArgs class using the JsonSerialisation Service
         val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, MySecondFlowStartArgs::class.java)
@@ -75,7 +75,7 @@ class MySecondFlow: RPCStartableFlow {
         val message = Message(otherMember, "Hello from $ourIdentity.")
 
         // Log the message to be sent.
-        log.info("MFF: message.message: ${message.message}")
+        log.info("MSF: message.message: ${message.message}")
 
         // Start a flow session with the otherMember using the FlowMessaging service
         // The otherMember's Virtual Node will run the corresponding MySecondFlowResponder responder flow
@@ -121,13 +121,13 @@ class MySecondFlowResponder: ResponderFlow {
     override fun call(session: FlowSession) {
 
         // Useful logging to follow what's happening in the console or logs
-        log.info("MFF: MySecondResponderFlow.call() called")
+        log.info("MSF: MySecondResponderFlow.call() called")
 
         // Receive the payload and deserialize it into a Message class
         val receivedMessage = session.receive(Message::class.java)
 
         // Log the message as a proxy for performing some useful operation on it.
-        log.info("MFF: Message received from ${receivedMessage.sender}: ${receivedMessage.message} ")
+        log.info("MSF: Message received from ${receivedMessage.sender}: ${receivedMessage.message} ")
 
         // Get our identity from the MemberLookup service.
         val ourIdentity = memberLookup.myInfo().name
@@ -137,7 +137,7 @@ class MySecondFlowResponder: ResponderFlow {
             "Hello ${session.counterparty.commonName}, best wishes from ${ourIdentity.commonName}")
 
         // Log the response to be sent.
-        log.info("MFF: response.message: ${response.message}")
+        log.info("MSF: response.message: ${response.message}")
 
         // Send the response via the send method on the flow session
         session.send(response)
@@ -146,10 +146,10 @@ class MySecondFlowResponder: ResponderFlow {
 /*
 RequestBody for triggering the flow via http-rpc:
 {
-    "clientRequestId": "r1",
+    "clientRequestId": "r2",
     "flowClassName": "com.r3.developers.csdetemplate.MySecondFlow",
     "requestData": {
-        "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB"
+        "otherMember":"CN=Emma, OU=Test Dept, O=R3, L=London, C=GB"
         }
 }
  */
