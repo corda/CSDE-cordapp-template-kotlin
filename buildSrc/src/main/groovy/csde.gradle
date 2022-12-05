@@ -247,5 +247,14 @@ tasks.register("stopCorda") {
     }
 }
 
-
-
+tasks.register("cleanupCorda") {
+    group = pluginGroupName
+    dependsOn('clean')
+    doLast {
+        try {
+            csdeHelper.stopCorda()
+        } catch(Exception ignored) {
+        }
+        delete devEnvWorkspace
+    }
+}
