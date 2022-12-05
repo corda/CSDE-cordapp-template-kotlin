@@ -388,8 +388,13 @@ public class CsdeRpcInterface {
 
     }
 
-    public void startCorda() throws IOException {
-        PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPidCache));
+    public void startCorda() throws Exception {
+        File cordaPIDFile = new File(cordaPidCache);
+        if (cordaPIDFile.exists()) {
+            throw new Exception("Cannot start the Combined worker\nCached process ID file " + cordaPIDFile + " existing.\nWas the combined worker already started?");
+        }
+
+        PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPIDFile));
         File combinedWorkerJar = project.getConfigurations().getByName("combinedWorker").getSingleFile();
 
         new ProcessBuilder(
