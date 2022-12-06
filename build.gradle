@@ -88,8 +88,8 @@ dependencies {
     //   There is no kotlin-stdlib-jdk11, but one is not needed even though we are targetting Java 11.
     cordaProvided 'net.corda.kotlin:kotlin-stdlib-jdk8-osgi'
 
-    // Declare a "platform" to use the correct set of dependency versions for the version of
-    // Corda API specified.
+    // Declare a "platform" to use the correct set of dependency versions for the version that the
+    // Corda API specifies.
     cordaProvided platform("net.corda:corda-api:$cordaApiVersion")
 
     // If using transistive dependencies this will provide most of Corda-API: 
