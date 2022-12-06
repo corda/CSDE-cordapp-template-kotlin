@@ -7,14 +7,12 @@ plugins {
     // These extend existing build environment so that CPB and CPK files can be built.
     // This includes a CorDapp DSL that allows the developer to supply metadata for the CorDapp
     // required by Corda.
-    id 'net.corda.plugins.cordapp-cpb2'
+    id 'net.corda.plugins.cordapp-cpk2'
 
     id 'org.jetbrains.kotlin.plugin.jpa'
 
     id 'java'
     id 'maven-publish'
-
-    id 'csde'
 }
 
 group 'com.r3.hellocorda'
@@ -74,7 +72,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 repositories {
     // All dependencies are held in Maven Central
     mavenCentral()
-    mavenLocal()
 }
 
 // Declare dependencies for the modules we will use.
@@ -109,16 +106,13 @@ dependencies {
     // The CorDapp uses the slf4j logging framework. Corda-API provides this so we need a 'cordaProvided' declaration.
     cordaProvided 'org.slf4j:slf4j-api'
 
-    cordapp 'com.r3.hellocorda:corda-CSDE-kotlin-sample2-cpk:1.0-SNAPSHOT'
-    cordapp 'com.r3.hellocorda:corda-CSDE-kotlin-sample2-cpb:1.0-SNAPSHOT'
-
     // Dependencies Required By Test Tooling
     testImplementation "net.corda:corda-simulator-api:$testUtilsVersion"
     testRuntimeOnly "net.corda:corda-simulator-runtime:$testUtilsVersion"
 
     // 3rd party libraries
     // Required
-    testImplementation "org.slf4j:slf4j-simple:2.0.0" 
+    testImplementation "org.slf4j:slf4j-simple:2.0.0"
     testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
@@ -126,9 +120,7 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
     testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
-
 }
-
 
 test {
     useJUnitPlatform()
@@ -136,10 +128,10 @@ test {
 
 publishing {
     publications {
-            maven(MavenPublication) {
-                artifactId "corda-CSDE-kotlin-sample2"
-                groupId project.group
-                artifact jar
-            }
+        maven(MavenPublication) {
+            artifactId "corda-CSDE-kotlin-sample2-cpk"
+            groupId project.group
+            artifact jar
+        }
     }
 }
