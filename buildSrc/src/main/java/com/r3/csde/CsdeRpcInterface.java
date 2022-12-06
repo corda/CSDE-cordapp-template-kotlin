@@ -204,7 +204,7 @@ public class CsdeRpcInterface {
         kong.unirest.JsonNode body = response.getBody();
         // Do not retry if successful.
         if(status == 200) {
-            // Retry until you get an "OK", it may move to "Validating upload", "Persisting CPI".
+            // Retry until you get an "OK"; we may see several other responses before the "OK" response.
             return !(body.getObject().get("status").equals("OK"));
         }
         else if (status == 400){
@@ -299,7 +299,7 @@ public class CsdeRpcInterface {
         LinkedList<String> x500Ids = getConfigX500Ids();
         LinkedList<String> OKHoldingShortIds = new LinkedList<>();
 
-        // Check that each identity already exists.
+        // Create a list of X500 IDs we will not need to create VNodes for.
         Set<MemberX500Name> existingX500 = new HashSet<>();
         kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeListResponse = getVNodeInfo();
 
