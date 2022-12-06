@@ -2,27 +2,21 @@ package com.r3.csde;
 
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
-import kong.unirest.json.JSONArray;
-import org.gradle.api.Project;
-import net.corda.v5.base.types.MemberX500Name;
 import kong.unirest.Unirest;
+import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
+import net.corda.v5.base.types.MemberX500Name;
+import org.gradle.api.Project;
 import org.jetbrains.annotations.NotNull;
 
 import javax.naming.ConfigurationException;
 import java.io.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static java.lang.Thread.sleep;
+import static java.net.HttpURLConnection.*;
 
 public class CsdeRpcInterface {
     private Project project;
@@ -212,7 +206,6 @@ public class CsdeRpcInterface {
         return Unirest.get(baseURL + "/api/v1/cpi/")
                 .basicAuth(rpcUser, rpcPasswd)
                 .asJson();
-
     }
 
     public void listCPIs() {
@@ -250,12 +243,12 @@ public class CsdeRpcInterface {
                 .basicAuth(rpcUser, rpcPasswd)
                 .asJson();
 
-        if(jsonResponse.getStatus() == 200) {
+        if(jsonResponse.getStatus() == HTTP_OK) {
             String id = (String) jsonResponse.getBody().getObject().get("id");
             out.println("get id:\n" +id);
             kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
 
-            if (statusResponse.getStatus() == 200) {
+            if (statusResponse.getStatus() == HTTP_OK) {
                 PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
                         CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));
                 cpiUploadStatus.print(statusResponse.getBody());
@@ -273,18 +266,18 @@ public class CsdeRpcInterface {
         int status = response.getStatus();
         kong.unirest.JsonNode body = response.getBody();
         // Do not retry on success
-        if(status == 200) {
-            // Keep retrying until we get "OK" may move through "Validateing upload", "Persisting CPI"
+        if(status == HTTP_OK) {
+            // Keep retrying until we get "OK" may move through "Validating upload", "Persisting CPI"
             return !(body.getObject().get("status").equals("OK"));
         }
-        else if (status == 400){
+        else if (status == HTTP_BAD_REQUEST){
             JSONObject details = response.getBody().getObject().getJSONObject("details");
             if( details != null ){
                 String code = (String) details.getString("code");
                 return !code.equals("BAD_REQUEST");
             }
             else {
-                // 400 otherwise means some transient problem
+                // Not HTTP_BAD_REQUEST implies some transient problem
                 return true;
             }
         }
@@ -319,7 +312,6 @@ public class CsdeRpcInterface {
         kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo();
         kong.unirest.json.JSONArray jArray = (JSONArray) cpiResponse.getBody().getObject().get("cpis");
 
-
         int matches = 0;
         for(Object o: jArray.toList() ) {
             if(o instanceof JSONObject) {
@@ -331,7 +323,6 @@ public class CsdeRpcInterface {
             }
         }
         out.println("Matching CPIS="+matches);
-
 
         if(matches == 0) {
             kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")
@@ -347,12 +338,12 @@ public class CsdeRpcInterface {
             out.println("Pretty print the body\n" + body.toPrettyString());
 
             // We expect the id field to be a string.
-            if (status == 200) {
+            if (status == HTTP_OK) {
                 String id = (String) body.getObject().get("id");
                 out.println("get id:\n" + id);
 
                 kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
-                if (statusResponse.getStatus() == 200) {
+                if (statusResponse.getStatus() == HTTP_OK) {
                     PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
                             CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));
                     cpiUploadStatus.print(statusResponse.getBody());
@@ -367,6 +358,54 @@ public class CsdeRpcInterface {
         else {
             out.println("CPI already uploaded doing a 'force' upload.");
             forceuploadCPI(cpiFName);
+        }
+    }
+
+    private boolean isMembershipRegComplete(kong.unirest.HttpResponse<kong.unirest.JsonNode> response) throws CsdeException {
+        if(response.getStatus() == HTTP_OK) {
+            kong.unirest.JsonNode responseBody = response.getBody();
+            out.println(responseBody.toPrettyString());
+            if(responseBody.getArray().length() > 0) {
+                kong.unirest.json.JSONObject memRegStatusInfo = (kong.unirest.json.JSONObject) responseBody
+                        .getArray()
+                        .getJSONObject(0);
+                String memRegStatus = memRegStatusInfo.get("registrationStatus").toString();
+                if (memRegStatus.equals("DECLINED")) {
+                    throw new CsdeException("V-Node membership registration declined by Corda");
+                }
+                return memRegStatus.equals("APPROVED");
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            reportError(response);
+        }
+        return false;
+    }
+
+    private void pollForCompleteMembershipRegistration(Map<String, String> X500ToShortIdHash) throws CsdeException {
+        HashSet<String> vnodesToCheck = new HashSet<String>(X500ToShortIdHash.keySet());
+        LinkedList<String> approved = new LinkedList<String>();
+        while (!vnodesToCheck.isEmpty()) {
+            rpcWait(2000);
+            approved.clear();
+            for (String vnodeX500 : vnodesToCheck) {
+                try {
+                    out.println("Checking membership registration progress for v-node '" + vnodeX500 + "':");
+                    kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = Unirest
+                            .get(baseURL + "/api/v1/membership/" + X500ToShortIdHash.get(vnodeX500) + "/")
+                            .basicAuth(rpcUser, rpcPasswd)
+                            .asJson();
+                    if (isMembershipRegComplete(statusResponse)) {
+                        approved.add(vnodeX500);
+                    }
+                } catch (Exception e) {
+                    throw new CsdeException("Error when registering V-Node '" + vnodeX500 + "'", e);
+                }
+            }
+            approved.forEach(vnodesToCheck::remove);
         }
     }
 
@@ -418,10 +457,10 @@ public class CsdeRpcInterface {
             try {
                 HttpResponse<JsonNode> jsonNode = response.getValue().get();
                 // need to check this and report errors.
-                // 200 - OK
-                // 409 - Vnode already exists
-                if (jsonNode.getStatus() != 409) {
-                    if (jsonNode.getStatus() != 200) {
+                // 200/HTTP_OK - OK
+                // 409/HTTP_CONFLICT - Vnode already exists
+                if (jsonNode.getStatus() != HTTP_CONFLICT) {
+                    if (jsonNode.getStatus() != HTTP_OK) {
                         reportError(jsonNode);
                     } else {
                         JSONObject thing = jsonNode.getBody().getObject().getJSONObject("holdingIdentity");
@@ -459,6 +498,8 @@ public class CsdeRpcInterface {
                         "membership submission for holding identity" + response.getKey());
             }
         }
+
+        pollForCompleteMembershipRegistration(OKHoldingX500AndShortIds);
     }
 
     public void startCorda() throws IOException {
