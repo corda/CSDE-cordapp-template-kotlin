@@ -14,8 +14,8 @@ import net.corda.v5.base.util.contextLogger
 class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
 
 
-// Where a class contains a message, mark it with @CordaSerializable to enable Corda to send it from one virtual node to another.
-@CordaSerializable
+// A class used for sending a greeting message between the 2 flows.
+// Corda requires all classes used to send data from one virtual node to another to be annotated with @CordaSerializable.
 class Message(val sender: MemberX500Name, val message: String)
 
 
@@ -37,12 +37,12 @@ class MyFirstFlow: RPCStartableFlow {
     @CordaInject
     lateinit var jsonMarshallingService: JsonMarshallingService
 
-    // FlowMessaging establishes flow sessions between virtual nodes which
+    // FlowMessaging provides a service that establishes flow sessions between virtual nodes which
     // sends and receives payloads between them.
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
 
-    // MemberLookup looks for information about members of the virtual network which
+    // MemberLookup provides a service that looks for information about members of the virtual network which
     // this CorDapp operates in.
     @CordaInject
     lateinit var memberLookup: MemberLookup
@@ -86,7 +86,7 @@ class MyFirstFlow: RPCStartableFlow {
         // Receive a response from the Responder flow
         val response = session.receive(Message::class.java)
 
-        // The return value of a RPCStartableFlow must always be a string. This string will pass
+        // The return value of a RPCStartableFlow must always be a String. This will be passed
         // back as the REST RPC response when the status of the flow is queried on Corda, or as the return
         // value from the flow when testing using the Simulator
         return response.message
