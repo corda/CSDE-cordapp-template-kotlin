@@ -202,9 +202,9 @@ public class CsdeRpcInterface {
     private boolean uploadStatusRetry(kong.unirest.HttpResponse<kong.unirest.JsonNode> response) {
         int status = response.getStatus();
         kong.unirest.JsonNode body = response.getBody();
-        // Do not retry on success
+        // Do not retry if successful.
         if(status == 200) {
-            // Keep retrying until we get "OK" may move through "Validateing upload", "Persisting CPI"
+            // Retry until you get an "OK"; we may see several other responses before the "OK" response.
             return !(body.getObject().get("status").equals("OK"));
         }
         else if (status == 400){
@@ -269,7 +269,7 @@ public class CsdeRpcInterface {
             out.println("Upload Status:" + status);
             out.println("Pretty print the body\n" + body.toPrettyString());
 
-            // We expect the id field to be a string.
+            // Expect the ID field to be a string.
             if (status == 200) {
                 String id = (String) body.getObject().get("id");
                 out.println("get id:\n" + id);
@@ -299,7 +299,7 @@ public class CsdeRpcInterface {
         LinkedList<String> x500Ids = getConfigX500Ids();
         LinkedList<String> OKHoldingShortIds = new LinkedList<>();
 
-        // For each identity check that it already exists.
+        // Create a list of X500 IDs we will not need to create VNodes for.
         Set<MemberX500Name> existingX500 = new HashSet<>();
         kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeListResponse = getVNodeInfo();
 
@@ -322,7 +322,7 @@ public class CsdeRpcInterface {
                         .asJson();
                 // Logging.
 
-                // need to check this and report errors.
+                // Check this and report errors.
                 // 200 - OK
                 // 409 - Vnode already exists
                 if (jsonNode.getStatus() != 409) {
