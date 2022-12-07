@@ -1,7 +1,0 @@
-{
-"identities" : [
- "CN=X, OU=Test Dept, O=R3, L=London, C=GB",
- "CN=Y, OU=Test Dept, O=R3, L=London, C=GB",
- "CN=Z, OU=Test Dept, O=R3, L=London, C=GB"
- ]
-}
