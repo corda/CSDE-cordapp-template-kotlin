@@ -23,15 +23,10 @@ pluginManagement {
 
 include 'CorDapp1'
 
-include 'cpkServiceApi'
-include 'cpkServiceProvider'
-include 'CorDServApp'
-
 include 'cpkCorDapp2'
 include 'cpbCorDapp2'
 include 'CorDapp2'
 
-include 'cpkContracts'
-include 'cpkWorkflows'
-include 'cpbDoorCode'
-include 'cdaDoorCode'
+include 'cpkServiceApi'
+include 'cpkServiceProvider'
+include 'CorDappServiceConsumer'

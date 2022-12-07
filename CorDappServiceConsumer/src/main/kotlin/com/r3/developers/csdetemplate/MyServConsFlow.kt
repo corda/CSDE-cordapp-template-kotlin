@@ -14,18 +14,16 @@ import net.corda.v5.base.util.contextLogger
 // A class to hold the arguments required to start the flow
 class MyServConsFlowStartArgs(val otherMember: MemberX500Name)
 
-
 // A class which will contain a message, It must be marked with @CordaSerializable for Corda
 // to be able to send from one virtual node to another.
 @CordaSerializable
 class ServConsMessage(val sender: MemberX500Name, val message: String)
 
-
 // MyServConsFlow is an initiating flow, it's corresponding responder flow is called MyServConsFlowResponder (defined below)
 // to link the two sides of the flow together they need to have the same protocol.
 @InitiatingFlow(protocol = "my-servCons-flow")
 // MyServConsFlow should inherit from RPCStartableFlow, which tells Corda it can be started via an RPC call
-class MyServConsFlow: RPCStartableFlow {
+class MyServConsFlow : RPCStartableFlow {
 
     // It is useful to be able to log messages from the flows for debugging.
     private companion object {
@@ -48,8 +46,6 @@ class MyServConsFlow: RPCStartableFlow {
     // this CorDapp is operating in.
     @CordaInject
     lateinit var memberLookup: MemberLookup
-
-
 
     // When a flow is invoked it's call() method is called.
     // call() methods must be marked as @Suspendable, this allows Corda to pause mid-execution to wait
@@ -79,14 +75,10 @@ class MyServConsFlow: RPCStartableFlow {
         log.info("MSCF: message.message: ${servConsMessage.message}")
 
         log.info(">>>")
-        log.info(this.javaClass.classLoader.toString())
-        log.info(this::class.java.classLoader.toString())
-        log.info("---")
-        val allImpls = TestServiceConsumer.getAllImpls()
-        log.info("1 ${allImpls.size}")
-        log.info("2 $allImpls")
-        log.info("---")
+        val allImpls = TestServiceConsumer.getAllImpls(true)
+        log.info("$allImpls")
         log.info(servConsMessage.message)
+        log.info("vs.")
         val test = TestServiceConsumer.testMe(servConsMessage.message)
         log.info(test)
         log.info("<<<")
@@ -112,7 +104,7 @@ class MyServConsFlow: RPCStartableFlow {
 // to link the two sides of the flow together they need to have the same protocol.
 @InitiatedBy(protocol = "my-servCons-flow")
 open// Responder flows must inherit from ResponderFlow
-class MyServConsFlowResponder: ResponderFlow {
+class MyServConsFlowResponder : ResponderFlow {
 
     // It is useful to be able to log messages from the flows for debugging.
     private companion object {
@@ -123,7 +115,6 @@ class MyServConsFlowResponder: ResponderFlow {
     // this CorDapp is operating in.
     @CordaInject
     lateinit var memberLookup: MemberLookup
-
 
     // Responder flows are invoked when an initiating flow makes a call via a session set up with the Virtual
     // node hosting the Responder flow. When a responder flow is invoked it's call() method is called.
@@ -147,8 +138,10 @@ class MyServConsFlowResponder: ResponderFlow {
         val ourIdentity = memberLookup.myInfo().name
 
         // Create a response to greet the sender
-        val response = ServConsMessage(ourIdentity,
-            "Hello ${session.counterparty.commonName}, best wishes from ${ourIdentity.commonName}")
+        val response = ServConsMessage(
+            ourIdentity,
+            "Hello ${session.counterparty.commonName}, best wishes from ${ourIdentity.commonName}"
+        )
 
         // Log the response to be sent.
         log.info("MSCF: response.message: ${response.message}")
