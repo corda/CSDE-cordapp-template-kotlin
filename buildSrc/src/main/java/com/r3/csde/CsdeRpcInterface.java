@@ -410,6 +410,7 @@ public class CsdeRpcInterface {
 
         ProcessBuilder procBuild = new ProcessBuilder(javaBinDir + "/java",
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
+                "-DsecurityPolicyAllPermissions=true",
                 "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
                 "-jar",
                 combinedWorkerJar.toString(),

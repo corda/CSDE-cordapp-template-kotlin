@@ -22,6 +22,10 @@ class TestServiceConsumer {
                 ?: throw NullPointerException("Could not get ${TestService::class.java}")
         }
 
+        fun getAllImpls(): List<TestService> {
+            return ServiceLoader.load(TestService::class.java, this.javaClass.classLoader).toList()
+        }
+
         fun testMe(s: String): String {
             return testService.testMe(s)
         }
