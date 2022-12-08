@@ -103,8 +103,8 @@ class MyServConsFlow : RPCStartableFlow {
 // MyServConsFlowResponder is a responder flow, it's corresponding initiating flow is called MyServConsFlow (defined above)
 // to link the two sides of the flow together they need to have the same protocol.
 @InitiatedBy(protocol = "my-servCons-flow")
-open// Responder flows must inherit from ResponderFlow
-class MyServConsFlowResponder : ResponderFlow {
+// Responder flows must inherit from ResponderFlow
+open class MyServConsFlowResponder : ResponderFlow {
 
     // It is useful to be able to log messages from the flows for debugging.
     private companion object {
