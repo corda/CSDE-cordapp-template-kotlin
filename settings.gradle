@@ -6,6 +6,7 @@ pluginManagement {
             url = "$artifactoryContextUrl/"
         }
 
+
         // Internal R3 Repos while in dev mode
         mavenCentral {
             content {
@@ -13,6 +14,7 @@ pluginManagement {
             }
         }
 
+        /*
 
         // R3 internal repositories
         maven {
@@ -42,6 +44,8 @@ pluginManagement {
                 password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
             }
         }
+
+         */
 
    }
 
