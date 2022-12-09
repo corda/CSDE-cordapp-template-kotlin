@@ -74,6 +74,13 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 repositories {
     // All dependencies are held in Maven Central
     mavenCentral()
+    maven {
+        url "https://software.r3.com/artifactory/corda-os-maven-unstable/"
+        credentials {
+            username = System.getenv('CORDA_ARTIFACTORY_USERNAME')
+            password = System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+        }
+    }
 }
 
 // Declare dependencies for the modules we will use.

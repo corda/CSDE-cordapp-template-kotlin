@@ -7,6 +7,13 @@ pluginManagement {
                 includeGroupByRegex 'net\\.corda(\\..*)?'
             }
         }
+        maven {
+            url "https://software.r3.com/artifactory/corda-os-maven-unstable/"
+            credentials {
+                username = System.getenv('CORDA_ARTIFACTORY_USERNAME')
+                password = System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+            }
+        }
     }
 
     //  The plugin dependencies with versions of the plugins congruent with the specified CorDapp plugin version,
