@@ -37,3 +37,5 @@ include 'CorDapp2'
 include 'cpkServiceApi'
 include 'cpkServiceProvider'
 include 'CorDappServiceConsumer'
+
+include 'CorDappEncumbrance'
