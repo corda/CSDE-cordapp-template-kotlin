@@ -18,6 +18,8 @@ import java.util.concurrent.ExecutionException;
 import static java.lang.Thread.sleep;
 import static java.net.HttpURLConnection.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class CsdeRpcInterface {
     private Project project;
     private String baseURL = "https://localhost:8888";
@@ -78,7 +80,9 @@ public class CsdeRpcInterface {
 
     public LinkedList<String> getConfigX500Ids() throws IOException {
         LinkedList<String> x500Ids = new LinkedList<>();
-        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+//        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
+
 
         FileInputStream in = new FileInputStream(X500ConfigFile);
         com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
@@ -93,7 +97,7 @@ public class CsdeRpcInterface {
         if (notaryRepresentatives == null) {
             notaryRepresentatives = new HashMap<>();
 
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            ObjectMapper mapper = new ObjectMapper();
 
             FileInputStream in = new FileInputStream(X500ConfigFile);
             com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
@@ -155,7 +159,7 @@ public class CsdeRpcInterface {
     }
 
 
-    public void reportError(@NotNull kong.unirest.HttpResponse<kong.unirest.JsonNode> response) throws CsdeException {
+    public void reportError(@NotNull kong.unirest.HttpResponse<JsonNode> response) throws CsdeException {
 
         out.println("*** *** ***");
         out.println("Unexpected response from Corda");
@@ -172,7 +176,7 @@ public class CsdeRpcInterface {
                 .getBody();
     }
 
-    public kong.unirest.HttpResponse<kong.unirest.JsonNode> getVNodeInfo() {
+    public kong.unirest.HttpResponse<JsonNode> getVNodeInfo() {
         Unirest.config().verifySsl(false);
         return Unirest.get(baseURL + "/api/v1/virtualnode/")
                 .basicAuth(rpcUser, rpcPasswd)
@@ -180,13 +184,13 @@ public class CsdeRpcInterface {
     }
 
     public void listVNodesVerbose() {
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = getVNodeInfo();
+        kong.unirest.HttpResponse<JsonNode> vnodeResponse = getVNodeInfo();
         out.println("VNodes:\n" + vnodeResponse.getBody().toPrettyString());
     }
 
     // X500Name, shorthash, cpiname
     public void listVNodes() {
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = getVNodeInfo();
+        kong.unirest.HttpResponse<JsonNode> vnodeResponse = getVNodeInfo();
 
         kong.unirest.json.JSONArray virtualNodesJson = (JSONArray) vnodeResponse.getBody().getObject().get("virtualNodes");
         out.println("X500 Name\tHolding identity short hash\tCPI Name");
@@ -201,7 +205,7 @@ public class CsdeRpcInterface {
         }
     }
 
-    public kong.unirest.HttpResponse<kong.unirest.JsonNode> getCpiInfo() {
+    public kong.unirest.HttpResponse<JsonNode> getCpiInfo() {
         Unirest.config().verifySsl(false);
         return Unirest.get(baseURL + "/api/v1/cpi/")
                 .basicAuth(rpcUser, rpcPasswd)
@@ -209,7 +213,7 @@ public class CsdeRpcInterface {
     }
 
     public void listCPIs() {
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo();
+        kong.unirest.HttpResponse<JsonNode> cpiResponse  = getCpiInfo();
         kong.unirest.json.JSONArray jArray = (JSONArray) cpiResponse.getBody().getObject().get("cpis");
 
         for(Object o: jArray){
@@ -223,7 +227,7 @@ public class CsdeRpcInterface {
 
     public void uploadCertificate(String certAlias, String certFName) {
         Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.put(baseURL + "/api/v1/certificates/cluster/code-signer")
+        kong.unirest.HttpResponse<JsonNode> uploadResponse = Unirest.put(baseURL + "/api/v1/certificates/cluster/code-signer")
                 .field("alias", certAlias)
                 .field("certificate", new File(certFName))
                 .basicAuth(rpcUser, rpcPasswd)
@@ -238,7 +242,7 @@ public class CsdeRpcInterface {
 
     public void forceuploadCPI(String cpiFName, String uploadStatusQualifier) throws FileNotFoundException, CsdeException {
         Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonResponse = Unirest.post(baseURL + "/api/v1/maintenance/virtualnode/forcecpiupload/")
+        kong.unirest.HttpResponse<JsonNode> jsonResponse = Unirest.post(baseURL + "/api/v1/maintenance/virtualnode/forcecpiupload/")
                 .field("upload", new File(cpiFName))
                 .basicAuth(rpcUser, rpcPasswd)
                 .asJson();
@@ -246,7 +250,7 @@ public class CsdeRpcInterface {
         if(jsonResponse.getStatus() == HTTP_OK) {
             String id = (String) jsonResponse.getBody().getObject().get("id");
             out.println("get id:\n" +id);
-            kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
+            kong.unirest.HttpResponse<JsonNode> statusResponse = uploadStatus(id);
 
             if (statusResponse.getStatus() == HTTP_OK) {
                 PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
@@ -262,9 +266,9 @@ public class CsdeRpcInterface {
         }
     }
 
-    private boolean uploadStatusRetry(kong.unirest.HttpResponse<kong.unirest.JsonNode> response) {
+    private boolean uploadStatusRetry(kong.unirest.HttpResponse<JsonNode> response) {
         int status = response.getStatus();
-        kong.unirest.JsonNode body = response.getBody();
+        JsonNode body = response.getBody();
         // Do not retry on success
         if(status == HTTP_OK) {
             // Keep retrying until we get "OK" may move through "Validating upload", "Persisting CPI"
@@ -284,8 +288,8 @@ public class CsdeRpcInterface {
         return false;
     }
 
-    public kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadStatus(String requestId) {
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = null;
+    public kong.unirest.HttpResponse<JsonNode> uploadStatus(String requestId) {
+        kong.unirest.HttpResponse<JsonNode> statusResponse = null;
         do {
             rpcWait(1000);
             statusResponse = Unirest
@@ -309,7 +313,7 @@ public class CsdeRpcInterface {
                           String uploadStatusQualifier) throws FileNotFoundException, CsdeException {
         Unirest.config().verifySsl(false);
 
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo();
+        kong.unirest.HttpResponse<JsonNode> cpiResponse  = getCpiInfo();
         kong.unirest.json.JSONArray jArray = (JSONArray) cpiResponse.getBody().getObject().get("cpis");
 
         int matches = 0;
@@ -502,43 +506,43 @@ public class CsdeRpcInterface {
         pollForCompleteMembershipRegistration(OKHoldingX500AndShortIds);
     }
 
-    public void startCorda() throws IOException {
-        PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPidCache));
-        File combinedWorkerJar = project.getConfigurations().getByName("combinedWorker").getSingleFile();
-
-        new ProcessBuilder(
-                "docker",
-                "run", "-d", "--rm",
-                "-p", "5432:5432",
-                "--name", dbContainerName,
-                "-e", "POSTGRES_DB=cordacluster",
-                "-e", "POSTGRES_USER=postgres",
-                "-e", "POSTGRES_PASSWORD=password",
-                "postgres:latest").start();
-        rpcWait(10000);
-
-        ProcessBuilder procBuild = new ProcessBuilder(javaBinDir + "/java",
-                "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
-                "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
-                "-jar",
-                combinedWorkerJar.toString(),
-                "--instanceId=0",
-                "-mbus.busType=DATABASE",
-                "-spassphrase=password",
-                "-ssalt=salt",
-                "-spassphrase=password",
-                "-ssalt=salt",
-                "-ddatabase.user=user",
-                "-ddatabase.pass=password",
-                "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
-                "-ddatabase.jdbc.directory="+JDBCDir);
-
-
-        procBuild.redirectErrorStream(true);
-        Process proc = procBuild.start();
-        pidStore.print(proc.pid());
-        out.println("Corda Process-id="+proc.pid());
-    }
+//    public void startCorda() throws IOException {
+//        PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPidCache));
+//        File combinedWorkerJar = project.getConfigurations().getByName("combinedWorker").getSingleFile();
+//
+//        new ProcessBuilder(
+//                "docker",
+//                "run", "-d", "--rm",
+//                "-p", "5432:5432",
+//                "--name", dbContainerName,
+//                "-e", "POSTGRES_DB=cordacluster",
+//                "-e", "POSTGRES_USER=postgres",
+//                "-e", "POSTGRES_PASSWORD=password",
+//                "postgres:latest").start();
+//        rpcWait(10000);
+//
+//        ProcessBuilder procBuild = new ProcessBuilder(javaBinDir + "/java",
+//                "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
+//                "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
+//                "-jar",
+//                combinedWorkerJar.toString(),
+//                "--instanceId=0",
+//                "-mbus.busType=DATABASE",
+//                "-spassphrase=password",
+//                "-ssalt=salt",
+//                "-spassphrase=password",
+//                "-ssalt=salt",
+//                "-ddatabase.user=user",
+//                "-ddatabase.pass=password",
+//                "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
+//                "-ddatabase.jdbc.directory="+JDBCDir);
+//
+//
+//        procBuild.redirectErrorStream(true);
+//        Process proc = procBuild.start();
+//        pidStore.print(proc.pid());
+//        out.println("Corda Process-id="+proc.pid());
+//    }
 
     public void stopCorda() throws IOException, NoPidFile {
         File cordaPIDFile = new File(cordaPidCache);

@@ -1,11 +1,15 @@
 import com.r3.csde.CsdeRpcInterface
+import com.r3.csde.TestJavaClass
+import com.r3.csde.CordaLifeCycle
+import com.r3.csde.ProjectContext
 
 plugins {
+
     id 'java-library'
     id 'groovy'
     id 'java'
-}
 
+}
 
 configurations {
     combinedWorker{
@@ -69,6 +73,30 @@ def csdeHelper = new CsdeRpcInterface(project,
         cordaJDBCDir,
         combiWorkerPidCacheFile
 )
+
+def projectContext = new ProjectContext(project,
+        cordaClusterURL.toString(),
+        cordaRpcUser,
+        cordaRpcPasswd,
+        devEnvWorkspace,
+        new String("${System.getProperty("java.home")}/bin"),
+        dbContainerName,
+        cordaJDBCDir,
+        combiWorkerPidCacheFile
+)
+
+def cordaLifeCycle = new CordaLifeCycle(projectContext)
+
+def testJavaClass = new TestJavaClass()
+
+// todo start here -> consider breaking the java up into different files grouped by purpose
+
+tasks.register("testJava") {
+    group = pluginGroupName
+    doLast {
+        println(testJavaClass.helloWorld())
+    }
+}
 
 
 tasks.register("getPostgresJDBC") {
@@ -294,7 +322,9 @@ tasks.register("startCorda") {
     dependsOn('getDevCordaLite', 'getPostgresJDBC')
     doLast {
         mkdir devEnvWorkspace
-        csdeHelper.startCorda()
+//        csdeHelper.startCorda()
+        cordaLifeCycle.startCorda()
+
     }
 }
 
