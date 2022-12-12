@@ -460,7 +460,8 @@ public class CsdeRpcInterface {
                 // 200/HTTP_OK - OK
                 // 409/HTTP_CONFLICT - Vnode already exists
                 if (jsonNode.getStatus() != HTTP_CONFLICT) {
-                    if (jsonNode.getStatus() != HTTP_OK) {
+                    if (jsonNode.getStatus() != HTTP_OK && jsonNode.getStatus() != HTTP_INTERNAL_ERROR) {
+                    //if (jsonNode.getStatus() != HTTP_OK) {
                         reportError(jsonNode);
                     } else {
                         JSONObject thing = jsonNode.getBody().getObject().getJSONObject("holdingIdentity");
