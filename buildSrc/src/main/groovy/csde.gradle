@@ -2,6 +2,8 @@ import com.r3.csde.TestJavaClass
 import com.r3.csde.CordaLifeCycleHelper
 import com.r3.csde.ProjectContext
 import com.r3.csde.DeployCordappHelper
+import com.r3.csde.BuildCPIHelper
+import com.r3.csde.ProjectUtils
 
 plugins {
     id 'java-library'
@@ -72,6 +74,8 @@ def projectContext = new ProjectContext(project,
         combiWorkerPidCacheFile
 )
 
+def projectUtils = new ProjectUtils()
+
 // todo: Start here -> Can the one off tasks be split into a separate file/ section, eg create group policy etc..
 
 // todo: should the x500Config be loaded into the ProjectContext, then read from it wherever needed, eg in
@@ -87,7 +91,7 @@ def projectContext = new ProjectContext(project,
 
 
 
-def deployCordapp = new DeployCordappHelper(projectContext)
+def deployCordappHelper = new DeployCordappHelper(projectContext)
 
 def testJavaClass = new TestJavaClass()
 
@@ -157,7 +161,7 @@ tasks.register('listCPIs') {
 
 // Build CPI tasks
 
-
+def buildCPIHelper = new BuildCPIHelper(projectContext)
 
 tasks.register('projInit') {
     group = pluginImplGroupName
@@ -176,7 +180,7 @@ tasks.register("createGroupPolicy") {
             File groupPolicyFile = new File(groupPolicyFName)
             File devnetFile = new File(devnetFName)
             if (!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
-                def configX500Ids = deployCordappHelper.getConfigX500Ids()
+                def configX500Ids = projectUtils.getConfigX500Ids(projectContext.X500ConfigFile)
 
                 println("createGroupPolicy: Creating a GroupPolicy")
 

@@ -14,6 +14,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import static com.r3.csde.ProjectUtils.getConfigX500Ids;
+import static com.r3.csde.ProjectUtils.jsonNodeToString;
 import static java.lang.Thread.sleep;
 import static java.net.HttpURLConnection.*;
 
@@ -41,19 +43,19 @@ public class DeployCordappHelper {
         rpcWait( pc.retryWaitMs);
     }
 
-    public LinkedList<String> getConfigX500Ids() throws IOException {
-        LinkedList<String> x500Ids = new LinkedList<>();
-//        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        ObjectMapper mapper = new ObjectMapper();
-
-
-        FileInputStream in = new FileInputStream(pc.X500ConfigFile);
-        com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
-        for( com.fasterxml.jackson.databind.JsonNode identity:  jsonNode.get("identities")) {
-            x500Ids.add(jsonNodeToString(identity));
-        }
-        return x500Ids;
-    }
+//    public LinkedList<String> getConfigX500Ids() throws IOException {
+//        LinkedList<String> x500Ids = new LinkedList<>();
+////        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+//        ObjectMapper mapper = new ObjectMapper();
+//
+//
+//        FileInputStream in = new FileInputStream(pc.X500ConfigFile);
+//        com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
+//        for( com.fasterxml.jackson.databind.JsonNode identity:  jsonNode.get("identities")) {
+//            x500Ids.add(jsonNodeToString(identity));
+//        }
+//        return x500Ids;
+//    }
 
     // KV pairs of representative x500 name and corresponding notary service x500 name
     public Map<String, String> getNotaryRepresentatives() throws IOException, ConfigurationException {
@@ -65,7 +67,7 @@ public class DeployCordappHelper {
             FileInputStream in = new FileInputStream(pc.X500ConfigFile);
             com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
 
-            List<String> identities = getConfigX500Ids();
+            List<String> identities = getConfigX500Ids(pc.X500ConfigFile);
 
             for (com.fasterxml.jackson.databind.JsonNode notary : jsonNode.get("notaries")) {
 
@@ -381,7 +383,7 @@ public class DeployCordappHelper {
         String appCpiCheckSum = getLastCPIUploadChkSum( pc.CPIUploadStatusFName );
         String notaryCpiCheckSum = getLastCPIUploadChkSum( pc.CPIUploadStatusFName, "-NotaryServer" );
 
-        LinkedList<String> x500Ids = getConfigX500Ids();
+        LinkedList<String> x500Ids = getConfigX500Ids(pc.X500ConfigFile);
         // Map of X500 name to short hash
         Map<String, String> OKHoldingX500AndShortIds = new HashMap<>();
 
@@ -471,10 +473,10 @@ public class DeployCordappHelper {
 
 
     // Helper to extract a string from a  JSON node and strip quotes
-    private String jsonNodeToString(com.fasterxml.jackson.databind.JsonNode jsonNode) {
-        String jsonString = jsonNode.toString();
-        return jsonString.substring(1, jsonString.length()-1);
-    }
+//    private String jsonNodeToString(com.fasterxml.jackson.databind.JsonNode jsonNode) {
+//        String jsonString = jsonNode.toString();
+//        return jsonString.substring(1, jsonString.length()-1);
+//    }
 
     private String getMemberRegistrationBody(String memberX500Name) throws ConfigurationException, IOException {
         Map<String, String> notaryReps = getNotaryRepresentatives();
