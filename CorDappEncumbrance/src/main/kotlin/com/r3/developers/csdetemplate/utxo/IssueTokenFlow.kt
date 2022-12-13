@@ -73,6 +73,9 @@ class IssueTokenFlow : RPCStartableFlow {
             .addCommand(Issue())
             .addSignatories(listOf(issuerParty.owningKey))
 
+        log.info("\n[IssueTokenFlow] $issuerParty")
+        log.info("\n[IssueTokenFlow] ${issuerParty.name}")
+        log.info("\n[IssueTokenFlow] ${issuerParty.owningKey}")
         @Suppress("DEPRECATION")
         val signedTx = utxoTxBuilder.toSignedTransaction(issuerParty.owningKey)
         val sessions = listOf(flowMessaging.initiateFlow(ownerParty.name))
