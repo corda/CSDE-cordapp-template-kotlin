@@ -1,14 +1,12 @@
-import com.r3.csde.CsdeRpcInterface
 import com.r3.csde.TestJavaClass
-import com.r3.csde.CordaLifeCycle
+import com.r3.csde.CordaLifeCycleHelper
 import com.r3.csde.ProjectContext
+import com.r3.csde.DeployCordappHelper
 
 plugins {
-
     id 'java-library'
     id 'groovy'
     id 'java'
-
 }
 
 configurations {
@@ -63,17 +61,6 @@ def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
 def appCpiName =  'cpi name'
 def notaryCpiName =  'CSDE Notary Server CPI'
 
-def csdeHelper = new CsdeRpcInterface(project,
-        cordaClusterURL.toString(),
-        cordaRpcUser,
-        cordaRpcPasswd,
-        devEnvWorkspace,
-        new String("${System.getProperty("java.home")}/bin"),
-        dbContainerName,
-        cordaJDBCDir,
-        combiWorkerPidCacheFile
-)
-
 def projectContext = new ProjectContext(project,
         cordaClusterURL.toString(),
         cordaRpcUser,
@@ -85,11 +72,26 @@ def projectContext = new ProjectContext(project,
         combiWorkerPidCacheFile
 )
 
-def cordaLifeCycle = new CordaLifeCycle(projectContext)
+// todo: Start here -> Can the one off tasks be split into a separate file/ section, eg create group policy etc..
+
+// todo: should the x500Config be loaded into the ProjectContext, then read from it wherever needed, eg in
+// createGroupPolicy + 3 times in the Java
+
+// todo investigate adding corda-cli to the class path then executing it directly - might not work as
+// gradle has to set up the jar file, so its not their when you start.
+
+// Todo: write a test flow runner helper function
+// todo: Write a final output message which give the set up VNodes
+// todo: question, is it possible to invoke the cli from java rather than gradle/ groovy
+
+
+
+
+def deployCordapp = new DeployCordappHelper(projectContext)
 
 def testJavaClass = new TestJavaClass()
 
-// todo start here -> consider breaking the java up into different files grouped by purpose
+
 
 tasks.register("testJava") {
     group = pluginGroupName
@@ -98,6 +100,25 @@ tasks.register("testJava") {
     }
 }
 
+// CordaLifeCycle tasks
+
+def cordaLifeCycle = new CordaLifeCycleHelper(projectContext)
+
+tasks.register("startCorda") {
+    group = pluginGroupName
+    dependsOn('getDevCordaLite', 'getPostgresJDBC')
+    doLast {
+        mkdir devEnvWorkspace
+        cordaLifeCycle.startCorda()
+    }
+}
+
+tasks.register("stopCorda") {
+    group = pluginGroupName
+    doLast {
+        cordaLifeCycle.stopCorda()
+    }
+}
 
 tasks.register("getPostgresJDBC") {
     group = pluginImplGroupName
@@ -108,6 +129,35 @@ tasks.register("getPostgresJDBC") {
         }
     }
 }
+
+tasks.register("getDevCordaLite", Copy) {
+    group = pluginImplGroupName
+    from configurations.combinedWorker
+    into cordaBinDir
+}
+
+
+
+// CordaStatusQueries
+
+tasks.register('listVNodes') {
+    group = pluginGroupName
+    doLast {
+        deployCordappHelper.listVNodes()
+    }
+}
+
+tasks.register('listCPIs') {
+    group = pluginImplGroupName
+    doLast {
+        deployCordappHelper.listCPIs()
+    }
+}
+
+
+// Build CPI tasks
+
+
 
 tasks.register('projInit') {
     group = pluginImplGroupName
@@ -126,7 +176,7 @@ tasks.register("createGroupPolicy") {
             File groupPolicyFile = new File(groupPolicyFName)
             File devnetFile = new File(devnetFName)
             if (!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
-                def configX500Ids = csdeHelper.getConfigX500Ids()
+                def configX500Ids = deployCordappHelper.getConfigX500Ids()
 
                 println("createGroupPolicy: Creating a GroupPolicy")
 
@@ -154,11 +204,6 @@ tasks.register("createGroupPolicy") {
     }
 }
 
-tasks.register("getDevCordaLite", Copy) {
-    group = pluginImplGroupName
-    from configurations.combinedWorker
-    into cordaBinDir
-}
 
 tasks.register("getNotaryServerCPB", Copy) {
     group = pluginImplGroupName
@@ -207,7 +252,6 @@ tasks.register('createKeystore') {
 
     }
 }
-
 
 tasks.register('buildCPIs') {
     group = pluginGroupName
@@ -274,14 +318,18 @@ tasks.register('buildCPIs') {
 
 }
 
+
+
+// deploy CPI tasks
+
 tasks.register("deployCPIs") {
     group = pluginImplGroupName
     dependsOn('buildCPIs')
     doLast {
-        csdeHelper.uploadCertificate(signingCertAlias, signingCertFName)
-        csdeHelper.uploadCertificate(keystoreAlias, keystoreCertFName)
-        csdeHelper.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi", appCpiName, project.version)
-        csdeHelper.deployCPI(
+        deployCordappHelper.uploadCertificate(signingCertAlias, signingCertFName)
+        deployCordappHelper.uploadCertificate(keystoreAlias, keystoreCertFName)
+        deployCordappHelper.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi", appCpiName, project.version)
+        deployCordappHelper.deployCPI(
                 "${buildDir}/${notaryCpiName.replace(' ', '-').toLowerCase()}-${project.version}.cpi",
                 notaryCpiName,
                 project.version,
@@ -293,23 +341,10 @@ tasks.register("createAndRegVNodes") {
     group = pluginImplGroupName
     dependsOn('deployCPIs')
     doLast {
-        csdeHelper.createAndRegVNodes()
+        deployCordappHelper.createAndRegVNodes()
     }
 }
 
-tasks.register('listVNodes') {
-    group = pluginGroupName
-    doLast {
-        csdeHelper.listVNodes()
-    }
-}
-
-tasks.register('listCPIs') {
-    group = pluginImplGroupName
-    doLast {
-        csdeHelper.listCPIs()
-    }
-}
 
 // Empty task, just acts as the Task user entry point task.
 tasks.register('deployCordapp') {
@@ -317,20 +352,4 @@ tasks.register('deployCordapp') {
     dependsOn("createAndRegVNodes")
 }
 
-tasks.register("startCorda") {
-    group = pluginGroupName
-    dependsOn('getDevCordaLite', 'getPostgresJDBC')
-    doLast {
-        mkdir devEnvWorkspace
-//        csdeHelper.startCorda()
-        cordaLifeCycle.startCorda()
 
-    }
-}
-
-tasks.register("stopCorda") {
-    group = pluginGroupName
-    doLast {
-        csdeHelper.stopCorda()
-    }
-}

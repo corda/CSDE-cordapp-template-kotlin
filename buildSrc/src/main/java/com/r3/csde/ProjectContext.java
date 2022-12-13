@@ -11,7 +11,7 @@ public class ProjectContext {
     String rpcUser = "admin";
     String rpcPasswd = "admin";
      String workspaceDir = "workspace";
-    static  int retryWaitMs = 1000;
+    static int retryWaitMs = 1000;
     static PrintStream out = System.out;
     static String CPIUploadStatusBaseName = "CPIFileStatus.json";
     static String CPIUploadStatusFName;

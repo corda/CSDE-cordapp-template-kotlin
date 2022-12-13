@@ -1,21 +1,20 @@
 package com.r3.csde;
 
-import org.gradle.api.Project;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Scanner;
 
 /**
  * Manages Bringing corda up, testing for liveness and takign corda down
  */
 
-public class CordaLifeCycle {
+public class CordaLifeCycleHelper {
 
     ProjectContext pc;
 
-    public CordaLifeCycle(ProjectContext _pc) {
+    public CordaLifeCycleHelper(ProjectContext _pc) {
         pc = _pc;
     }
 
@@ -57,5 +56,29 @@ public class CordaLifeCycle {
         pidStore.print(proc.pid());
         pc.out.println("Corda Process-id="+proc.pid());
     }
+
+
+    public void stopCorda() throws IOException, NoPidFile {
+        File cordaPIDFile = new File(pc.cordaPidCache);
+        if(cordaPIDFile.exists()) {
+            Scanner sc = new Scanner(cordaPIDFile);
+            long pid = sc.nextLong();
+            pc.out.println("pid to kill=" + pid);
+
+            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+                new ProcessBuilder("Powershell", "-Command", "Stop-Process", "-Id", Long.toString(pid), "-PassThru").start();
+            } else {
+                new ProcessBuilder("kill", "-9", Long.toString(pid)).start();
+            }
+
+            Process proc = new ProcessBuilder("docker", "stop", pc.dbContainerName).start();
+
+            cordaPIDFile.delete();
+        }
+        else {
+            throw new NoPidFile("Cannot stop the Combined worker\nCached process ID file " + pc.cordaPidCache + " missing.\nWas the combined worker not started?");
+        }
+    }
+
 
 }

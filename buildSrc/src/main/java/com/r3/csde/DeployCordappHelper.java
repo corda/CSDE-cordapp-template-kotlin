@@ -6,7 +6,6 @@ import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 import net.corda.v5.base.types.MemberX500Name;
-import org.gradle.api.Project;
 import org.jetbrains.annotations.NotNull;
 
 import javax.naming.ConfigurationException;
@@ -20,49 +19,13 @@ import static java.net.HttpURLConnection.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class CsdeRpcInterface {
-    private Project project;
-    private String baseURL = "https://localhost:8888";
-    private String rpcUser = "admin";
-    private String rpcPasswd = "admin";
-    private String workspaceDir = "workspace";
-    static private int retryWaitMs = 1000;
-    static PrintStream out = System.out;
-    static private String CPIUploadStatusBaseName = "CPIFileStatus.json";
-    static private String CPIUploadStatusFName;
-    static private String X500ConfigFile = "config/dev-net.json";
-    static private String javaBinDir;
-    static private String cordaPidCache = "CordaPIDCache.dat";
-    static private String dbContainerName;
-    private String JDBCDir;
-    private String combinedWorkerBinRe;
-    private Map<String, String> notaryRepresentatives = null;
+public class DeployCordappHelper {
 
-    public CsdeRpcInterface() {
+    public DeployCordappHelper() {
     }
+    ProjectContext pc;
+    public DeployCordappHelper(ProjectContext _pc) { pc = _pc;}
 
-    public CsdeRpcInterface (Project inProject,
-                             String inBaseUrl,
-                             String inRpcUser,
-                             String inRpcPasswd,
-                             String inWorkspaceDir,
-                             String inJavaBinDir,
-                             String inDbContainerName,
-                             String inJDBCDir,
-                             String inCordaPidCache
-    ) {
-        project = inProject;
-        baseURL = inBaseUrl;
-        rpcUser = inRpcUser;
-        rpcPasswd = inRpcPasswd;
-        workspaceDir = inWorkspaceDir;
-        javaBinDir = inJavaBinDir;
-        cordaPidCache = inCordaPidCache;
-        dbContainerName = inDbContainerName;
-        JDBCDir = inJDBCDir;
-        CPIUploadStatusFName = workspaceDir +"/"+ CPIUploadStatusBaseName;
-
-    }
 
 
     static private void rpcWait(int millis) {
@@ -74,8 +37,8 @@ public class CsdeRpcInterface {
         }
     }
 
-    static private void rpcWait() {
-        rpcWait(retryWaitMs);
+    private void rpcWait() {
+        rpcWait( pc.retryWaitMs);
     }
 
     public LinkedList<String> getConfigX500Ids() throws IOException {
@@ -84,7 +47,7 @@ public class CsdeRpcInterface {
         ObjectMapper mapper = new ObjectMapper();
 
 
-        FileInputStream in = new FileInputStream(X500ConfigFile);
+        FileInputStream in = new FileInputStream(pc.X500ConfigFile);
         com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
         for( com.fasterxml.jackson.databind.JsonNode identity:  jsonNode.get("identities")) {
             x500Ids.add(jsonNodeToString(identity));
@@ -94,12 +57,12 @@ public class CsdeRpcInterface {
 
     // KV pairs of representative x500 name and corresponding notary service x500 name
     public Map<String, String> getNotaryRepresentatives() throws IOException, ConfigurationException {
-        if (notaryRepresentatives == null) {
-            notaryRepresentatives = new HashMap<>();
+        if (pc.notaryRepresentatives == null) {
+            pc.notaryRepresentatives = new HashMap<>();
 
             ObjectMapper mapper = new ObjectMapper();
 
-            FileInputStream in = new FileInputStream(X500ConfigFile);
+            FileInputStream in = new FileInputStream(pc.X500ConfigFile);
             com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
 
             List<String> identities = getConfigX500Ids();
@@ -124,7 +87,7 @@ public class CsdeRpcInterface {
                     String repAsString = jsonNodeToString(representative);
 
                     if (identities.contains(repAsString)) {
-                        notaryRepresentatives.put(repAsString, svcX500Id);
+                        pc.notaryRepresentatives.put(repAsString, svcX500Id);
                     } else {
                         throw new ConfigurationException(
                                 "Notary representative \"" + repAsString + "\" is not a valid identity");
@@ -133,7 +96,7 @@ public class CsdeRpcInterface {
             }
         }
 
-        return notaryRepresentatives;
+        return pc.notaryRepresentatives;
     }
 
     static public String getLastCPIUploadChkSum(@NotNull String CPIUploadStatusFName) throws IOException, NullPointerException {
@@ -161,12 +124,12 @@ public class CsdeRpcInterface {
 
     public void reportError(@NotNull kong.unirest.HttpResponse<JsonNode> response) throws CsdeException {
 
-        out.println("*** *** ***");
-        out.println("Unexpected response from Corda");
-        out.println("Status="+ response.getStatus());
-        out.println("*** Headers ***\n"+ response.getHeaders());
-        out.println("*** Body ***\n"+ response.getBody());
-        out.println("*** *** ***");
+        pc.out.println("*** *** ***");
+        pc.out.println("Unexpected response from Corda");
+        pc.out.println("Status="+ response.getStatus());
+        pc.out.println("*** Headers ***\n"+ response.getHeaders());
+        pc.out.println("*** Body ***\n"+ response.getBody());
+        pc.out.println("*** *** ***");
         throw new CsdeException("Error: unexpected response from Corda.");
     }
 
@@ -178,14 +141,14 @@ public class CsdeRpcInterface {
 
     public kong.unirest.HttpResponse<JsonNode> getVNodeInfo() {
         Unirest.config().verifySsl(false);
-        return Unirest.get(baseURL + "/api/v1/virtualnode/")
-                .basicAuth(rpcUser, rpcPasswd)
+        return Unirest.get(pc.baseURL + "/api/v1/virtualnode/")
+                .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
     }
 
     public void listVNodesVerbose() {
         kong.unirest.HttpResponse<JsonNode> vnodeResponse = getVNodeInfo();
-        out.println("VNodes:\n" + vnodeResponse.getBody().toPrettyString());
+        pc.out.println("VNodes:\n" + vnodeResponse.getBody().toPrettyString());
     }
 
     // X500Name, shorthash, cpiname
@@ -193,22 +156,22 @@ public class CsdeRpcInterface {
         kong.unirest.HttpResponse<JsonNode> vnodeResponse = getVNodeInfo();
 
         kong.unirest.json.JSONArray virtualNodesJson = (JSONArray) vnodeResponse.getBody().getObject().get("virtualNodes");
-        out.println("X500 Name\tHolding identity short hash\tCPI Name");
+        pc.out.println("X500 Name\tHolding identity short hash\tCPI Name");
         for(Object o: virtualNodesJson){
             if(o instanceof kong.unirest.json.JSONObject) {
                 kong.unirest.json.JSONObject idObj = ((kong.unirest.json.JSONObject) o).getJSONObject("holdingIdentity");
                 kong.unirest.json.JSONObject cpiObj = ((kong.unirest.json.JSONObject) o).getJSONObject("cpiIdentifier");
-                out.print("\"" + idObj.get("x500Name") + "\"");
-                out.print("\t\"" + idObj.get("shortHash") + "\"");
-                out.println("\t\"" + cpiObj.get("cpiName") + "\"");
+                pc.out.print("\"" + idObj.get("x500Name") + "\"");
+                pc.out.print("\t\"" + idObj.get("shortHash") + "\"");
+                pc.out.println("\t\"" + cpiObj.get("cpiName") + "\"");
             }
         }
     }
 
     public kong.unirest.HttpResponse<JsonNode> getCpiInfo() {
         Unirest.config().verifySsl(false);
-        return Unirest.get(baseURL + "/api/v1/cpi/")
-                .basicAuth(rpcUser, rpcPasswd)
+        return Unirest.get(pc.baseURL + "/api/v1/cpi/")
+                .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
     }
 
@@ -219,21 +182,21 @@ public class CsdeRpcInterface {
         for(Object o: jArray){
             if(o instanceof kong.unirest.json.JSONObject) {
                 kong.unirest.json.JSONObject idObj = ((kong.unirest.json.JSONObject) o).getJSONObject("id");
-                out.print("cpiName=" + idObj.get("cpiName"));
-                out.println(", cpiVersion=" + idObj.get("cpiVersion"));
+                pc.out.print("cpiName=" + idObj.get("cpiName"));
+                pc.out.println(", cpiVersion=" + idObj.get("cpiVersion"));
             }
         }
     }
 
     public void uploadCertificate(String certAlias, String certFName) {
         Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<JsonNode> uploadResponse = Unirest.put(baseURL + "/api/v1/certificates/cluster/code-signer")
+        kong.unirest.HttpResponse<JsonNode> uploadResponse = Unirest.put(pc.baseURL + "/api/v1/certificates/cluster/code-signer")
                 .field("alias", certAlias)
                 .field("certificate", new File(certFName))
-                .basicAuth(rpcUser, rpcPasswd)
+                .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
-        out.println("Certificate/key upload, alias "+certAlias+" certificate/key file "+certFName);
-        out.println(uploadResponse.getBody().toPrettyString());
+        pc.out.println("Certificate/key upload, alias "+certAlias+" certificate/key file "+certFName);
+        pc.out.println(uploadResponse.getBody().toPrettyString());
     }
 
     public void forceuploadCPI(String cpiFName) throws FileNotFoundException, CsdeException {
@@ -242,21 +205,21 @@ public class CsdeRpcInterface {
 
     public void forceuploadCPI(String cpiFName, String uploadStatusQualifier) throws FileNotFoundException, CsdeException {
         Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<JsonNode> jsonResponse = Unirest.post(baseURL + "/api/v1/maintenance/virtualnode/forcecpiupload/")
+        kong.unirest.HttpResponse<JsonNode> jsonResponse = Unirest.post(pc.baseURL + "/api/v1/maintenance/virtualnode/forcecpiupload/")
                 .field("upload", new File(cpiFName))
-                .basicAuth(rpcUser, rpcPasswd)
+                .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
 
         if(jsonResponse.getStatus() == HTTP_OK) {
             String id = (String) jsonResponse.getBody().getObject().get("id");
-            out.println("get id:\n" +id);
+            pc.out.println("get id:\n" +id);
             kong.unirest.HttpResponse<JsonNode> statusResponse = uploadStatus(id);
 
             if (statusResponse.getStatus() == HTTP_OK) {
                 PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
-                        CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));
+                        pc.CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));
                 cpiUploadStatus.print(statusResponse.getBody());
-                out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
+                pc.out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
             } else {
                 reportError(statusResponse);
             }
@@ -293,10 +256,10 @@ public class CsdeRpcInterface {
         do {
             rpcWait(1000);
             statusResponse = Unirest
-                    .get(baseURL + "/api/v1/cpi/status/" + requestId + "/")
-                    .basicAuth(rpcUser, rpcPasswd)
+                    .get(pc.baseURL + "/api/v1/cpi/status/" + requestId + "/")
+                    .basicAuth(pc.rpcUser, pc.rpcPasswd)
                     .asJson();
-            out.println("Upload status="+statusResponse.getStatus()+", status query response:\n"+statusResponse.getBody().toPrettyString());
+            pc.out.println("Upload status="+statusResponse.getStatus()+", status query response:\n"+statusResponse.getBody().toPrettyString());
         }
         while(uploadStatusRetry(statusResponse));
 
@@ -326,32 +289,32 @@ public class CsdeRpcInterface {
                 }
             }
         }
-        out.println("Matching CPIS="+matches);
+        pc.out.println("Matching CPIS="+matches);
 
         if(matches == 0) {
-            kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")
+            kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.post(pc.baseURL + "/api/v1/cpi/")
                     .field("upload", new File(cpiFName))
-                    .basicAuth(rpcUser, rpcPasswd)
+                    .basicAuth(pc.rpcUser, pc.rpcPasswd)
                     .asJson();
 
             kong.unirest.JsonNode body = uploadResponse.getBody();
 
             int status = uploadResponse.getStatus();
 
-            out.println("Upload Status:" + status);
-            out.println("Pretty print the body\n" + body.toPrettyString());
+            pc.out.println("Upload Status:" + status);
+            pc.out.println("Pretty print the body\n" + body.toPrettyString());
 
             // We expect the id field to be a string.
             if (status == HTTP_OK) {
                 String id = (String) body.getObject().get("id");
-                out.println("get id:\n" + id);
+                pc.out.println("get id:\n" + id);
 
                 kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
                 if (statusResponse.getStatus() == HTTP_OK) {
                     PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
-                            CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));
+                            pc.CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));
                     cpiUploadStatus.print(statusResponse.getBody());
-                    out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
+                    pc.out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
                 } else {
                     reportError(statusResponse);
                 }
@@ -360,7 +323,7 @@ public class CsdeRpcInterface {
             }
         }
         else {
-            out.println("CPI already uploaded doing a 'force' upload.");
+            pc.out.println("CPI already uploaded doing a 'force' upload.");
             forceuploadCPI(cpiFName);
         }
     }
@@ -368,7 +331,7 @@ public class CsdeRpcInterface {
     private boolean isMembershipRegComplete(kong.unirest.HttpResponse<kong.unirest.JsonNode> response) throws CsdeException {
         if(response.getStatus() == HTTP_OK) {
             kong.unirest.JsonNode responseBody = response.getBody();
-            out.println(responseBody.toPrettyString());
+            pc.out.println(responseBody.toPrettyString());
             if(responseBody.getArray().length() > 0) {
                 kong.unirest.json.JSONObject memRegStatusInfo = (kong.unirest.json.JSONObject) responseBody
                         .getArray()
@@ -397,10 +360,10 @@ public class CsdeRpcInterface {
             approved.clear();
             for (String vnodeX500 : vnodesToCheck) {
                 try {
-                    out.println("Checking membership registration progress for v-node '" + vnodeX500 + "':");
+                    pc.out.println("Checking membership registration progress for v-node '" + vnodeX500 + "':");
                     kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = Unirest
-                            .get(baseURL + "/api/v1/membership/" + X500ToShortIdHash.get(vnodeX500) + "/")
-                            .basicAuth(rpcUser, rpcPasswd)
+                            .get(pc.baseURL + "/api/v1/membership/" + X500ToShortIdHash.get(vnodeX500) + "/")
+                            .basicAuth(pc.rpcUser, pc.rpcPasswd)
                             .asJson();
                     if (isMembershipRegComplete(statusResponse)) {
                         approved.add(vnodeX500);
@@ -415,8 +378,8 @@ public class CsdeRpcInterface {
 
     public void createAndRegVNodes() throws IOException, CsdeException, ConfigurationException{
         Unirest.config().verifySsl(false);
-        String appCpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName );
-        String notaryCpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName, "-NotaryServer" );
+        String appCpiCheckSum = getLastCPIUploadChkSum( pc.CPIUploadStatusFName );
+        String notaryCpiCheckSum = getLastCPIUploadChkSum( pc.CPIUploadStatusFName, "-NotaryServer" );
 
         LinkedList<String> x500Ids = getConfigX500Ids();
         // Map of X500 name to short hash
@@ -442,20 +405,20 @@ public class CsdeRpcInterface {
             if(!existingX500.contains(MemberX500Name.parse(x500id) )) {
                 String cpiCheckSum = getNotaryRepresentatives().containsKey(x500id) ?  notaryCpiCheckSum : appCpiCheckSum;
 
-                out.println("Creating VNode for x500id=\"" + x500id + "\" cpi checksum=" + cpiCheckSum);
+                pc.out.println("Creating VNode for x500id=\"" + x500id + "\" cpi checksum=" + cpiCheckSum);
                 responses.put(x500id, Unirest
-                        .post(baseURL + "/api/v1/virtualnode")
+                        .post(pc.baseURL + "/api/v1/virtualnode")
                         .body("{ \"request\" : { \"cpiFileChecksum\": " + cpiCheckSum + ", \"x500Name\": \"" + x500id + "\" } }")
-                        .basicAuth(rpcUser, rpcPasswd)
+                        .basicAuth(pc.rpcUser, pc.rpcPasswd)
                         .asJsonAsync()
                 );
             }
             else {
-                out.println("Not creating a vnode for \"" + x500id + "\", vnode already exists.");
+                pc.out.println("Not creating a vnode for \"" + x500id + "\", vnode already exists.");
             }
         }
 
-        out.println("Waiting for VNode creation results...");
+        pc.out.println("Waiting for VNode creation results...");
 
         for (Map.Entry<String, CompletableFuture<HttpResponse<JsonNode>>> response: responses.entrySet()) {
             try {
@@ -483,16 +446,16 @@ public class CsdeRpcInterface {
 
         for(String okId: OKHoldingX500AndShortIds.keySet()) {
             responses.put(okId, Unirest
-                    .post(baseURL + "/api/v1/membership/" +  OKHoldingX500AndShortIds.get(okId))
+                    .post(pc.baseURL + "/api/v1/membership/" +  OKHoldingX500AndShortIds.get(okId))
                     .body(getMemberRegistrationBody(okId))
-                    .basicAuth(rpcUser, rpcPasswd)
+                    .basicAuth(pc.rpcUser, pc.rpcPasswd)
                     .asJsonAsync( response ->
-                            out.println("Vnode membership submission for \"" + okId + "\"" +
+                            pc.out.println("Vnode membership submission for \"" + okId + "\"" +
                                     System.lineSeparator() + response.getBody().toPrettyString()))
             );
         }
 
-        out.println("Vnode membership requests submitted, waiting for acknowledgement from MGM...");
+        pc.out.println("Vnode membership requests submitted, waiting for acknowledgement from MGM...");
 
         for (Map.Entry<String, CompletableFuture<HttpResponse<JsonNode>>> response: responses.entrySet()) {
             try {
@@ -506,65 +469,6 @@ public class CsdeRpcInterface {
         pollForCompleteMembershipRegistration(OKHoldingX500AndShortIds);
     }
 
-//    public void startCorda() throws IOException {
-//        PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPidCache));
-//        File combinedWorkerJar = project.getConfigurations().getByName("combinedWorker").getSingleFile();
-//
-//        new ProcessBuilder(
-//                "docker",
-//                "run", "-d", "--rm",
-//                "-p", "5432:5432",
-//                "--name", dbContainerName,
-//                "-e", "POSTGRES_DB=cordacluster",
-//                "-e", "POSTGRES_USER=postgres",
-//                "-e", "POSTGRES_PASSWORD=password",
-//                "postgres:latest").start();
-//        rpcWait(10000);
-//
-//        ProcessBuilder procBuild = new ProcessBuilder(javaBinDir + "/java",
-//                "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
-//                "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
-//                "-jar",
-//                combinedWorkerJar.toString(),
-//                "--instanceId=0",
-//                "-mbus.busType=DATABASE",
-//                "-spassphrase=password",
-//                "-ssalt=salt",
-//                "-spassphrase=password",
-//                "-ssalt=salt",
-//                "-ddatabase.user=user",
-//                "-ddatabase.pass=password",
-//                "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
-//                "-ddatabase.jdbc.directory="+JDBCDir);
-//
-//
-//        procBuild.redirectErrorStream(true);
-//        Process proc = procBuild.start();
-//        pidStore.print(proc.pid());
-//        out.println("Corda Process-id="+proc.pid());
-//    }
-
-    public void stopCorda() throws IOException, NoPidFile {
-        File cordaPIDFile = new File(cordaPidCache);
-        if(cordaPIDFile.exists()) {
-            Scanner sc = new Scanner(cordaPIDFile);
-            long pid = sc.nextLong();
-            out.println("pid to kill=" + pid);
-
-            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-                new ProcessBuilder("Powershell", "-Command", "Stop-Process", "-Id", Long.toString(pid), "-PassThru").start();
-            } else {
-                new ProcessBuilder("kill", "-9", Long.toString(pid)).start();
-            }
-
-            Process proc = new ProcessBuilder("docker", "stop", dbContainerName).start();
-
-            cordaPIDFile.delete();
-        }
-        else {
-            throw new NoPidFile("Cannot stop the Combined worker\nCached process ID file " + cordaPidCache + " missing.\nWas the combined worker not started?");
-        }
-    }
 
     // Helper to extract a string from a  JSON node and strip quotes
     private String jsonNodeToString(com.fasterxml.jackson.databind.JsonNode jsonNode) {
