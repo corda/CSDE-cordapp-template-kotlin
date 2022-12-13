@@ -5,13 +5,15 @@ import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.application.messaging.FlowMessaging
+import net.corda.v5.application.messaging.FlowSession
 import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
-import net.corda.v5.ledger.common.NotaryLookup
 import net.corda.v5.ledger.common.Party
 import net.corda.v5.ledger.utxo.*
+import net.corda.v5.ledger.utxo.transaction.UtxoLedgerTransaction
+import net.corda.v5.ledger.utxo.transaction.UtxoTransactionValidator
 import java.time.Instant
 
 @CordaSerializable
@@ -47,12 +49,9 @@ class IssueTokenFlow : RPCStartableFlow {
     @CordaInject
     lateinit var memberLookup: MemberLookup
 
-    @CordaInject
-    lateinit var notaryLookup: NotaryLookup
-
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
-        log.info("[IssueTokenFlow] Starting...")
+        log.info("\n[IssueTokenFlow] Starting...")
 
 //        val notaryInfo =
 //            notaryLookup.notaryServices.firstOrNull() ?: throw IllegalArgumentException("Notary not available!")
@@ -76,12 +75,38 @@ class IssueTokenFlow : RPCStartableFlow {
 
         @Suppress("DEPRECATION")
         val signedTx = utxoTxBuilder.toSignedTransaction(issuerParty.owningKey)
-        val finalizedTx = utxoLedgerService.finalize(signedTx, emptyList())
-        log.info("[IssueTokenFlow] Finalized Tx is: $finalizedTx")
-        finalizedTx.outputStateAndRefs.map { it.state.contractState }.forEach { log.info("[IssueTokenFlow] $it") }
+        val sessions = listOf(flowMessaging.initiateFlow(ownerParty.name))
+        val finalizedTx = utxoLedgerService.finalize(signedTx, sessions)
+        log.info("\n[IssueTokenFlow] Finalized Tx is: $finalizedTx")
+        finalizedTx.outputStateAndRefs.map { it.state.contractState }.forEach { log.info("\n[IssueTokenFlow] $it") }
 
         val resultMessage = finalizedTx.id.toString()
-        log.info("[IssueTokenFlow] Finalized Tx Id is: $resultMessage")
+        log.info("\n[IssueTokenFlow] Finalized Tx Id is: $resultMessage")
         return resultMessage
+    }
+}
+
+@InitiatedBy("utxo-token-issue-flow-protocol")
+class IssueTokenRespFlow : ResponderFlow, UtxoTransactionValidator {
+
+    private companion object {
+        val log = contextLogger()
+    }
+
+    @CordaInject
+    lateinit var utxoLedgerService: UtxoLedgerService
+
+    @Suspendable
+    override fun call(session: FlowSession) {
+        log.info("\n[IssueTokenRespFlow] Starting...")
+        val finalizedTx = utxoLedgerService.receiveFinality(session, this)
+        val resultMessage = finalizedTx.id.toString()
+        log.info("\n[IssueTokenRespFlow] Finalized Tx Id is: $resultMessage")
+    }
+
+    @Suspendable
+    override fun checkTransaction(ledgerTransaction: UtxoLedgerTransaction) {
+        log.info("\n[IssueTokenRespFlow] UtxoLedger Tx is: ${ledgerTransaction.id}")
+        ledgerTransaction.outputContractStates.forEach { log.info("\n[IssueTokenRespFlow] $it") }
     }
 }
