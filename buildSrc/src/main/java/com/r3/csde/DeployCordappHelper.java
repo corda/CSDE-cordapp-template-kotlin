@@ -14,11 +14,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static com.r3.csde.ProjectUtils.getConfigX500Ids;
-import static com.r3.csde.ProjectUtils.jsonNodeToString;
-import static java.lang.Thread.sleep;
 import static java.net.HttpURLConnection.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DeployCordappHelper {
@@ -26,36 +22,14 @@ public class DeployCordappHelper {
     public DeployCordappHelper() {
     }
     ProjectContext pc;
-    public DeployCordappHelper(ProjectContext _pc) { pc = _pc;}
+    CordaStatusQueries queries;
+    ProjectUtils utils;
 
-
-
-    static private void rpcWait(int millis) {
-        try {
-            sleep(millis);
-        }
-        catch(InterruptedException e) {
-            throw new UnsupportedOperationException("Interrupts not supported.", e);
-        }
+    public DeployCordappHelper(ProjectContext _pc) {
+        pc = _pc;
+        queries = new CordaStatusQueries(pc);
+        utils = new ProjectUtils(pc);
     }
-
-    private void rpcWait() {
-        rpcWait( pc.retryWaitMs);
-    }
-
-//    public LinkedList<String> getConfigX500Ids() throws IOException {
-//        LinkedList<String> x500Ids = new LinkedList<>();
-////        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-//        ObjectMapper mapper = new ObjectMapper();
-//
-//
-//        FileInputStream in = new FileInputStream(pc.X500ConfigFile);
-//        com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
-//        for( com.fasterxml.jackson.databind.JsonNode identity:  jsonNode.get("identities")) {
-//            x500Ids.add(jsonNodeToString(identity));
-//        }
-//        return x500Ids;
-//    }
 
     // KV pairs of representative x500 name and corresponding notary service x500 name
     public Map<String, String> getNotaryRepresentatives() throws IOException, ConfigurationException {
@@ -67,11 +41,11 @@ public class DeployCordappHelper {
             FileInputStream in = new FileInputStream(pc.X500ConfigFile);
             com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
 
-            List<String> identities = getConfigX500Ids(pc.X500ConfigFile);
+            List<String> identities = utils.getConfigX500Ids(pc.X500ConfigFile);
 
             for (com.fasterxml.jackson.databind.JsonNode notary : jsonNode.get("notaries")) {
 
-                String svcX500Id = jsonNodeToString(notary.get("serviceX500Name"));
+                String svcX500Id = utils.jsonNodeToString(notary.get("serviceX500Name"));
 
                 com.fasterxml.jackson.databind.JsonNode repsForThisService = notary.get("representatives");
 
@@ -86,7 +60,7 @@ public class DeployCordappHelper {
 
                 for (com.fasterxml.jackson.databind.JsonNode representative : repsForThisService) {
 
-                    String repAsString = jsonNodeToString(representative);
+                    String repAsString = utils.jsonNodeToString(representative);
 
                     if (identities.contains(repAsString)) {
                         pc.notaryRepresentatives.put(repAsString, svcX500Id);
@@ -139,55 +113,6 @@ public class DeployCordappHelper {
         Unirest.get(url)
                 .asFile(targetPath)
                 .getBody();
-    }
-
-    public kong.unirest.HttpResponse<JsonNode> getVNodeInfo() {
-        Unirest.config().verifySsl(false);
-        return Unirest.get(pc.baseURL + "/api/v1/virtualnode/")
-                .basicAuth(pc.rpcUser, pc.rpcPasswd)
-                .asJson();
-    }
-
-    public void listVNodesVerbose() {
-        kong.unirest.HttpResponse<JsonNode> vnodeResponse = getVNodeInfo();
-        pc.out.println("VNodes:\n" + vnodeResponse.getBody().toPrettyString());
-    }
-
-    // X500Name, shorthash, cpiname
-    public void listVNodes() {
-        kong.unirest.HttpResponse<JsonNode> vnodeResponse = getVNodeInfo();
-
-        kong.unirest.json.JSONArray virtualNodesJson = (JSONArray) vnodeResponse.getBody().getObject().get("virtualNodes");
-        pc.out.println("X500 Name\tHolding identity short hash\tCPI Name");
-        for(Object o: virtualNodesJson){
-            if(o instanceof kong.unirest.json.JSONObject) {
-                kong.unirest.json.JSONObject idObj = ((kong.unirest.json.JSONObject) o).getJSONObject("holdingIdentity");
-                kong.unirest.json.JSONObject cpiObj = ((kong.unirest.json.JSONObject) o).getJSONObject("cpiIdentifier");
-                pc.out.print("\"" + idObj.get("x500Name") + "\"");
-                pc.out.print("\t\"" + idObj.get("shortHash") + "\"");
-                pc.out.println("\t\"" + cpiObj.get("cpiName") + "\"");
-            }
-        }
-    }
-
-    public kong.unirest.HttpResponse<JsonNode> getCpiInfo() {
-        Unirest.config().verifySsl(false);
-        return Unirest.get(pc.baseURL + "/api/v1/cpi/")
-                .basicAuth(pc.rpcUser, pc.rpcPasswd)
-                .asJson();
-    }
-
-    public void listCPIs() {
-        kong.unirest.HttpResponse<JsonNode> cpiResponse  = getCpiInfo();
-        kong.unirest.json.JSONArray jArray = (JSONArray) cpiResponse.getBody().getObject().get("cpis");
-
-        for(Object o: jArray){
-            if(o instanceof kong.unirest.json.JSONObject) {
-                kong.unirest.json.JSONObject idObj = ((kong.unirest.json.JSONObject) o).getJSONObject("id");
-                pc.out.print("cpiName=" + idObj.get("cpiName"));
-                pc.out.println(", cpiVersion=" + idObj.get("cpiVersion"));
-            }
-        }
     }
 
     public void uploadCertificate(String certAlias, String certFName) {
@@ -256,7 +181,7 @@ public class DeployCordappHelper {
     public kong.unirest.HttpResponse<JsonNode> uploadStatus(String requestId) {
         kong.unirest.HttpResponse<JsonNode> statusResponse = null;
         do {
-            rpcWait(1000);
+            utils.rpcWait(1000);
             statusResponse = Unirest
                     .get(pc.baseURL + "/api/v1/cpi/status/" + requestId + "/")
                     .basicAuth(pc.rpcUser, pc.rpcPasswd)
@@ -278,7 +203,7 @@ public class DeployCordappHelper {
                           String uploadStatusQualifier) throws FileNotFoundException, CsdeException {
         Unirest.config().verifySsl(false);
 
-        kong.unirest.HttpResponse<JsonNode> cpiResponse  = getCpiInfo();
+        kong.unirest.HttpResponse<JsonNode> cpiResponse  = queries.getCpiInfo();
         kong.unirest.json.JSONArray jArray = (JSONArray) cpiResponse.getBody().getObject().get("cpis");
 
         int matches = 0;
@@ -358,7 +283,7 @@ public class DeployCordappHelper {
         HashSet<String> vnodesToCheck = new HashSet<String>(X500ToShortIdHash.keySet());
         LinkedList<String> approved = new LinkedList<String>();
         while (!vnodesToCheck.isEmpty()) {
-            rpcWait(2000);
+            utils.rpcWait(2000);
             approved.clear();
             for (String vnodeX500 : vnodesToCheck) {
                 try {
@@ -383,13 +308,13 @@ public class DeployCordappHelper {
         String appCpiCheckSum = getLastCPIUploadChkSum( pc.CPIUploadStatusFName );
         String notaryCpiCheckSum = getLastCPIUploadChkSum( pc.CPIUploadStatusFName, "-NotaryServer" );
 
-        LinkedList<String> x500Ids = getConfigX500Ids(pc.X500ConfigFile);
+        LinkedList<String> x500Ids = utils.getConfigX500Ids(pc.X500ConfigFile);
         // Map of X500 name to short hash
         Map<String, String> OKHoldingX500AndShortIds = new HashMap<>();
 
         // For each identity check that it already exists.
         Set<MemberX500Name> existingX500 = new HashSet<>();
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeListResponse = getVNodeInfo();
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeListResponse = queries.getVNodeInfo();
 
         kong.unirest.json.JSONArray virtualNodesJson = (JSONArray) vnodeListResponse.getBody().getObject().get("virtualNodes");
         for(Object o: virtualNodesJson){
@@ -470,13 +395,6 @@ public class DeployCordappHelper {
 
         pollForCompleteMembershipRegistration(OKHoldingX500AndShortIds);
     }
-
-
-    // Helper to extract a string from a  JSON node and strip quotes
-//    private String jsonNodeToString(com.fasterxml.jackson.databind.JsonNode jsonNode) {
-//        String jsonString = jsonNode.toString();
-//        return jsonString.substring(1, jsonString.length()-1);
-//    }
 
     private String getMemberRegistrationBody(String memberX500Name) throws ConfigurationException, IOException {
         Map<String, String> notaryReps = getNotaryRepresentatives();

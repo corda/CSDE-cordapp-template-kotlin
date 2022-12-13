@@ -10,7 +10,13 @@ import static java.lang.Thread.sleep;
 
 public class ProjectUtils {
 
-    static void rpcWait(int millis) {
+    ProjectContext pc;
+    ProjectUtils(ProjectContext _pc) {
+        pc = _pc;
+    }
+
+
+    void rpcWait(int millis) {
         try {
             sleep(millis);
         }
@@ -19,7 +25,11 @@ public class ProjectUtils {
         }
     }
 
-    static public LinkedList<String> getConfigX500Ids(String configFile) throws IOException {
+    private void rpcWait() {
+        rpcWait( pc.retryWaitMs);
+    }
+
+    public LinkedList<String> getConfigX500Ids(String configFile) throws IOException {
         LinkedList<String> x500Ids = new LinkedList<>();
 //        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
         ObjectMapper mapper = new ObjectMapper();
@@ -33,9 +43,10 @@ public class ProjectUtils {
         return x500Ids;
     }
 
-    static String jsonNodeToString(com.fasterxml.jackson.databind.JsonNode jsonNode) {
+    String jsonNodeToString(com.fasterxml.jackson.databind.JsonNode jsonNode) {
         String jsonString = jsonNode.toString();
         return jsonString.substring(1, jsonString.length()-1);
     }
+
 
 }

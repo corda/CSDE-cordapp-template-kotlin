@@ -4,6 +4,7 @@ import com.r3.csde.ProjectContext
 import com.r3.csde.DeployCordappHelper
 import com.r3.csde.BuildCPIHelper
 import com.r3.csde.ProjectUtils
+import com.r3.csde.CordaStatusQueries
 
 plugins {
     id 'java-library'
@@ -78,9 +79,6 @@ def projectUtils = new ProjectUtils()
 
 // todo: Start here -> Can the one off tasks be split into a separate file/ section, eg create group policy etc..
 
-// todo: should the x500Config be loaded into the ProjectContext, then read from it wherever needed, eg in
-// createGroupPolicy + 3 times in the Java
-
 // todo investigate adding corda-cli to the class path then executing it directly - might not work as
 // gradle has to set up the jar file, so its not their when you start.
 
@@ -144,17 +142,20 @@ tasks.register("getDevCordaLite", Copy) {
 
 // CordaStatusQueries
 
+def cordaStatusQueries = new CordaStatusQueries(projectContext)
+
+
 tasks.register('listVNodes') {
     group = pluginGroupName
     doLast {
-        deployCordappHelper.listVNodes()
+        cordaStatusQueries.listVNodes()
     }
 }
 
 tasks.register('listCPIs') {
     group = pluginImplGroupName
     doLast {
-        deployCordappHelper.listCPIs()
+        cordaStatusQueries.listCPIs()
     }
 }
 

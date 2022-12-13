@@ -13,9 +13,11 @@ import java.util.Scanner;
 public class CordaLifeCycleHelper {
 
     ProjectContext pc;
+    ProjectUtils utils;
 
     public CordaLifeCycleHelper(ProjectContext _pc) {
         pc = _pc;
+        utils = new ProjectUtils(pc);
     }
 
 
@@ -32,7 +34,7 @@ public class CordaLifeCycleHelper {
                 "-e", "POSTGRES_USER=postgres",
                 "-e", "POSTGRES_PASSWORD=password",
                 "postgres:latest").start();
-        ProjectUtils.rpcWait(10000);
+        utils.rpcWait(10000);
 
         ProcessBuilder procBuild = new ProcessBuilder(pc.javaBinDir + "/java",
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
