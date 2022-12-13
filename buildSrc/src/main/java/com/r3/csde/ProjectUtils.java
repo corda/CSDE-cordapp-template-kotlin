@@ -1,6 +1,7 @@
 package com.r3.csde;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kong.unirest.Unirest;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class ProjectUtils {
         }
     }
 
-    private void rpcWait() {
+    void rpcWait() {
         rpcWait( pc.retryWaitMs);
     }
 
@@ -43,10 +44,14 @@ public class ProjectUtils {
         return x500Ids;
     }
 
-    String jsonNodeToString(com.fasterxml.jackson.databind.JsonNode jsonNode) {
+    public String jsonNodeToString(com.fasterxml.jackson.databind.JsonNode jsonNode) {
         String jsonString = jsonNode.toString();
         return jsonString.substring(1, jsonString.length()-1);
     }
 
-
+    public void downloadFile(String url, String targetPath) {
+        Unirest.get(url)
+                .asFile(targetPath)
+                .getBody();
+    }
 }

@@ -109,12 +109,6 @@ public class DeployCordappHelper {
         throw new CsdeException("Error: unexpected response from Corda.");
     }
 
-    public void downloadFile(String url, String targetPath) {
-        Unirest.get(url)
-                .asFile(targetPath)
-                .getBody();
-    }
-
     public void uploadCertificate(String certAlias, String certFName) {
         Unirest.config().verifySsl(false);
         kong.unirest.HttpResponse<JsonNode> uploadResponse = Unirest.put(pc.baseURL + "/api/v1/certificates/cluster/code-signer")
