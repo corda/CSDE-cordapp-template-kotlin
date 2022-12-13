@@ -367,6 +367,7 @@ public class CsdeRpcInterface {
                 "postgres:latest").start();
         rpcWait(10000);
 
+        /*
         ProcessBuilder procBuild = new ProcessBuilder(javaBinDir + "/java",
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
                 "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
@@ -382,6 +383,28 @@ public class CsdeRpcInterface {
                 "-ddatabase.pass=password",
                 "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
                 "-ddatabase.jdbc.directory="+JDBCDir);
+
+         */
+
+
+        ProcessBuilder procBuild = new ProcessBuilder(javaBinDir + "/java",
+                "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
+                "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
+                "-Dlog4j2.configurationFile= C:\\Users\\eric\\.corda\\log4j2.xml",
+                "-jar",
+                combinedWorkerJar.toString(),
+                "--instanceId=0",
+                "-mbus.busType=DATABASE",
+                "-spassphrase=password",
+                "-ssalt=salt",
+                "-spassphrase=password",
+                "-ssalt=salt",
+                "-ddatabase.user=user",
+                "-ddatabase.pass=password",
+                "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
+                "-ddatabase.jdbc.directory="+JDBCDir);
+
+
 
 
         procBuild.redirectErrorStream(true);
