@@ -22,6 +22,15 @@ public class ProjectContext {
     String JDBCDir;
     String combinedWorkerBinRe;
     Map<String, String> notaryRepresentatives = null;
+    String signingCertAlias;
+    String signingCertFName;
+    String keystoreAlias;
+    String keystoreFName;
+    String keystoreCertFName;
+    String appCPIName;
+    String notaryCPIName;
+
+
 
     public ProjectContext (Project inProject,
                            String inBaseUrl,
@@ -31,7 +40,14 @@ public class ProjectContext {
                            String inJavaBinDir,
                            String inDbContainerName,
                            String inJDBCDir,
-                           String inCordaPidCache
+                           String inCordaPidCache,
+                           String inSigningCertAlias,
+                           String inSigningCertFName,
+                           String inKeystoreAlias,
+                           String inKeystoreFName,
+                           String inKeystoreCertFName,
+                           String inAppCPIName,
+                           String inNotaryCPIName
     ) {
         project = inProject;
         baseURL = inBaseUrl;
@@ -43,5 +59,12 @@ public class ProjectContext {
         dbContainerName = inDbContainerName;
         JDBCDir = inJDBCDir;
         CPIUploadStatusFName = workspaceDir + "/" + CPIUploadStatusBaseName;
+        signingCertAlias = inSigningCertAlias;
+        signingCertFName = inSigningCertFName;
+        keystoreAlias = inKeystoreAlias;
+        keystoreFName = inKeystoreFName;
+        keystoreCertFName = inKeystoreCertFName;
+        appCPIName = inAppCPIName;
+        notaryCPIName = inNotaryCPIName;
     }
 }

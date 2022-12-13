@@ -31,6 +31,30 @@ public class DeployCordappHelper {
         utils = new ProjectUtils(pc);
     }
 
+    public void deployCPIs() throws FileNotFoundException, CsdeException{
+
+        uploadCertificate(pc.signingCertAlias, pc.signingCertFName);
+        uploadCertificate(pc.keystoreAlias, pc.keystoreCertFName);
+
+        String appCPILocation = String.format("%s/%s-%s.cpi",
+                pc.project.getBuildDir(),
+                pc.project.getName(),
+                pc.project.getVersion());
+        deployCPI(appCPILocation, pc.appCPIName,pc.project.getVersion().toString());
+
+        String notaryCPILocation = String.format("%s/%s-%s.cpi",
+                pc.project.getBuildDir(),
+                pc.notaryCPIName.replace(' ','-').toLowerCase(),
+                pc.project.getVersion());
+        deployCPI(notaryCPILocation,
+                pc.notaryCPIName,
+                pc.project.getVersion().toString(),
+                "-NotaryServer" );
+
+    }
+
+
+
     // KV pairs of representative x500 name and corresponding notary service x500 name
     public Map<String, String> getNotaryRepresentatives() throws IOException, ConfigurationException {
         if (pc.notaryRepresentatives == null) {

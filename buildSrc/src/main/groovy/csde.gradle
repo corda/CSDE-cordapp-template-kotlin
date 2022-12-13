@@ -72,7 +72,14 @@ def projectContext = new ProjectContext(project,
         new String("${System.getProperty("java.home")}/bin"),
         dbContainerName,
         cordaJDBCDir,
-        combiWorkerPidCacheFile
+        combiWorkerPidCacheFile,
+        signingCertAlias,
+        signingCertFName,
+        keystoreAlias,
+        keystoreFName,
+        keystoreCertFName,
+        appCpiName,
+        notaryCpiName
 )
 
 def projectUtils = new ProjectUtils()
@@ -333,14 +340,7 @@ tasks.register("deployCPIs") {
     group = pluginImplGroupName
     dependsOn('buildCPIs')
     doLast {
-        deployCordappHelper.uploadCertificate(signingCertAlias, signingCertFName)
-        deployCordappHelper.uploadCertificate(keystoreAlias, keystoreCertFName)
-        deployCordappHelper.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi", appCpiName, project.version)
-        deployCordappHelper.deployCPI(
-                "${buildDir}/${notaryCpiName.replace(' ', '-').toLowerCase()}-${project.version}.cpi",
-                notaryCpiName,
-                project.version,
-                "-NotaryServer")
+        deployCordappHelper.deployCPIs()
     }
 }
 
