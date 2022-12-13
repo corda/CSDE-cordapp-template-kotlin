@@ -20,7 +20,7 @@ data class TokenIssueRequest(val amount: Int, val owner: MemberX500Name)
 /*
 {
   "clientRequestId": "issue_1",
-  "flowClassName": "com.r3.developers.csdetemplate.utxo.TokenIssueFlow",
+  "flowClassName": "com.r3.developers.csdetemplate.utxo.IssueTokenFlow",
   "requestData": {
     "owner": "CN=Bob, OU=Test Dept, O=R3, L=London, C=GB",
     "amount": 10
@@ -29,7 +29,7 @@ data class TokenIssueRequest(val amount: Int, val owner: MemberX500Name)
 */
 
 @InitiatingFlow("utxo-token-issue-flow-protocol")
-class TokenIssueFlow : RPCStartableFlow {
+class IssueTokenFlow : RPCStartableFlow {
 
     private companion object {
         val log = contextLogger()
@@ -52,7 +52,7 @@ class TokenIssueFlow : RPCStartableFlow {
 
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
-        log.info("TokenIssueFlow starting...")
+        log.info("[IssueTokenFlow] Starting...")
 
 //        val notaryInfo =
 //            notaryLookup.notaryServices.firstOrNull() ?: throw IllegalArgumentException("Notary not available!")
@@ -73,14 +73,15 @@ class TokenIssueFlow : RPCStartableFlow {
             .addOutputState(tokenState)
             .addCommand(Issue())
             .addSignatories(listOf(issuerParty.owningKey))
+
         @Suppress("DEPRECATION")
         val signedTx = utxoTxBuilder.toSignedTransaction(issuerParty.owningKey)
         val finalizedTx = utxoLedgerService.finalize(signedTx, emptyList())
-        log.info("Finalized Tx is: $finalizedTx")
-        finalizedTx.outputStateAndRefs.map { it.state.contractState }.forEach { log.info(it.toString()) }
+        log.info("[IssueTokenFlow] Finalized Tx is: $finalizedTx")
+        finalizedTx.outputStateAndRefs.map { it.state.contractState }.forEach { log.info("[IssueTokenFlow] $it") }
 
         val resultMessage = finalizedTx.id.toString()
-        log.info("Response: $resultMessage")
+        log.info("[IssueTokenFlow] Finalized Tx Id is: $resultMessage")
         return resultMessage
     }
 }

@@ -11,7 +11,7 @@ class TokenContract : Contract {
 
     interface Commands : Command {
         class Issue : Commands
-        class Move : Commands
+        class MoveAll : Commands
     }
 
     @Throws(IllegalArgumentException::class)
@@ -24,8 +24,8 @@ class TokenContract : Contract {
                 return
             }
 
-            is Commands.Move -> {
-                verifyMoveCmd(transaction)
+            is Commands.MoveAll -> {
+                verifyMoveAllCmd(transaction)
                 return
             }
 
@@ -45,7 +45,9 @@ class TokenContract : Contract {
         val tokenState = outputStates[0]
 
         //content == logic
-        require(tokenState.amount > 0) { "Output.TokenState.Amount must be > 0!" }
+        require(tokenState.amount > 0) {
+            "Output.TokenState.Amount must be > 0!"
+        }
 
         //signers
         if (!transaction.signatories.contains(tokenState.issuer.owningKey)) {
@@ -53,7 +55,24 @@ class TokenContract : Contract {
         }
     }
 
-    private fun verifyMoveCmd(transaction: UtxoLedgerTransaction) {
-        // will do it later on ...
+    private fun verifyMoveAllCmd(transaction: UtxoLedgerTransaction) {
+        //shape == params
+        val inputStates = transaction.getInputStates(TokenState::class.java)
+        require(inputStates.size == 1) { "Inputs must be one!" }
+        val inputTokenState = inputStates[0]
+
+        val outputStates = transaction.getOutputStates(TokenState::class.java)
+        require(outputStates.size == 1) { "Outputs must be one!" }
+        val outputTokenState = outputStates[0]
+
+        //content == logic
+        require(inputTokenState.amount == outputTokenState.amount) {
+            "Output.TokenState.Amount must be equals to Input.TokenState.Amount!"
+        }
+
+        //signers
+        if (!transaction.signatories.contains(inputTokenState.owner.owningKey)) {
+            throw IllegalArgumentException("Input.TokenState.Owner must be required signer!");
+        }
     }
 }
