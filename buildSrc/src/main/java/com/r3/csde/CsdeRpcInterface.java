@@ -390,7 +390,7 @@ public class CsdeRpcInterface {
         ProcessBuilder procBuild = new ProcessBuilder(javaBinDir + "/java",
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
                 "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
-                "-Dlog4j2.configurationFile= C:\\Users\\eric\\.corda\\log4j2.xml",
+                "-Dlog4j2.configurationFile=C:\\Users\\eric\\.corda\\log4j2.xml",
                 "-jar",
                 combinedWorkerJar.toString(),
                 "--instanceId=0",
