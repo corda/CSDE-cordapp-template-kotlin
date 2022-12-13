@@ -64,12 +64,12 @@ class IssueTokenFlow : RPCStartableFlow {
         val issuerMember = memberLookup.myInfo()
         val issuerParty = Party(issuerMember.name, issuerMember.sessionInitiationKey)
 
-        val tokenState = TokenState(issuerParty, ownerParty, request.amount)
+        val outputTokenState = TokenState(issuerParty, ownerParty, request.amount)
 
         val utxoTxBuilder = utxoLedgerService.getTransactionBuilder()
             .setNotary(issuerParty) // notary is not working as of now
             .setTimeWindowBetween(Instant.MIN, Instant.MAX) // a time windows is mandatory
-            .addOutputState(tokenState)
+            .addOutputState(outputTokenState)
             .addCommand(Issue())
             .addSignatories(listOf(issuerParty.owningKey))
 

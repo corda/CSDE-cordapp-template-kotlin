@@ -11,7 +11,6 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.crypto.SecureHash
-import net.corda.v5.ledger.common.NotaryLookup
 import net.corda.v5.ledger.common.Party
 import net.corda.v5.ledger.utxo.*
 import net.corda.v5.ledger.utxo.transaction.UtxoLedgerTransaction
@@ -51,9 +50,6 @@ class MoveAllTokenFlow : RPCStartableFlow {
     @CordaInject
     lateinit var memberLookup: MemberLookup
 
-    @CordaInject
-    lateinit var notaryLookup: NotaryLookup
-
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
         log.info("\n[MoveAllTokenFlow] Starting...")
@@ -78,8 +74,6 @@ class MoveAllTokenFlow : RPCStartableFlow {
         val inputTokenState = inputStateAndRef.state.contractState as TokenState
         val outputTokenState = TokenState(inputTokenState.issuer, ownerParty, inputTokenState.amount)
 
-        log.info("\n[MoveAllTokenFlow] ----- 1 -----")
-
         val utxoTxBuilder = utxoLedgerService.getTransactionBuilder()
             .setNotary(issuerParty) // notary is not working as of now
             .setTimeWindowBetween(Instant.MIN, Instant.MAX) // a time windows is mandatory
@@ -88,18 +82,13 @@ class MoveAllTokenFlow : RPCStartableFlow {
             .addCommand(MoveAll())
             .addSignatories(listOf(issuerParty.owningKey))
 
-        log.info("\n[MoveAllTokenFlow] ----- 2 -----")
-
-
         log.info("\n[MoveAllTokenFlow] $issuerParty")
         log.info("\n[MoveAllTokenFlow] ${issuerParty.name}")
         log.info("\n[MoveAllTokenFlow] ${issuerParty.owningKey}")
         @Suppress("DEPRECATION")
         val signedTx = utxoTxBuilder.toSignedTransaction(issuerParty.owningKey)
-        log.info("\n[MoveAllTokenFlow] ----- 3 -----")
         val sessions = listOf(flowMessaging.initiateFlow(ownerParty.name))
         val finalizedTx = utxoLedgerService.finalize(signedTx, sessions)
-        log.info("\n[MoveAllTokenFlow] ----- 4 -----")
         log.info("\n[MoveAllTokenFlow] Finalized Tx is: $finalizedTx")
         finalizedTx.outputStateAndRefs.map { it.state.contractState }.forEach { log.info("\n[MoveAllTokenFlow] $it") }
 
