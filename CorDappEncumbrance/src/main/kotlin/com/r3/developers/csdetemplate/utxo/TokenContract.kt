@@ -41,17 +41,19 @@ class TokenContract : Contract {
         require(inputStates.isEmpty()) { "Inputs must be empty!" }
 
         val outputStates = transaction.getOutputStates(TokenState::class.java)
-        require(outputStates.size == 1) { "Outputs must be one!" }
-        val tokenState = outputStates[0]
+//        require(outputStates.size == 1) { "Outputs must be one!" }
+//        val tokenState = outputStates[0]
+        outputStates.forEach { tokenState ->
 
-        //content == logic
-        require(tokenState.amount > 0) {
-            "Output.TokenState.Amount must be > 0!"
-        }
+            //content == logic
+            require(tokenState.amount > 0) {
+                "Output.TokenState.Amount must be > 0!"
+            }
 
-        //signers
-        if (!transaction.signatories.contains(tokenState.issuer.owningKey)) {
-            throw IllegalArgumentException("Output.TokenState.Issuer must be required signer!");
+            //signers
+            if (!transaction.signatories.contains(tokenState.issuer.owningKey)) {
+                throw IllegalArgumentException("Output.TokenState.Issuer must be required signer!");
+            }
         }
     }
 

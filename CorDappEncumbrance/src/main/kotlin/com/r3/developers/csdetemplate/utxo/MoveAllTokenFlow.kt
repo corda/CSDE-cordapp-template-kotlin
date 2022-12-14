@@ -52,7 +52,7 @@ class MoveAllTokenFlow : RPCStartableFlow {
 
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
-        log.info("\n[MoveAllTokenFlow] Starting...")
+        log.info("\n--- [MoveAllTokenFlow] Starting...")
 
 //        val notaryInfo =
 //            notaryLookup.notaryServices.firstOrNull() ?: throw IllegalArgumentException("Notary not available!")
@@ -82,18 +82,16 @@ class MoveAllTokenFlow : RPCStartableFlow {
             .addCommand(MoveAll())
             .addSignatories(listOf(issuerParty.owningKey))
 
-        log.info("\n[MoveAllTokenFlow] $issuerParty")
-        log.info("\n[MoveAllTokenFlow] ${issuerParty.name}")
-        log.info("\n[MoveAllTokenFlow] ${issuerParty.owningKey}")
         @Suppress("DEPRECATION")
         val signedTx = utxoTxBuilder.toSignedTransaction(issuerParty.owningKey)
         val sessions = listOf(flowMessaging.initiateFlow(ownerParty.name))
         val finalizedTx = utxoLedgerService.finalize(signedTx, sessions)
-        log.info("\n[MoveAllTokenFlow] Finalized Tx is: $finalizedTx")
-        finalizedTx.outputStateAndRefs.map { it.state.contractState }.forEach { log.info("\n[MoveAllTokenFlow] $it") }
+        log.info("\n--- [MoveAllTokenFlow] Finalized Tx is: $finalizedTx")
+        finalizedTx.outputStateAndRefs.map { it.state.contractState }
+            .forEach { log.info("\n--- [MoveAllTokenFlow] $it") }
 
         val resultMessage = finalizedTx.id.toString()
-        log.info("\n[MoveAllTokenFlow] Finalized Tx Id is: $resultMessage")
+        log.info("\n--- [MoveAllTokenFlow] Finalized Tx Id is: $resultMessage")
         return resultMessage
     }
 }
@@ -110,15 +108,15 @@ class MoveAllTokenRespFlow : ResponderFlow, UtxoTransactionValidator {
 
     @Suspendable
     override fun call(session: FlowSession) {
-        log.info("\n[MoveAllTokenRespFlow] Starting...")
+        log.info("\n--- [MoveAllTokenRespFlow] Starting...")
         val finalizedTx = utxoLedgerService.receiveFinality(session, this)
         val resultMessage = finalizedTx.id.toString()
-        log.info("\n[MoveAllTokenRespFlow] Finalized Tx Id is: $resultMessage")
+        log.info("\n--- [MoveAllTokenRespFlow] Finalized Tx Id is: $resultMessage")
     }
 
     @Suspendable
     override fun checkTransaction(ledgerTransaction: UtxoLedgerTransaction) {
-        log.info("\n[MoveAllTokenRespFlow] UtxoLedger Tx is: ${ledgerTransaction.id}")
-        ledgerTransaction.outputContractStates.forEach { log.info("\n[MoveAllTokenRespFlow] $it") }
+        log.info("\n--- [MoveAllTokenRespFlow] UtxoLedger Tx is: ${ledgerTransaction.id}")
+        ledgerTransaction.outputContractStates.forEach { log.info("\n--- [MoveAllTokenRespFlow] $it") }
     }
 }
