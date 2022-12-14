@@ -26,7 +26,7 @@ data class TokenMoveRequest(val input: String, val owner: MemberX500Name)
   "flowClassName": "com.r3.developers.csdetemplate.utxo.MoveAllTokenFlow",
   "requestData": {
     "owner": "CN=Charlie, OU=Test Dept, O=R3, L=London, C=GB",
-    "input": "SHA-256D:FDCA2015F6D46C676508FE84AF48FE630190F775124E8EFA17EF09F69FF67D42"
+    "input": "SHA-256D:C72AEBA0131DEA48A56EAF9CF9BB0973102006E171C55F78AEC7FF23DB3A1BFD"
   }
 }
 */
@@ -68,7 +68,7 @@ class MoveAllTokenFlow : RPCStartableFlow {
 
         val inputTxHash = SecureHash.parse(request.input)
         val inputTx =
-            utxoLedgerService.findLedgerTransaction(inputTxHash) ?: throw IllegalArgumentException("Token not found!")
+            utxoLedgerService.findSignedTransaction(inputTxHash) ?: throw IllegalArgumentException("Token not found!")
 
         val inputStateAndRef = inputTx.outputStateAndRefs[0]
         val inputTokenState = inputStateAndRef.state.contractState as TokenState
