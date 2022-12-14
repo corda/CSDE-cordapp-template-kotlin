@@ -7,6 +7,7 @@ pluginManagement {
         }
 
 
+        /*
         // Internal R3 Repos while in dev mode
         mavenCentral {
             content {
@@ -14,7 +15,6 @@ pluginManagement {
             }
         }
 
-        /*
 
         // R3 internal repositories
         maven {
