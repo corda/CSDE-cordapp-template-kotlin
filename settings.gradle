@@ -2,13 +2,12 @@ pluginManagement {
     // Declare the repositories where plugins are stored.
     repositories {
         gradlePluginPortal()
-	
-	/*
+
         maven {
             url = "$artifactoryContextUrl/"
         }
-*/
 
+        /*
         // Internal R3 Repos while in dev mode
         mavenCentral {
             content {
@@ -46,6 +45,7 @@ pluginManagement {
             }
         }
 
+*/
 
     }
 

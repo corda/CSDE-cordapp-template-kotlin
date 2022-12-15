@@ -7,7 +7,7 @@ plugins {
     // These extend existing build environment so that CPB and CPK files can be built.
     // This includes a CorDapp DSL that allows the developer to supply metadata for the CorDapp
     // required by Corda.
-    id 'net.corda.plugins.cordapp-cpb2'
+    //id 'net.corda.plugins.cordapp-cpb2'
     id 'net.corda.cordapp.cordapp-configuration'
 
     id 'org.jetbrains.kotlin.plugin.jpa'
@@ -18,48 +18,50 @@ plugins {
     id 'csde'
 }
 
-group 'com.r3.hellocorda'
-version '1.0-SNAPSHOT'
+// subprojects {
+allprojects {
+    group 'com.r3.hellocorda'
+    version '1.0-SNAPSHOT'
 
-def javaVersion = VERSION_11
+    def javaVersion = VERSION_11
 
 
 // Declare the set of Kotlin compiler options we need to build a CorDapp.
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        allWarningsAsErrors = false
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            allWarningsAsErrors = false
 
-        // Specify the version of Kotlin that we are that we will be developing. 
-        languageVersion = '1.7'
-        // Specify the Kotlin libraries that code is compatible with
-        apiVersion = '1.7'
-        // Note that we Need to use a version of Kotlin that will be compatible with the Corda API.
-        // Currently that is developed in Kotlin 1.7 so picking the same version ensures compatibility with that.
+            // Specify the version of Kotlin that we are that we will be developing.
+            languageVersion = '1.7'
+            // Specify the Kotlin libraries that code is compatible with
+            apiVersion = '1.7'
+            // Note that we Need to use a version of Kotlin that will be compatible with the Corda API.
+            // Currently that is developed in Kotlin 1.7 so picking the same version ensures compatibility with that.
 
-        // Specify the version of Java to target.
-        jvmTarget = javaVersion
+            // Specify the version of Java to target.
+            jvmTarget = javaVersion
 
-        // Needed for reflection to work correctly.
-        javaParameters = true
+            // Needed for reflection to work correctly.
+            javaParameters = true
 
-        // -Xjvm-default determines how Kotlin supports default methods.
-        // JetBrains currently recommends developers use -Xjvm-default=all
-        // https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-default/
-        freeCompilerArgs += [
-                "-Xjvm-default=all"
-        ]
-    }
-}
-
-repositories {
-    // All dependencies are held in Maven Central
-    mavenCentral()
-    maven {
-        url = "$artifactoryContextUrl/"
+            // -Xjvm-default determines how Kotlin supports default methods.
+            // JetBrains currently recommends developers use -Xjvm-default=all
+            // https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-default/
+            freeCompilerArgs += [
+                    "-Xjvm-default=all"
+            ]
+        }
     }
 
+    repositories {
+        // All dependencies are held in Maven Central
+        mavenCentral()
+        maven {
+            url = "$artifactoryContextUrl/"
+        }
 
-    /*
+
+        /*
     // Internal artifactory repos for dev
     // R3 Internal repositories
     // Repository the provides kotlin-stdlib-jdk8-osgi created by R3.
@@ -104,51 +106,55 @@ repositories {
     }
 
      */
-}
+    }
 
 // Declare dependencies for the modules we will use.
 // A cordaProvided declaration is required for anything that we use that the Corda API provides.
 // This is required to allow us to build CorDapp modules as OSGi bundles that CPI and CPB files are built on.
-dependencies {
-    // We need a version of kotlin-stdlib-jdk8 built as an OSGi bundle, this is "kotlin-stdlib-jdk8-osgi".
-    // R3 builds kotlin-stdlib-jdk8-osgi from Kotlin's kotlin-stdlib-jdk8.
-    // NB:
-    //   Kotlin's kotlin-osgi-bundle does not provide all of the Kotlin API that is required,
-    //   There is no kotlin-stdlib-jdk11, but one is not needed even though we are targetting Java 11.
-    cordaProvided 'net.corda.kotlin:kotlin-stdlib-jdk8-osgi'
+    dependencies {
 
-    // Declare a "platform" so that we use the correct set of dependency versions for the version of the
-    // Corda API specified.
-    cordaProvided platform("net.corda:corda-api:$cordaApiVersion")
+        /*
 
-    // If using transistive dependencies this will provide most of Corda-API: 
-    // cordaProvided 'net.corda:corda-application'
+        // We need a version of kotlin-stdlib-jdk8 built as an OSGi bundle, this is "kotlin-stdlib-jdk8-osgi".
+        // R3 builds kotlin-stdlib-jdk8-osgi from Kotlin's kotlin-stdlib-jdk8.
+        // NB:
+        //   Kotlin's kotlin-osgi-bundle does not provide all of the Kotlin API that is required,
+        //   There is no kotlin-stdlib-jdk11, but one is not needed even though we are targetting Java 11.
+        cordaProvided 'net.corda.kotlin:kotlin-stdlib-jdk8-osgi'
 
-    // Alternatively we can explicitly specify all our Corda-API dependencies:
-    cordaProvided 'net.corda:corda-base'
-    cordaProvided 'net.corda:corda-application'
-    cordaProvided 'net.corda:corda-crypto'
-    cordaProvided 'net.corda:corda-membership'
-    // cordaProvided 'net.corda:corda-persistence'
-    cordaProvided 'net.corda:corda-serialization'
+        // Declare a "platform" so that we use the correct set of dependency versions for the version of the
+        // Corda API specified.
+        cordaProvided platform("net.corda:corda-api:$cordaApiVersion")
 
-    // Not yet fully implemented:
-    // cordaProvided 'net.corda:corda-ledger'
+        // If using transistive dependencies this will provide most of Corda-API:
+        // cordaProvided 'net.corda:corda-application'
 
-    // CorDapps that use the UTXO ledger must include at least one notary client plugin
-    cordapp "com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-client:$cordaNotaryPluginsVersion"
+        // Alternatively we can explicitly specify all our Corda-API dependencies:
+        cordaProvided 'net.corda:corda-base'
+        cordaProvided 'net.corda:corda-application'
+        cordaProvided 'net.corda:corda-crypto'
+        cordaProvided 'net.corda:corda-membership'
+        // cordaProvided 'net.corda:corda-persistence'
+        cordaProvided 'net.corda:corda-serialization'
 
-    // The CorDapp uses the slf4j logging framework. Corda-API provides this so we need a 'cordaProvided' declaration.
-    cordaProvided 'org.slf4j:slf4j-api'
+        // Not yet fully implemented:
+        // cordaProvided 'net.corda:corda-ledger'
 
-    // Dependencies Required By Test Tooling
-    testImplementation "net.corda:corda-simulator-api:$simulatorVersion"
-    testRuntimeOnly "net.corda:corda-simulator-runtime:$simulatorVersion"
+        // CorDapps that use the UTXO ledger must include at least one notary client plugin
+        cordapp "com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-client:$cordaNotaryPluginsVersion"
 
-    // 3rd party libraries
-    // Required
-    testImplementation "org.slf4j:slf4j-simple:2.0.0" 
-    testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+        // The CorDapp uses the slf4j logging framework. Corda-API provides this so we need a 'cordaProvided' declaration.
+        cordaProvided 'org.slf4j:slf4j-api'
+
+        */
+        // Dependencies Required By Test Tooling
+        testImplementation "net.corda:corda-simulator-api:$simulatorVersion"
+        testRuntimeOnly "net.corda:corda-simulator-runtime:$simulatorVersion"
+
+        // 3rd party libraries
+        // Required
+        testImplementation "org.slf4j:slf4j-simple:2.0.0"
+        testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
     // Optional but used by exmaple tests.
@@ -171,4 +177,5 @@ publishing {
                 artifact jar
             }
     }
+}
 }
