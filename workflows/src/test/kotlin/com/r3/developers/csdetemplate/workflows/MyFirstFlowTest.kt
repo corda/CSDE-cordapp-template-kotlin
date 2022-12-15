@@ -1,4 +1,4 @@
-package com.r3.developers.csdetemplate
+package com.r3.developers.csdetemplate.workflows
 
 import net.corda.simulator.HoldingIdentity
 import net.corda.simulator.RequestData
@@ -32,9 +32,9 @@ class MyFirstFlowTest {
 
         // Create a requestData object
         val requestData = RequestData.create(
-            "request no 1",        // A unique reference for the instance of the flow request
-            MyFirstFlow::class.java,        // The name of the flow class which is to be started
-            myFirstFlowStartArgs            // The object which contains the start arguments of the flow
+            "request no 1", // A unique reference for the instance of the flow request
+            MyFirstFlow::class.java, // The name of the flow class which is to be started
+            myFirstFlowStartArgs // The object which contains the start arguments of the flow
         )
 
         // Call the Flow on Alice's virtual node and capture the response from the flow

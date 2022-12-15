@@ -2,10 +2,12 @@ pluginManagement {
     // Declare the repositories where plugins are stored.
     repositories {
         gradlePluginPortal()
+	
+	/*
         maven {
             url = "$artifactoryContextUrl/"
         }
-
+*/
 
         // Internal R3 Repos while in dev mode
         mavenCentral {
@@ -14,7 +16,6 @@ pluginManagement {
             }
         }
 
-        /*
 
         // R3 internal repositories
         maven {
@@ -45,9 +46,8 @@ pluginManagement {
             }
         }
 
-         */
 
-   }
+    }
 
     //  The plugin dependencies with versions of the plugins congruent with the specified CorDapp plugin version,
     //  Corda API version, and Kotlin version.
@@ -63,3 +63,6 @@ pluginManagement {
 
 // Root project name, used in naming the project as a whole and used in naming objects built by the project.
 rootProject.name = 'csde-cordapp-template-kotlin'
+include 'workflows'
+include 'contracts'
+
