@@ -1,0 +1,38 @@
+plugins {
+}
+
+/*
+group 'com.r3.hellocorda'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    cordapp project(':contracts')
+}
+*/
+
+// The CordApp section.
+// This is part of the DSL provided by the corda plugins to define metadata for our CorDapp.
+// Each component of the CorDapp would get its own CorDapp section in the build.gradle file for the component’s
+// subproject.
+// This is required by the corda plugins to build the CorDapp.
+cordapp {
+    // "targetPlatformVersion" and "minimumPlatformVersion" are intended to specify the preferred
+    // and earliest versions of the Corda platform that the CorDapp will run on respectively.
+    // Enforced versioning has not implemented yet so we need to pass in a dummy value for now.
+    // The platform version will correspond to and be roughly equivalent to the Corda API version.
+    targetPlatformVersion platformVersion.toInteger()
+    minimumPlatformVersion platformVersion.toInteger()
+
+    // The cordapp section contains either a workflow or contract subsection depending on the type of component.
+    // Declares the type and metadata of the CPK (this CPB has one CPK).
+    workflow {
+        name "WorkflowsModuleNameHere"
+        versionId 1
+        vendor "VendorNameHere"
+    }
+}
