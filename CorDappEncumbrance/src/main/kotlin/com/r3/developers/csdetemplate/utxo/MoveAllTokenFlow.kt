@@ -18,15 +18,17 @@ import net.corda.v5.ledger.utxo.transaction.UtxoTransactionValidator
 import java.time.Instant
 
 @CordaSerializable
-data class TokenMoveRequest(val input: String, val owner: MemberX500Name)
+data class TokenMoveRequest(val input: String, val maxIndex: Int = 1, val owner: MemberX500Name)
 
 /*
+As "CN=Bob, OU=Test Dept, O=R3, L=London, C=GB":
 {
   "clientRequestId": "moveAll_1",
   "flowClassName": "com.r3.developers.csdetemplate.utxo.MoveAllTokenFlow",
   "requestData": {
     "owner": "CN=Charlie, OU=Test Dept, O=R3, L=London, C=GB",
-    "input": "SHA-256D:C72AEBA0131DEA48A56EAF9CF9BB0973102006E171C55F78AEC7FF23DB3A1BFD"
+    "input": "SHA-256D:5645A8DFD7089C5C8A65B675F815C34C30E160387733A4F53DC3EBA91605530E",
+    "maxIndex": 3
   }
 }
 */
@@ -70,15 +72,21 @@ class MoveAllTokenFlow : RPCStartableFlow {
         val inputTx =
             utxoLedgerService.findSignedTransaction(inputTxHash) ?: throw IllegalArgumentException("Token not found!")
 
-        val inputStateAndRef = inputTx.outputStateAndRefs[0]
-        val inputTokenState = inputStateAndRef.state.contractState as TokenState
-        val outputTokenState = TokenState(inputTokenState.issuer, ownerParty, inputTokenState.amount)
+        inputTx.outputStateAndRefs.forEachIndexed { i, it ->
+            log.info("\n--- [MoveAllTokenFlow] InputState.$i with index ${it.ref.index} and with Encumbrance.name ${it.state.encumbrance ?: "n/a"}")
+        }
+        val inputStateAndRefs = inputTx.outputStateAndRefs.filter { it.ref.index < request.maxIndex }
+        val inputStateRefs = inputStateAndRefs.map { it.ref }
+        val outputTokenStates = inputStateAndRefs
+            .map { it.state.contractState as TokenState }
+            .map { TokenState(it.issuer, ownerParty, it.amount) }
 
         val utxoTxBuilder = utxoLedgerService.getTransactionBuilder()
             .setNotary(issuerParty) // notary is not working as of now
             .setTimeWindowBetween(Instant.MIN, Instant.MAX) // a time windows is mandatory
-            .addInputState(inputStateAndRef.ref)
-            .addOutputState(outputTokenState)
+            .addInputStates(inputStateRefs)
+//            .addReferenceInputStates(inputStateRefs)
+            .addOutputStates(outputTokenStates)
             .addCommand(MoveAll())
             .addSignatories(listOf(issuerParty.owningKey))
 
@@ -86,12 +94,13 @@ class MoveAllTokenFlow : RPCStartableFlow {
         val signedTx = utxoTxBuilder.toSignedTransaction(issuerParty.owningKey)
         val sessions = listOf(flowMessaging.initiateFlow(ownerParty.name))
         val finalizedTx = utxoLedgerService.finalize(signedTx, sessions)
-        log.info("\n--- [MoveAllTokenFlow] Finalized Tx is: $finalizedTx")
-        finalizedTx.outputStateAndRefs.map { it.state.contractState }
-            .forEach { log.info("\n--- [MoveAllTokenFlow] $it") }
+        log.info("\n--- [MoveAllTokenFlow] Finalized Tx is $finalizedTx")
+        finalizedTx.outputStateAndRefs.map { it.state.contractState }.forEachIndexed { i, it ->
+            log.info("\n--- [MoveAllTokenFlow] OutputState.$i $it")
+        }
 
         val resultMessage = finalizedTx.id.toString()
-        log.info("\n--- [MoveAllTokenFlow] Finalized Tx Id is: $resultMessage")
+        log.info("\n--- [MoveAllTokenFlow] Finalized Tx Id is $resultMessage")
         return resultMessage
     }
 }
@@ -111,12 +120,14 @@ class MoveAllTokenRespFlow : ResponderFlow, UtxoTransactionValidator {
         log.info("\n--- [MoveAllTokenRespFlow] Starting...")
         val finalizedTx = utxoLedgerService.receiveFinality(session, this)
         val resultMessage = finalizedTx.id.toString()
-        log.info("\n--- [MoveAllTokenRespFlow] Finalized Tx Id is: $resultMessage")
+        log.info("\n--- [MoveAllTokenRespFlow] Finalized Tx Id is $resultMessage")
     }
 
     @Suspendable
     override fun checkTransaction(ledgerTransaction: UtxoLedgerTransaction) {
-        log.info("\n--- [MoveAllTokenRespFlow] UtxoLedger Tx is: ${ledgerTransaction.id}")
-        ledgerTransaction.outputContractStates.forEach { log.info("\n--- [MoveAllTokenRespFlow] $it") }
+        log.info("\n--- [MoveAllTokenRespFlow] UtxoLedger Tx is ${ledgerTransaction.id}")
+        ledgerTransaction.outputContractStates.forEachIndexed { i, it ->
+            log.info("\n--- [MoveAllTokenRespFlow] OutputState.$i $it")
+        }
     }
 }

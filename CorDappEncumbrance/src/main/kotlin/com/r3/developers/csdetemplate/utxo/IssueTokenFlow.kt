@@ -25,6 +25,7 @@ data class TokenIssueRequest(
 )
 
 /*
+As "CN=Alice, OU=Test Dept, O=R3, L=London, C=GB":
 {
   "clientRequestId": "issue_1",
   "flowClassName": "com.r3.developers.csdetemplate.utxo.IssueTokenFlow",
@@ -79,25 +80,29 @@ class IssueTokenFlow : RPCStartableFlow {
         var utxoTxBuilder = utxoLedgerService.getTransactionBuilder()
             .setNotary(issuerParty) // notary is not working as of now
             .setTimeWindowBetween(Instant.MIN, Instant.MAX) // a time windows is mandatory
-            .addOutputStates(outputTokenStates)
             .addCommand(Issue())
             .addSignatories(listOf(issuerParty.owningKey))
-        if (request.withEncumbrance) {
-            utxoTxBuilder = utxoTxBuilder.addEncumberedOutputStates("all-for-one", outputTokenStates)
+        // !!! be sure not to add them twice ... maybe some checks in the builder are needed?
+        utxoTxBuilder = if (request.withEncumbrance) {
+            utxoTxBuilder.addEncumberedOutputStates("all-for-one", outputTokenStates)
+        } else {
+            utxoTxBuilder.addOutputStates(outputTokenStates)
         }
         utxoTxBuilder.getEncumbranceGroups().forEach { entry ->
-            log.info("\n--- [IssueTokenFlow] ${entry.key} : ${entry.value.size}")
+            log.info("\n--- [IssueTokenFlow] EncumbranceGroup name ${entry.key} and size ${entry.value.size}")
         }
 
         @Suppress("DEPRECATION")
         val signedTx = utxoTxBuilder.toSignedTransaction(issuerParty.owningKey)
         val sessions = listOf(flowMessaging.initiateFlow(ownerParty.name))
         val finalizedTx = utxoLedgerService.finalize(signedTx, sessions)
-        log.info("\n--- [IssueTokenFlow] Finalized Tx is: $finalizedTx")
-        finalizedTx.outputStateAndRefs.map { it.state.contractState }.forEach { log.info("\n--- [IssueTokenFlow] $it") }
+        log.info("\n--- [IssueTokenFlow] Finalized Tx is $finalizedTx")
+        finalizedTx.outputStateAndRefs.map { it.state.contractState }.forEachIndexed { i, it ->
+            log.info("\n--- [IssueTokenFlow] OutputState.$i $it")
+        }
 
         val resultMessage = finalizedTx.id.toString()
-        log.info("\n--- [IssueTokenFlow] Finalized Tx Id is: $resultMessage")
+        log.info("\n--- [IssueTokenFlow] Finalized Tx Id is $resultMessage")
         return resultMessage
     }
 }
@@ -117,12 +122,14 @@ class IssueTokenRespFlow : ResponderFlow, UtxoTransactionValidator {
         log.info("\n--- [IssueTokenRespFlow] Starting...")
         val finalizedTx = utxoLedgerService.receiveFinality(session, this)
         val resultMessage = finalizedTx.id.toString()
-        log.info("\n--- [IssueTokenRespFlow] Finalized Tx Id is: $resultMessage")
+        log.info("\n--- [IssueTokenRespFlow] Finalized Tx Id is $resultMessage")
     }
 
     @Suspendable
     override fun checkTransaction(ledgerTransaction: UtxoLedgerTransaction) {
-        log.info("\n--- [IssueTokenRespFlow] UtxoLedger Tx is: ${ledgerTransaction.id}")
-        ledgerTransaction.outputContractStates.forEach { log.info("\n--- [IssueTokenRespFlow] $it") }
+        log.info("\n--- [IssueTokenRespFlow] UtxoLedger Tx is ${ledgerTransaction.id}")
+        ledgerTransaction.outputContractStates.forEachIndexed { i, it ->
+            log.info("\n--- [IssueTokenRespFlow] OutputState.$i $it")
+        }
     }
 }
