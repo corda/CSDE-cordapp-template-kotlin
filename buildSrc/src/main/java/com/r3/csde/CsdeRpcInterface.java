@@ -218,10 +218,10 @@ public class CsdeRpcInterface {
                     x500NameToShortHashes.put(x500Name, vnodesMap.get(x500Name));
                 }
             }
-            vnodesMap.keySet().forEach(vnodesMap::remove);
+            vnodesMap.keySet().forEach(vnodesToCheck::remove);
         }
         if(!vnodesToCheck.isEmpty()) {
-            throw new CsdeException("Ay-Yar! Timed out and not all vnodes were reported as created:" + vnodesToCheck.toString());
+            throw new CsdeException("VNode creation timed out. Not all expected vnodes were reported as created:" + vnodesToCheck.toString());
         }
         return x500NameToShortHashes;
     }
@@ -326,7 +326,7 @@ public class CsdeRpcInterface {
                 return !code.equals("BAD_REQUEST");
             }
             else {
-                // Not HTTP_BAD_REQUEST implies some transient problem
+                // No details object implies a transient problem.
                 return true;
             }
         }
@@ -485,25 +485,8 @@ public class CsdeRpcInterface {
                 // 409/HTTP_CONFLICT - Vnode already exists
                 // 500/HTTP_INTERNAL_ERROR
                 //      - Can mean that the request timed out.
-                //      - However, the cluster may still have created the V-node successfully.
-                // Badness if != HTTP_CONFLICT && != HTTP_OK && != HTTP_INTERNAL_ERROR
-                //
-                /*
-                if (jsonNode.getStatus() != HTTP_CONFLICT) {
-                    if (jsonNode.getStatus() != HTTP_OK) {
-                        reportError(jsonNode);
-                    } else {
-                        JSONObject thing = jsonNode.getBody().getObject().getJSONObject("holdingIdentity");
-                        String shortHash = (String) thing.get("shortHash");
-                        OKHoldingX500AndShortIds.put(response.getKey(), shortHash);
-                    }
-                }
-
-                 */
-                // I'd rather do something like this though:
-                //if(jsonNode.getStatus() not in setOf(HTTP_OK, HTTP_CONFLICT, HTTP_INTERNAL_ERROR) {
-                //    reportError(jsonNode);
-                //}
+                //      - However, the cluster may still have created the V-node successfully, so we want to poll later.
+                out.println("Vnode creation end point status:" + jsonNode.getStatus());
                 switch(jsonNode.getStatus()) {
                     case HTTP_OK:               break;
                     case HTTP_CONFLICT:         break;
@@ -518,11 +501,7 @@ public class CsdeRpcInterface {
             }
         }
 
-        // Poll for vnodes with GET /api/v1/virtualnode and collection vnode short hash holding IDs for vnodes
-        //
-        // HashMap<String, String> OkHoldingX500AndShortIds = pollForVNodes(x500Ids, 2000, 60);
-        // Map of X500 name to short hash
-        Map<String, String> OKHoldingX500AndShortIds = pollForVNodeShortHoldingHashIds(x500Ids, 60, 2000);
+        Map<String, String> OKHoldingX500AndShortIds = pollForVNodeShortHoldingHashIds(x500Ids, 60, 5000);
 
         // Register the VNodes
         responses.clear();
