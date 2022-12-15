@@ -1,10 +1,11 @@
 import com.r3.csde.TestJavaClass
 import com.r3.csde.CordaLifeCycleHelper
 import com.r3.csde.ProjectContext
-import com.r3.csde.DeployCordappHelper
+import com.r3.csde.DeployCPIsHelper
 import com.r3.csde.BuildCPIHelper
 import com.r3.csde.ProjectUtils
 import com.r3.csde.CordaStatusQueries
+import com.r3.csde.CreateAndRegisterVNodesHelper
 
 plugins {
     id 'java-library'
@@ -79,14 +80,16 @@ def projectContext = new ProjectContext(project,
         keystoreFName,
         keystoreCertFName,
         appCpiName,
-        notaryCpiName
+        notaryCpiName,
+        devEnvWorkspace
+
 )
 
 def projectUtils = new ProjectUtils()
 
 // todo: Start here -> Can the one off tasks be split into a separate file/ section, eg create group policy etc..
 
-//todo: move the sequencing of build CPI to Java
+// todo: move create and register vnodes to separate helper
 
 // todo investigate adding corda-cli to the class path then executing it directly - might not work as
 // gradle has to set up the jar file, so its not their when you start.
@@ -94,22 +97,16 @@ def projectUtils = new ProjectUtils()
 // Todo: write a test flow runner helper function
 // todo: Write a final output message which give the set up VNodes
 // todo: question, is it possible to invoke the cli from java rather than gradle/ groovy
+// todo: rename deployCPIsHelper
+// todo: sort out the fully qualified class names in functions
 
 
 
-
-def deployCordappHelper = new DeployCordappHelper(projectContext)
+def deployCPIsHelper = new DeployCPIsHelper(projectContext)
 
 def testJavaClass = new TestJavaClass()
 
 
-
-tasks.register("testJava") {
-    group = pluginGroupName
-    doLast {
-        println(testJavaClass.helloWorld())
-    }
-}
 
 // CordaLifeCycle tasks
 
@@ -177,6 +174,15 @@ tasks.register('projInit') {
     group = pluginImplGroupName
     doLast {
          mkdir devEnvWorkspace
+    }
+}
+
+
+tasks.register("testJava") {
+    group = pluginGroupName
+    doLast {
+        println(testJavaClass.helloWorld())
+        buildCPIHelper.testExec()
     }
 }
 
@@ -340,18 +346,22 @@ tasks.register("deployCPIs") {
     group = pluginImplGroupName
     dependsOn('buildCPIs')
     doLast {
-        deployCordappHelper.deployCPIs()
+        deployCPIsHelper.deployCPIs()
     }
 }
+
+
+// create and register Vnodes Tasks
+
+def createAndRegisterVNodesHelper = new CreateAndRegisterVNodesHelper(projectContext)
 
 tasks.register("createAndRegVNodes") {
     group = pluginImplGroupName
     dependsOn('deployCPIs')
     doLast {
-        deployCordappHelper.createAndRegVNodes()
+        createAndRegisterVNodesHelper.createAndRegVNodes()
     }
 }
-
 
 // Empty task, just acts as the Task user entry point task.
 tasks.register('deployCordapp') {

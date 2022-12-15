@@ -11,14 +11,14 @@ public class ProjectContext {
     String rpcUser = "admin";
     String rpcPasswd = "admin";
      String workspaceDir = "workspace";
-    static int retryWaitMs = 1000;
-    static PrintStream out = System.out;
-    static String CPIUploadStatusBaseName = "CPIFileStatus.json";
-    static String CPIUploadStatusFName;
-    static String X500ConfigFile = "config/dev-net.json";
-    static  String javaBinDir;
-    static String cordaPidCache = "CordaPIDCache.dat";
-    static String dbContainerName;
+    int retryWaitMs = 1000;
+    PrintStream out = System.out;
+    String CPIUploadStatusBaseName = "CPIFileStatus.json";
+    String CPIUploadStatusFName;
+    String X500ConfigFile = "config/dev-net.json";
+    String javaBinDir;
+    String cordaPidCache = "CordaPIDCache.dat";
+    String dbContainerName;
     String JDBCDir;
     String combinedWorkerBinRe;
     Map<String, String> notaryRepresentatives = null;
@@ -29,7 +29,7 @@ public class ProjectContext {
     String keystoreCertFName;
     String appCPIName;
     String notaryCPIName;
-
+    String devEnvWorkspace;
 
 
     public ProjectContext (Project inProject,
@@ -47,7 +47,8 @@ public class ProjectContext {
                            String inKeystoreFName,
                            String inKeystoreCertFName,
                            String inAppCPIName,
-                           String inNotaryCPIName
+                           String inNotaryCPIName,
+                           String inDevEnvWorkspace
     ) {
         project = inProject;
         baseURL = inBaseUrl;
@@ -66,5 +67,6 @@ public class ProjectContext {
         keystoreCertFName = inKeystoreCertFName;
         appCPIName = inAppCPIName;
         notaryCPIName = inNotaryCPIName;
+        devEnvWorkspace = inDevEnvWorkspace;
     }
 }

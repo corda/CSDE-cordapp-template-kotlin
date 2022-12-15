@@ -1,7 +1,9 @@
 package com.r3.csde;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -54,4 +56,16 @@ public class ProjectUtils {
                 .asFile(targetPath)
                 .getBody();
     }
+
+    public void reportError(@NotNull kong.unirest.HttpResponse<JsonNode> response) throws CsdeException {
+
+        pc.out.println("*** *** ***");
+        pc.out.println("Unexpected response from Corda");
+        pc.out.println("Status="+ response.getStatus());
+        pc.out.println("*** Headers ***\n"+ response.getHeaders());
+        pc.out.println("*** Body ***\n"+ response.getBody());
+        pc.out.println("*** *** ***");
+        throw new CsdeException("Error: unexpected response from Corda.");
+    }
+
 }
