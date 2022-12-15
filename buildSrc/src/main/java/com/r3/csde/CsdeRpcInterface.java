@@ -62,7 +62,6 @@ public class CsdeRpcInterface {
 
     }
 
-
     static private void rpcWait(int millis) {
         try {
             sleep(millis);
@@ -201,6 +200,56 @@ public class CsdeRpcInterface {
         }
     }
 
+    Map<String, String> pollForVNodeShortHoldingHashIds(List<String> x500Ids, int retryCount, int coolDownMs ) throws CsdeException {
+        HashMap<String, String> x500NameToShortHashes = new HashMap<>();
+        Set<String> vnodesToCheck = new HashSet<String>(x500Ids);
+        while(!vnodesToCheck.isEmpty() && retryCount-- > 0) {
+            rpcWait(coolDownMs);
+            kong.unirest.json.JSONArray virtualNodes = (JSONArray) getVNodeInfo().getBody().getObject().get("virtualNodes");
+            Map<String, String> vnodesMap = new HashMap<String, String>();
+            for (Object virtualNode : virtualNodes) {
+                if (virtualNode instanceof JSONObject) {
+                    JSONObject idObj = ((JSONObject) virtualNode).getJSONObject("holdingIdentity");
+                    vnodesMap.put(idObj.get("x500Name").toString(), idObj.get("shortHash").toString());
+                }
+            }
+            for(String x500Name: vnodesToCheck) {
+                if(vnodesMap.containsKey(x500Name)) {
+                    x500NameToShortHashes.put(x500Name, vnodesMap.get(x500Name));
+                }
+            }
+            vnodesMap.keySet().forEach(vnodesToCheck::remove);
+        }
+        if(!vnodesToCheck.isEmpty()) {
+            throw new CsdeException("VNode creation timed out. Not all expected vnodes were reported as created:" + vnodesToCheck.toString());
+        }
+        return x500NameToShortHashes;
+    }
+
+    private void pollForCompleteMembershipRegistration(Map<String, String> X500ToShortIdHash) throws CsdeException {
+        HashSet<String> vnodesToCheck = new HashSet<String>(X500ToShortIdHash.keySet());
+        LinkedList<String> approved = new LinkedList<String>();
+        while (!vnodesToCheck.isEmpty()) {
+            rpcWait(2000);
+            approved.clear();
+            for (String vnodeX500 : vnodesToCheck) {
+                try {
+                    out.println("Checking membership registration progress for v-node '" + vnodeX500 + "':");
+                    kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = Unirest
+                            .get(baseURL + "/api/v1/membership/" + X500ToShortIdHash.get(vnodeX500) + "/")
+                            .basicAuth(rpcUser, rpcPasswd)
+                            .asJson();
+                    if (isMembershipRegComplete(statusResponse)) {
+                        approved.add(vnodeX500);
+                    }
+                } catch (Exception e) {
+                    throw new CsdeException("Error when registering V-Node '" + vnodeX500 + "'", e);
+                }
+            }
+            approved.forEach(vnodesToCheck::remove);
+        }
+    }
+
     public kong.unirest.HttpResponse<kong.unirest.JsonNode> getCpiInfo() {
         Unirest.config().verifySsl(false);
         return Unirest.get(baseURL + "/api/v1/cpi/")
@@ -277,7 +326,7 @@ public class CsdeRpcInterface {
                 return !code.equals("BAD_REQUEST");
             }
             else {
-                // Not HTTP_BAD_REQUEST implies some transient problem
+                // No details object implies a transient problem.
                 return true;
             }
         }
@@ -385,29 +434,6 @@ public class CsdeRpcInterface {
         return false;
     }
 
-    private void pollForCompleteMembershipRegistration(Map<String, String> X500ToShortIdHash) throws CsdeException {
-        HashSet<String> vnodesToCheck = new HashSet<String>(X500ToShortIdHash.keySet());
-        LinkedList<String> approved = new LinkedList<String>();
-        while (!vnodesToCheck.isEmpty()) {
-            rpcWait(2000);
-            approved.clear();
-            for (String vnodeX500 : vnodesToCheck) {
-                try {
-                    out.println("Checking membership registration progress for v-node '" + vnodeX500 + "':");
-                    kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = Unirest
-                            .get(baseURL + "/api/v1/membership/" + X500ToShortIdHash.get(vnodeX500) + "/")
-                            .basicAuth(rpcUser, rpcPasswd)
-                            .asJson();
-                    if (isMembershipRegComplete(statusResponse)) {
-                        approved.add(vnodeX500);
-                    }
-                } catch (Exception e) {
-                    throw new CsdeException("Error when registering V-Node '" + vnodeX500 + "'", e);
-                }
-            }
-            approved.forEach(vnodesToCheck::remove);
-        }
-    }
 
     public void createAndRegVNodes() throws IOException, CsdeException, ConfigurationException{
         Unirest.config().verifySsl(false);
@@ -415,8 +441,6 @@ public class CsdeRpcInterface {
         String notaryCpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName, "-NotaryServer" );
 
         LinkedList<String> x500Ids = getConfigX500Ids();
-        // Map of X500 name to short hash
-        Map<String, String> OKHoldingX500AndShortIds = new HashMap<>();
 
         // For each identity check that it already exists.
         Set<MemberX500Name> existingX500 = new HashSet<>();
@@ -459,20 +483,25 @@ public class CsdeRpcInterface {
                 // need to check this and report errors.
                 // 200/HTTP_OK - OK
                 // 409/HTTP_CONFLICT - Vnode already exists
-                if (jsonNode.getStatus() != HTTP_CONFLICT) {
-                    if (jsonNode.getStatus() != HTTP_OK) {
+                // 500/HTTP_INTERNAL_ERROR
+                //      - Can mean that the request timed out.
+                //      - However, the cluster may still have created the V-node successfully, so we want to poll later.
+                out.println("Vnode creation end point status:" + jsonNode.getStatus());
+                switch(jsonNode.getStatus()) {
+                    case HTTP_OK:               break;
+                    case HTTP_CONFLICT:         break;
+                    case HTTP_INTERNAL_ERROR:   break;
+                    default:
                         reportError(jsonNode);
-                    } else {
-                        JSONObject thing = jsonNode.getBody().getObject().getJSONObject("holdingIdentity");
-                        String shortHash = (String) thing.get("shortHash");
-                        OKHoldingX500AndShortIds.put(response.getKey(), shortHash);
-                    }
                 }
+
             } catch (ExecutionException | InterruptedException e) {
                 throw new CsdeException("Unexpected exception while waiting for response to " +
                         "membership submission for holding identity" + response.getKey());
             }
         }
+
+        Map<String, String> OKHoldingX500AndShortIds = pollForVNodeShortHoldingHashIds(x500Ids, 60, 5000);
 
         // Register the VNodes
         responses.clear();
