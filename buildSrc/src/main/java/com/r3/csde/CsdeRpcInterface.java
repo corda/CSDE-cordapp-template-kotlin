@@ -607,7 +607,7 @@ public class CsdeRpcInterface {
                         // This will need revisiting in the long term when additional protocols are added, and will
                         // need to be specified in config. We will also need to review the hard-coded name once
                         // notary plugin selection logic is re-instated in CORE-7248.
-                        "\"corda.notary.service.plugin\" : \"corda.notary.type.nonvalidating\""
+                        "\"corda.notary.service.plugin\" : \"net.corda.notary.NonValidatingNotary\""
                 : ""
         );
 
