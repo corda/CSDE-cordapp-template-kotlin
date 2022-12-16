@@ -1,8 +1,8 @@
 package com.r3.developers.csdetemplate
 
+import com.r3.developers.csdetemplate.cpb.CpbMessage
 import com.r3.developers.csdetemplate.cpb.MyCpbFlow
 import com.r3.developers.csdetemplate.cpb.MyCpbFlowResponder
-import com.r3.developers.csdetemplate.cpb.CpbMessage
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup

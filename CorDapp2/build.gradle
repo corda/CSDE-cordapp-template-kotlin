@@ -125,7 +125,7 @@ dependencies {
 
     // 3rd party libraries
     // Required
-    testImplementation "org.slf4j:slf4j-simple:2.0.0" 
+    testImplementation "org.slf4j:slf4j-simple:2.0.0"
     testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
@@ -133,9 +133,7 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
     testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
-
 }
-
 
 test {
     useJUnitPlatform()
@@ -143,10 +141,10 @@ test {
 
 publishing {
     publications {
-            maven(MavenPublication) {
-                artifactId "corda-CSDE-kotlin-sample2"
-                groupId project.group
-                artifact jar
-            }
+        maven(MavenPublication) {
+            artifactId "corda-CSDE-kotlin-sample2"
+            groupId project.group
+            artifact jar
+        }
     }
 }
