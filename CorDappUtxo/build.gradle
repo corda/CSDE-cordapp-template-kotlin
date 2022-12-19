@@ -121,14 +121,16 @@ dependencies {
     // The CorDapp uses the slf4j logging framework. Corda-API provides this so we need a 'cordaProvided' declaration.
     cordaProvided 'org.slf4j:slf4j-api'
 
-//    implementation 'net.corda:corda-flows:5.0.0.0-beta-+'
-//    implementation 'net.corda:corda-flow-service:5.0.0.0-beta-+'
-//    implementation 'net.corda:corda-ledger-common-flow:5.0.0.0-beta-+'
-//    implementation 'net.corda:corda-ledger-utxo-flow:5.0.0.0-beta-+'
+//    implementation 'net.corda:corda-schema-registry:5.0.0.0-Fox-beta-1671430748377'
+//    implementation 'net.corda:corda-schema-registry-impl:5.0.0.0-Fox-beta-1671430748377'
+//    implementation 'net.corda:corda-flows:$combinedWorkerVersion'
+//    implementation 'net.corda:corda-flow-service:$combinedWorkerVersion'
+//    implementation 'net.corda:corda-ledger-common-flow:$combinedWorkerVersion'
+//    implementation 'net.corda:corda-ledger-utxo-flow:$combinedWorkerVersion'
 
     // Dependencies Required By Test Tooling
-    testImplementation "net.corda:corda-simulator-api:$testUtilsVersion"
-    testRuntimeOnly "net.corda:corda-simulator-runtime:$testUtilsVersion"
+    testImplementation "net.corda:corda-simulator-api:$simulatorVersion"
+    testRuntimeOnly "net.corda:corda-simulator-runtime:$simulatorVersion"
 
     // 3rd party libraries
     // Required

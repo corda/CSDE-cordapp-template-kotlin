@@ -127,8 +127,8 @@ dependencies {
     cordapp 'com.r3.hellocorda:corda-CSDE-kotlin-service-provider:1.0-SNAPSHOT'
 
     // Dependencies Required By Test Tooling
-    testImplementation "net.corda:corda-simulator-api:$testUtilsVersion"
-    testRuntimeOnly "net.corda:corda-simulator-runtime:$testUtilsVersion"
+    testImplementation "net.corda:corda-simulator-api:$simulatorVersion"
+    testRuntimeOnly "net.corda:corda-simulator-runtime:$simulatorVersion"
 
     // 3rd party libraries
     // Required
