@@ -88,7 +88,9 @@ class IssueTokenFlow : RPCStartableFlow {
 
         var utxoTxBuilder = utxoLedgerService.getTransactionBuilder()
             .setNotary(notaryParty)
-            .setTimeWindowBetween(Instant.MIN, Instant.MAX) // a time windows is mandatory
+            // a time windows is mandatory
+            // !!! => .setTimeWindowBetween(Instant.MIN, Instant.MAX) => string overflow exception
+            .setTimeWindowBetween(Instant.now(), Instant.now().plus(1, ChronoUnit.HOURS))
             .addCommand(Issue())
             .addSignatories(listOf(issuerParty.owningKey))
         // !!! be sure not to add them twice ... maybe some checks in the builder are needed?
