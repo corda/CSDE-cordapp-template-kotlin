@@ -154,6 +154,16 @@ class DoorCodeQueryFlow : RPCStartableFlow {
 }
 
 /*
+// Before running one will need to create a key for each party involved.
+// This can be done through the Swagger UI end point:
+//  "POST  /keys/{tenantid}/alias/alias}/category/{hsmcategory}/scheme/{scheme}
+//  Where:
+//      tenantid = the v-node short holding ID hash of the v-node to get the key
+//      alias = not used directly, no other key used by the v-node should have the same alias
+//      hsmcategory = **must** be set to "LEDGER", not including the quotes
+//      schema = set to one the possible values listed on the Swagger UI page
+
+// Then one can run the flow.
 // Example request data:
 {
     "clientRequestId": "r1",
@@ -161,6 +171,7 @@ class DoorCodeQueryFlow : RPCStartableFlow {
     "requestData": {
         "newDoorCode": {"code":"1234"},
         "participants":[
+            "CN=Alice, OU=Test Dept, O=R3, L=London, C=GB",
             "CN=Bob, OU=Test Dept, O=R3, L=London, C=GB",
             "CN=Charlie, OU=Test Dept, O=R3, L=London, C=GB"
         ]
