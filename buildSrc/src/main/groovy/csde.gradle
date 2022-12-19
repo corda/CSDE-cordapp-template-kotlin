@@ -236,7 +236,7 @@ tasks.register('buildCPIs') {
         // Create a file collection using a closure
         def notaryCpbs = layout
                 .files { file(cordaNotaryServerDir).listFiles() }
-                .filter { it.getName().endsWith(".cpb") }
+                .filter { it.getName().endsWith(".cpb") && it.getName().contains(cordaNotaryPluginsVersion) }
 
         println("notaryCpbs:")
         notaryCpbs.forEach {

@@ -329,15 +329,8 @@ public class CsdeRpcInterface {
             return !(body.getObject().get("status").equals("OK"));
         }
         else if (status == HTTP_BAD_REQUEST){
-            JSONObject details = response.getBody().getObject().getJSONObject("details");
-            if( details != null ){
-                String code = (String) details.getString("code");
-                return !code.equals("BAD_REQUEST");
-            }
-            else {
-                // No details object implies a transient problem.
-                return true;
-            }
+            String bodyTitle = response.getBody().getObject().getString("title");
+            return bodyTitle != null && bodyTitle.matches("No such requestId=[-0-9a-f]+");
         }
         return false;
     }
@@ -616,7 +609,7 @@ public class CsdeRpcInterface {
                         // This will need revisiting in the long term when additional protocols are added, and will
                         // need to be specified in config. We will also need to review the hard-coded name once
                         // notary plugin selection logic is re-instated in CORE-7248.
-                        "\"corda.notary.service.plugin\" : \"corda.notary.type.nonvalidating\""
+                        "\"corda.notary.service.plugin\" : \"net.corda.notary.NonValidatingNotary\""
                 : ""
         );
 
