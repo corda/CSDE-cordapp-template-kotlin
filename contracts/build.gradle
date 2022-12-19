@@ -54,6 +54,7 @@ dependencies {
 
 
 
+    /*dd
     // Dependencies Required By Test Tooling
     testImplementation "net.corda:corda-simulator-api:$simulatorVersion"
     testRuntimeOnly "net.corda:corda-simulator-runtime:$simulatorVersion"
@@ -68,6 +69,8 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
     testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
+
+     */
 }
 
 // The CordApp section.

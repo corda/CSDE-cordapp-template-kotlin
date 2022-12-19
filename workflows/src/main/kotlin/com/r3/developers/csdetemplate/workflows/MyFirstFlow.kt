@@ -65,7 +65,7 @@ class MyFirstFlow: RPCStartableFlow {
         // Show the requestBody in the logs - this can be used to help establish the format for starting a flow on corda
         log.info("MFF: requestBody: ${requestBody.getRequestBody()}")
 
-        val testConsenddsualState = TestConsensualState("Testing", LinkedList<PublicKey>())
+        val testConsensualState = TestConsensualState("Testing", LinkedList<PublicKey>())
 
 
         // Deserialize the Json requestBody into the MyfirstFlowStartArgs class using the JsonSerialisation Service
@@ -154,7 +154,7 @@ class MyFirstFlowResponder: ResponderFlow {
 RequestBody for triggering the flow via http-rpc:
 {
     "clientRequestId": "r1",
-    "flowClassName": "MyFirstFlow",
+    "flowClassName": "com.r3.developers.csdetemplate.workflows.MyFirstFlow",
     "requestData": {
         "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB"
         }

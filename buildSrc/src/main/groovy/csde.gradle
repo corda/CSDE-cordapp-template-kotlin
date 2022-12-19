@@ -53,6 +53,7 @@ def keystoreAlias = "my-signing-key"
 def keystoreFName = devEnvWorkspace + "/signingkeys.pfx"
 def keystoreCertFName = devEnvWorkspace + "/signingkey1.pem"
 def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
+def workflowBuildDir = rootDir.toString() + "/workflows/build"
 
 
 // Need to read things from cordapp plugin
@@ -183,17 +184,20 @@ tasks.register('createKeystore') {
 
 tasks.register('buildCPIs') {
     group = pluginGroupName
-    dependsOn('build', 'createGroupPolicy', 'createKeystore', 'getNotaryServerCPB')
+    //dependsOn('build', 'createGroupPolicy', 'createKeystore', 'getNotaryServerCPB')
+    dependsOn('contracts:build', 'workflows:build', 'createGroupPolicy', 'createKeystore', 'getNotaryServerCPB')
 
     doLast{
         // Application CPI
-        def appCpiFile = buildDir.toString() + "/" + project.archivesBaseName + "-" + project.version + ".cpi"
+        def appCpiFile = workflowBuildDir.toString() + "/" + project.archivesBaseName + "-" + project.version + ".cpi"
+        println("DEBUG appCpiFile=$appCpiFile")
         delete { delete appCpiFile }
-        File srcDir
-        srcDir = file('build/libs')
+        File cpbSrcDir
+        cpbSrcDir = file("${workflowBuildDir}/libs")
+        println("DEBUG cpbSrcDir=$cpbSrcDir")
 
         // Create a file collection using a closure
-        def appCollection = layout.files { srcDir.listFiles() }
+        def appCollection = layout.files { cpbSrcDir.listFiles() }
         def appCpbs = appCollection.filter { it.getName().endsWith(".cpb") }
 
         println("appCpbs:")
@@ -216,7 +220,7 @@ tasks.register('buildCPIs') {
         }
 
         // Notary CPI
-        def notaryCpiFile = buildDir.toString() + "/" +
+        def notaryCpiFile = workflowBuildDir.toString() + "/" +
                 notaryCpiName.replace(' ', '-').toLowerCase() + "-" + project.version + ".cpi"
         delete { delete notaryCpiFile }
 
@@ -252,9 +256,9 @@ tasks.register("deployCPIs") {
     doLast {
         csdeHelper.uploadCertificate(signingCertAlias, signingCertFName)
         csdeHelper.uploadCertificate(keystoreAlias, keystoreCertFName)
-        csdeHelper.deployCPI("${buildDir}/${project.archivesBaseName}-${project.version}.cpi", appCpiName, project.version)
+        csdeHelper.deployCPI("${workflowBuildDir}/${project.archivesBaseName}-${project.version}.cpi", appCpiName, project.version)
         csdeHelper.deployCPI(
-                "${buildDir}/${notaryCpiName.replace(' ', '-').toLowerCase()}-${project.version}.cpi",
+                "${workflowBuildDir}/${notaryCpiName.replace(' ', '-').toLowerCase()}-${project.version}.cpi",
                 notaryCpiName,
                 project.version,
                 "-NotaryServer")
@@ -302,5 +306,11 @@ tasks.register("stopCorda") {
     group = pluginGroupName
     doLast {
         csdeHelper.stopCorda()
+    }
+}
+
+tasks.register("listBuildDirs") {
+    doLast {
+        csdeHelper.listBuildDirs()
     }
 }

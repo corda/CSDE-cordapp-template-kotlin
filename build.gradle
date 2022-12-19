@@ -111,9 +111,11 @@ allprojects {
 // Declare dependencies for the modules we will use.
 // A cordaProvided declaration is required for anything that we use that the Corda API provides.
 // This is required to allow us to build CorDapp modules as OSGi bundles that CPI and CPB files are built on.
-    dependencies {
+    plugins.withType(JavaPlugin) {
 
-        /*
+        dependencies {
+
+            /*
 
         // We need a version of kotlin-stdlib-jdk8 built as an OSGi bundle, this is "kotlin-stdlib-jdk8-osgi".
         // R3 builds kotlin-stdlib-jdk8-osgi from Kotlin's kotlin-stdlib-jdk8.
@@ -148,7 +150,7 @@ allprojects {
 
         */
 
-        /*
+
         // This are shared so should be here.
         // Dependencies Required By Test Tooling
         testImplementation "net.corda:corda-simulator-api:$simulatorVersion"
@@ -164,22 +166,23 @@ allprojects {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
     testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
-         */
-
-}
 
 
-test {
-    useJUnitPlatform()
-}
-
-publishing {
-    publications {
-            maven(MavenPublication) {
-                artifactId "corda-CSDE-kotlin-sample"
-                groupId project.group
-                artifact jar
-            }
+        }
     }
-}
+
+
+    test {
+     useJUnitPlatform()
+    }
+
+    publishing {
+        publications {
+                maven(MavenPublication) {
+                    artifactId "corda-CSDE-kotlin-sample"
+                    groupId project.group
+                    artifact jar
+             }
+        }
+    }
 }

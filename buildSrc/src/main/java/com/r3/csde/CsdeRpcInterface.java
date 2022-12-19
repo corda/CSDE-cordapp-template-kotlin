@@ -75,6 +75,15 @@ public class CsdeRpcInterface {
         rpcWait(retryWaitMs);
     }
 
+    public void listBuildDirs() {
+        out.println("List build dirs:");
+        project.getSubprojects().forEach(p -> {
+            if(p!=null) {
+                out.println(p.getBuildDir());
+            }
+        });
+    }
+
     public LinkedList<String> getConfigX500Ids() throws IOException {
         LinkedList<String> x500Ids = new LinkedList<>();
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
