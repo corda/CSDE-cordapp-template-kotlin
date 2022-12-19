@@ -1,4 +1,5 @@
 import com.r3.csde.CsdeRpcInterface
+// import net.corda.plugins.cpb2
 
 plugins {
     id 'java-library'
@@ -184,8 +185,16 @@ tasks.register('createKeystore') {
 
 tasks.register('buildCPIs') {
     group = pluginGroupName
-    //dependsOn('build', 'createGroupPolicy', 'createKeystore', 'getNotaryServerCPB')
     dependsOn('contracts:build', 'workflows:build', 'createGroupPolicy', 'createKeystore', 'getNotaryServerCPB')
+    /*
+    def dependsOnTasks = subprojects.collect {it.tasks.withType(org.gradle.api.tasks.GradleBuild)}
+    //subprojects {dependsOnTasks.add(it.tasks.withType(net.corda.plugins.cpb2.CpbTask))}
+    dependsOnTasks.add('createGroupPolicy')
+    dependsOnTasks.add('createKeystore')
+    dependsOnTasks.add('getNotaryServerCPB')
+    dependsOn dependsOnTasks
+
+     */
 
     doLast{
         // Application CPI
