@@ -1,6 +1,5 @@
 package com.r3.developers.csdetemplate.workflows
 
-import net.corda.simulator.HoldingIdentity
 import net.corda.simulator.RequestData
 import net.corda.simulator.Simulator
 import net.corda.v5.base.types.MemberX500Name
@@ -18,14 +17,10 @@ class MyFirstFlowTest {
         // Instantiate an instance of the Simulator
         val simulator = Simulator()
 
-        // Create Alice's and Bob HoldingIDs
-        val aliceHoldingID = HoldingIdentity.Companion.create(aliceX500)
-        val bobHoldingID = HoldingIdentity.Companion.create(bobX500)
-
         // Create Alice and Bob's virtual nodes, including the Class's of the flows which will be registered on each node.
         // We don't assign Bob's virtual node to a val because we don't need it for this particular test.
-        val aliceVN = simulator.createVirtualNode(aliceHoldingID, MyFirstFlow::class.java)
-        simulator.createVirtualNode(bobHoldingID, MyFirstFlowResponder::class.java)
+        val aliceVN = simulator.createVirtualNode(aliceX500, MyFirstFlow::class.java)
+        simulator.createVirtualNode(bobX500, MyFirstFlowResponder::class.java)
 
         // Create an instance of the MyFirstFlowStartArgs which contains the request arguments for starting the flow
         val myFirstFlowStartArgs = MyFirstFlowStartArgs(bobX500)
