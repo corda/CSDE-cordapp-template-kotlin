@@ -10,11 +10,13 @@ import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
+import net.corda.v5.ledger.common.NotaryLookup
 import net.corda.v5.ledger.common.Party
 import net.corda.v5.ledger.utxo.*
 import net.corda.v5.ledger.utxo.transaction.UtxoLedgerTransaction
 import net.corda.v5.ledger.utxo.transaction.UtxoTransactionValidator
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 @CordaSerializable
 data class TokenIssueRequest(
@@ -57,13 +59,20 @@ class IssueTokenFlow : RPCStartableFlow {
     @CordaInject
     lateinit var memberLookup: MemberLookup
 
+    @CordaInject
+    lateinit var notaryLookup: NotaryLookup
+
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
         log.info("\n--- [IssueTokenFlow] Starting...")
 
-//        val notaryInfo =
-//            notaryLookup.notaryServices.firstOrNull() ?: throw IllegalArgumentException("Notary not available!")
-//        val notaryParty = Party(notaryInfo.name, notaryInfo.publicKey)
+        val notaryInfo = notaryLookup.notaryServices.first()
+        // val notaryKey = notaryInfo.publicKey
+        // TODO CORE-6173 use proper notary key
+        val notaryKey = memberLookup.lookup().first {
+            it.memberProvidedContext["corda.notary.service.name"] == notaryInfo.name.toString()
+        }.ledgerKeys.first()
+        val notaryParty = Party(notaryInfo.name, notaryKey)
 
         val request = requestBody.getRequestBodyAs<TokenIssueRequest>(jsonMarshallingService)
         val ownerMember = memberLookup.lookup(request.owner) ?: throw IllegalArgumentException("Owner not found!")
@@ -78,7 +87,7 @@ class IssueTokenFlow : RPCStartableFlow {
         }
 
         var utxoTxBuilder = utxoLedgerService.getTransactionBuilder()
-            .setNotary(issuerParty) // notary is not working as of now
+            .setNotary(notaryParty)
             .setTimeWindowBetween(Instant.MIN, Instant.MAX) // a time windows is mandatory
             .addCommand(Issue())
             .addSignatories(listOf(issuerParty.owningKey))
