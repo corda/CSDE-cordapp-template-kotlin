@@ -75,6 +75,9 @@ repositories {
     // All dependencies are held in Maven Central
     mavenCentral()
     maven {
+        url = "$artifactoryContextUrl/"
+    }
+    maven {
         url "https://software.r3.com/artifactory/corda-os-maven-unstable/"
         credentials {
             username = System.getenv('CORDA_ARTIFACTORY_USERNAME')
@@ -111,6 +114,8 @@ dependencies {
 
     // Not yet fully implemented:
     // cordaProvided 'net.corda:corda-ledger'
+    // CorDapps that use the UTXO ledger must include at least one notary client plugin
+    // cordapp "com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-client:$cordaNotaryPluginsVersion"
 
     // The CorDapp uses the slf4j logging framework. Corda-API provides this so we need a 'cordaProvided' declaration.
     cordaProvided 'org.slf4j:slf4j-api'

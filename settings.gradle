@@ -2,16 +2,25 @@ pluginManagement {
     // Declare the repositories where plugins are stored.
     repositories {
         gradlePluginPortal()
+        maven {
+            url = "$artifactoryContextUrl/"
+        }
+        repositories {
+            mavenCentral()
+            maven {
+                url "https://software.r3.com/artifactory/corda-os-maven-unstable/"
+                credentials {
+                    username = System.getenv('CORDA_ARTIFACTORY_USERNAME')
+                    password = System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+                }
+            }
+        }
+
+
+        // Internal R3 Repos while in dev mode
         mavenCentral {
             content {
                 includeGroupByRegex 'net\\.corda(\\..*)?'
-            }
-        }
-        maven {
-            url "https://software.r3.com/artifactory/corda-os-maven-unstable/"
-            credentials {
-                username = System.getenv('CORDA_ARTIFACTORY_USERNAME')
-                password = System.getenv('CORDA_ARTIFACTORY_PASSWORD')
             }
         }
     }

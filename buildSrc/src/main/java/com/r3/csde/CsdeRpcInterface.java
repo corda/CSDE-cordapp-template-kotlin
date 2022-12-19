@@ -1,16 +1,22 @@
 package com.r3.csde;
 
-import kong.unirest.json.JSONArray;
-import org.gradle.api.Project;
-import net.corda.v5.base.types.MemberX500Name;
+import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
+import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
+import net.corda.v5.base.types.MemberX500Name;
+import org.gradle.api.Project;
 import org.jetbrains.annotations.NotNull;
+
+import javax.naming.ConfigurationException;
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static java.lang.Thread.sleep;
+import static java.net.HttpURLConnection.*;
 
 public class CsdeRpcInterface {
     private Project project;
@@ -28,6 +34,7 @@ public class CsdeRpcInterface {
     static private String dbContainerName;
     private String JDBCDir;
     private String combinedWorkerBinRe;
+    private Map<String, String> notaryRepresentatives = null;
 
     public CsdeRpcInterface() {
     }
@@ -55,7 +62,6 @@ public class CsdeRpcInterface {
 
     }
 
-
     static private void rpcWait(int millis) {
         try {
             sleep(millis);
@@ -76,22 +82,73 @@ public class CsdeRpcInterface {
         FileInputStream in = new FileInputStream(X500ConfigFile);
         com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
         for( com.fasterxml.jackson.databind.JsonNode identity:  jsonNode.get("identities")) {
-            String idAsString = identity.toString();
-            x500Ids.add(idAsString.substring(1,idAsString.length()-1));
+            x500Ids.add(jsonNodeToString(identity));
         }
         return x500Ids;
     }
 
+    // KV pairs of representative x500 name and corresponding notary service x500 name
+    public Map<String, String> getNotaryRepresentatives() throws IOException, ConfigurationException {
+        if (notaryRepresentatives == null) {
+            notaryRepresentatives = new HashMap<>();
+
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+            FileInputStream in = new FileInputStream(X500ConfigFile);
+            com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
+
+            List<String> identities = getConfigX500Ids();
+
+            for (com.fasterxml.jackson.databind.JsonNode notary : jsonNode.get("notaries")) {
+
+                String svcX500Id = jsonNodeToString(notary.get("serviceX500Name"));
+
+                com.fasterxml.jackson.databind.JsonNode repsForThisService = notary.get("representatives");
+
+                if (repsForThisService.isEmpty()) {
+                    throw new ConfigurationException(
+                            "Notary service \"" + svcX500Id + "\" must have at least one representative.");
+                } else if (repsForThisService.size() > 1) {
+                    // Temporary restriction while the MGM only supports a 1-1 association
+                    throw new ConfigurationException(
+                            "Notary service \"" + svcX500Id + "\" can only have a single representative at this time.");
+                }
+
+                for (com.fasterxml.jackson.databind.JsonNode representative : repsForThisService) {
+
+                    String repAsString = jsonNodeToString(representative);
+
+                    if (identities.contains(repAsString)) {
+                        notaryRepresentatives.put(repAsString, svcX500Id);
+                    } else {
+                        throw new ConfigurationException(
+                                "Notary representative \"" + repAsString + "\" is not a valid identity");
+                    }
+                }
+            }
+        }
+
+        return notaryRepresentatives;
+    }
+
     static public String getLastCPIUploadChkSum(@NotNull String CPIUploadStatusFName) throws IOException, NullPointerException {
+        return getLastCPIUploadChkSum(CPIUploadStatusFName, "");
+    }
+
+    static public String getLastCPIUploadChkSum(@NotNull String CPIUploadStatusFName,
+                                                String uploadStatusQualifier) throws IOException, NullPointerException {
+
+        String qualifiedCPIUploadStatusFName =
+                CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json");
 
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        FileInputStream in = new FileInputStream(CPIUploadStatusFName);
+        FileInputStream in = new FileInputStream(qualifiedCPIUploadStatusFName);
         com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
-
 
         String checksum = jsonNode.get("cpiFileChecksum").toString();
         if(checksum == null || checksum.equals("null")) {
-            throw new NullPointerException("Missing cpiFileChecksum in file " + CPIUploadStatusFName+ " with contents:" + jsonNode);
+            throw new NullPointerException("Missing cpiFileChecksum in file " +
+                    qualifiedCPIUploadStatusFName + " with contents:" + jsonNode);
         }
         return checksum;
     }
@@ -178,12 +235,61 @@ public class CsdeRpcInterface {
         return sb.toString();
     }
 
+    Map<String, String> pollForVNodeShortHoldingHashIds(List<String> x500Ids, int retryCount, int coolDownMs ) throws CsdeException {
+        HashMap<String, String> x500NameToShortHashes = new HashMap<>();
+        Set<String> vnodesToCheck = new HashSet<String>(x500Ids);
+        while(!vnodesToCheck.isEmpty() && retryCount-- > 0) {
+            rpcWait(coolDownMs);
+            kong.unirest.json.JSONArray virtualNodes = (JSONArray) getVNodeInfo().getBody().getObject().get("virtualNodes");
+            Map<String, String> vnodesMap = new HashMap<String, String>();
+            for (Object virtualNode : virtualNodes) {
+                if (virtualNode instanceof JSONObject) {
+                    JSONObject idObj = ((JSONObject) virtualNode).getJSONObject("holdingIdentity");
+                    vnodesMap.put(idObj.get("x500Name").toString(), idObj.get("shortHash").toString());
+                }
+            }
+            for(String x500Name: vnodesToCheck) {
+                if(vnodesMap.containsKey(x500Name)) {
+                    x500NameToShortHashes.put(x500Name, vnodesMap.get(x500Name));
+                }
+            }
+            vnodesMap.keySet().forEach(vnodesToCheck::remove);
+        }
+        if(!vnodesToCheck.isEmpty()) {
+            throw new CsdeException("VNode creation timed out. Not all expected vnodes were reported as created:" + vnodesToCheck.toString());
+        }
+        return x500NameToShortHashes;
+    }
+
+    private void pollForCompleteMembershipRegistration(Map<String, String> X500ToShortIdHash) throws CsdeException {
+        HashSet<String> vnodesToCheck = new HashSet<String>(X500ToShortIdHash.keySet());
+        LinkedList<String> approved = new LinkedList<String>();
+        while (!vnodesToCheck.isEmpty()) {
+            rpcWait(2000);
+            approved.clear();
+            for (String vnodeX500 : vnodesToCheck) {
+                try {
+                    out.println("Checking membership registration progress for v-node '" + vnodeX500 + "':");
+                    kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = Unirest
+                            .get(baseURL + "/api/v1/membership/" + X500ToShortIdHash.get(vnodeX500) + "/")
+                            .basicAuth(rpcUser, rpcPasswd)
+                            .asJson();
+                    if (isMembershipRegComplete(statusResponse)) {
+                        approved.add(vnodeX500);
+                    }
+                } catch (Exception e) {
+                    throw new CsdeException("Error when registering V-Node '" + vnodeX500 + "'", e);
+                }
+            }
+            approved.forEach(vnodesToCheck::remove);
+        }
+    }
+
     public kong.unirest.HttpResponse<kong.unirest.JsonNode> getCpiInfo() {
         Unirest.config().verifySsl(false);
         return Unirest.get(baseURL + "/api/v1/cpi/")
                 .basicAuth(rpcUser, rpcPasswd)
                 .asJson();
-
     }
 
     public void listCPIs() {
@@ -201,7 +307,7 @@ public class CsdeRpcInterface {
 
     public void uploadCertificate(String certAlias, String certFName) {
         Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.put(baseURL + "/api/v1/certificates/cluster/code-signer/")
+        kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.put(baseURL + "/api/v1/certificates/cluster/code-signer")
                 .field("alias", certAlias)
                 .field("certificate", new File(certFName))
                 .basicAuth(rpcUser, rpcPasswd)
@@ -211,19 +317,24 @@ public class CsdeRpcInterface {
     }
 
     public void forceuploadCPI(String cpiFName) throws FileNotFoundException, CsdeException {
+        forceuploadCPI(cpiFName, "");
+    }
+
+    public void forceuploadCPI(String cpiFName, String uploadStatusQualifier) throws FileNotFoundException, CsdeException {
         Unirest.config().verifySsl(false);
         kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonResponse = Unirest.post(baseURL + "/api/v1/maintenance/virtualnode/forcecpiupload/")
                 .field("upload", new File(cpiFName))
                 .basicAuth(rpcUser, rpcPasswd)
                 .asJson();
 
-        if(jsonResponse.getStatus() == 200) {
+        if(jsonResponse.getStatus() == HTTP_OK) {
             String id = (String) jsonResponse.getBody().getObject().get("id");
             out.println("get id:\n" +id);
             kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
 
-            if (statusResponse.getStatus() == 200) {
-                PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadStatusFName));
+            if (statusResponse.getStatus() == HTTP_OK) {
+                PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
+                        CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));
                 cpiUploadStatus.print(statusResponse.getBody());
                 out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
             } else {
@@ -239,20 +350,13 @@ public class CsdeRpcInterface {
         int status = response.getStatus();
         kong.unirest.JsonNode body = response.getBody();
         // Do not retry on success
-        if(status == 200) {
-            // Keep retrying until we get "OK" may move through "Validateing upload", "Persisting CPI"
+        if(status == HTTP_OK) {
+            // Keep retrying until we get "OK" may move through "Validating upload", "Persisting CPI"
             return !(body.getObject().get("status").equals("OK"));
         }
-        else if (status == 400){
-            JSONObject details = response.getBody().getObject().getJSONObject("details");
-            if( details != null ){
-                String code = (String) details.getString("code");
-                return !code.equals("BAD_REQUEST");
-            }
-            else {
-                // 400 otherwise means some transient problem
-                return true;
-            }
+        else if (status == HTTP_BAD_REQUEST){
+            String bodyTitle = response.getBody().getObject().getString("title");
+            return bodyTitle != null && bodyTitle.matches("No such requestId=[-0-9a-f]+");
         }
         return false;
     }
@@ -273,11 +377,17 @@ public class CsdeRpcInterface {
     }
 
     public void deployCPI(String cpiFName, String cpiName, String cpiVersion) throws FileNotFoundException, CsdeException {
+        deployCPI(cpiFName, cpiName, cpiVersion, "");
+    }
+
+    public void deployCPI(String cpiFName,
+                          String cpiName,
+                          String cpiVersion,
+                          String uploadStatusQualifier) throws FileNotFoundException, CsdeException {
         Unirest.config().verifySsl(false);
 
         kong.unirest.HttpResponse<kong.unirest.JsonNode> cpiResponse  = getCpiInfo();
         kong.unirest.json.JSONArray jArray = (JSONArray) cpiResponse.getBody().getObject().get("cpis");
-
 
         int matches = 0;
         for(Object o: jArray.toList() ) {
@@ -290,7 +400,6 @@ public class CsdeRpcInterface {
             }
         }
         out.println("Matching CPIS="+matches);
-
 
         if(matches == 0) {
             kong.unirest.HttpResponse<kong.unirest.JsonNode> uploadResponse = Unirest.post(baseURL + "/api/v1/cpi/")
@@ -306,13 +415,14 @@ public class CsdeRpcInterface {
             out.println("Pretty print the body\n" + body.toPrettyString());
 
             // We expect the id field to be a string.
-            if (status == 200) {
+            if (status == HTTP_OK) {
                 String id = (String) body.getObject().get("id");
                 out.println("get id:\n" + id);
 
                 kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = uploadStatus(id);
-                if (statusResponse.getStatus() == 200) {
-                    PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(CPIUploadStatusFName));
+                if (statusResponse.getStatus() == HTTP_OK) {
+                    PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
+                            CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));
                     cpiUploadStatus.print(statusResponse.getBody());
                     out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
                 } else {
@@ -328,12 +438,37 @@ public class CsdeRpcInterface {
         }
     }
 
-    public void createAndRegVNodes() throws IOException, CsdeException{
+    private boolean isMembershipRegComplete(kong.unirest.HttpResponse<kong.unirest.JsonNode> response) throws CsdeException {
+        if(response.getStatus() == HTTP_OK) {
+            kong.unirest.JsonNode responseBody = response.getBody();
+            out.println(responseBody.toPrettyString());
+            if(responseBody.getArray().length() > 0) {
+                kong.unirest.json.JSONObject memRegStatusInfo = (kong.unirest.json.JSONObject) responseBody
+                        .getArray()
+                        .getJSONObject(0);
+                String memRegStatus = memRegStatusInfo.get("registrationStatus").toString();
+                if (memRegStatus.equals("DECLINED")) {
+                    throw new CsdeException("V-Node membership registration declined by Corda");
+                }
+                return memRegStatus.equals("APPROVED");
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            reportError(response);
+        }
+        return false;
+    }
+
+
+    public void createAndRegVNodes() throws IOException, CsdeException, ConfigurationException{
         Unirest.config().verifySsl(false);
-        String cpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName );
+        String appCpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName );
+        String notaryCpiCheckSum = getLastCPIUploadChkSum( CPIUploadStatusFName, "-NotaryServer" );
 
         LinkedList<String> x500Ids = getConfigX500Ids();
-        LinkedList<String> OKHoldingShortIds = new LinkedList<>();
 
         // For each identity check that it already exists.
         Set<MemberX500Name> existingX500 = new HashSet<>();
@@ -348,53 +483,84 @@ public class CsdeRpcInterface {
             }
         }
 
+        Map<String, CompletableFuture<HttpResponse<JsonNode>>> responses = new LinkedHashMap<>();
+
         // Create the VNodes
         for(String x500id: x500Ids) {
             if(!existingX500.contains(MemberX500Name.parse(x500id) )) {
+                String cpiCheckSum = getNotaryRepresentatives().containsKey(x500id) ?  notaryCpiCheckSum : appCpiCheckSum;
+
                 out.println("Creating VNode for x500id=\"" + x500id + "\" cpi checksum=" + cpiCheckSum);
-                kong.unirest.HttpResponse<kong.unirest.JsonNode> jsonNode = Unirest.post(baseURL + "/api/v1/virtualnode")
+                responses.put(x500id, Unirest
+                        .post(baseURL + "/api/v1/virtualnode")
                         .body("{ \"request\" : { \"cpiFileChecksum\": " + cpiCheckSum + ", \"x500Name\": \"" + x500id + "\" } }")
                         .basicAuth(rpcUser, rpcPasswd)
-                        .asJson();
-                // Logging.
-
-                // need to check this and report errors.
-                // 200 - OK
-                // 409 - Vnode already exists
-                if (jsonNode.getStatus() != 409) {
-                    if (jsonNode.getStatus() != 200) {
-                        reportError(jsonNode);
-                    } else {
-                        JSONObject thing = jsonNode.getBody().getObject().getJSONObject("holdingIdentity");
-                        String shortHash = (String) thing.get("shortHash");
-                        OKHoldingShortIds.add(shortHash);
-                    }
-                }
+                        .asJsonAsync()
+                );
             }
             else {
                 out.println("Not creating a vnode for \"" + x500id + "\", vnode already exists.");
             }
         }
 
-        // Register the VNodes
-        for(String shortHoldingIdHash: OKHoldingShortIds) {
-            kong.unirest.HttpResponse<kong.unirest.JsonNode> vnodeResponse = Unirest.post(baseURL + "/api/v1/membership/" + shortHoldingIdHash)
-                    .body("{ \"memberRegistrationRequest\": { \"action\": \"requestJoin\",  \"context\": { \"corda.key.scheme\" : \"CORDA.ECDSA.SECP256R1\" } } }")
-                    .basicAuth(rpcUser, rpcPasswd)
-                    .asJson();
+        out.println("Waiting for VNode creation results...");
 
-            out.println("Vnode membership submission:\n" + vnodeResponse.getBody().toPrettyString());
+        for (Map.Entry<String, CompletableFuture<HttpResponse<JsonNode>>> response: responses.entrySet()) {
+            try {
+                HttpResponse<JsonNode> jsonNode = response.getValue().get();
+                // need to check this and report errors.
+                // 200/HTTP_OK - OK
+                // 409/HTTP_CONFLICT - Vnode already exists
+                // 500/HTTP_INTERNAL_ERROR
+                //      - Can mean that the request timed out.
+                //      - However, the cluster may still have created the V-node successfully, so we want to poll later.
+                out.println("Vnode creation end point status:" + jsonNode.getStatus());
+                switch(jsonNode.getStatus()) {
+                    case HTTP_OK:               break;
+                    case HTTP_CONFLICT:         break;
+                    case HTTP_INTERNAL_ERROR:   break;
+                    default:
+                        reportError(jsonNode);
+                }
+
+            } catch (ExecutionException | InterruptedException e) {
+                throw new CsdeException("Unexpected exception while waiting for response to " +
+                        "membership submission for holding identity" + response.getKey());
+            }
         }
 
+        Map<String, String> OKHoldingX500AndShortIds = pollForVNodeShortHoldingHashIds(x500Ids, 60, 5000);
+
+        // Register the VNodes
+        responses.clear();
+
+        for(String okId: OKHoldingX500AndShortIds.keySet()) {
+            responses.put(okId, Unirest
+                    .post(baseURL + "/api/v1/membership/" +  OKHoldingX500AndShortIds.get(okId))
+                    .body(getMemberRegistrationBody(okId))
+                    .basicAuth(rpcUser, rpcPasswd)
+                    .asJsonAsync( response ->
+                            out.println("Vnode membership submission for \"" + okId + "\"" +
+                                    System.lineSeparator() + response.getBody().toPrettyString()))
+            );
+        }
+
+        out.println("Vnode membership requests submitted, waiting for acknowledgement from MGM...");
+
+        for (Map.Entry<String, CompletableFuture<HttpResponse<JsonNode>>> response: responses.entrySet()) {
+            try {
+                response.getValue().get();
+            } catch (ExecutionException | InterruptedException e) {
+                throw new CsdeException("Unexpected exception while waiting for response to " +
+                        "membership submission for holding identity" + response.getKey());
+            }
+        }
+
+        pollForCompleteMembershipRegistration(OKHoldingX500AndShortIds);
     }
 
-    public void startCorda() throws Exception {
-        File cordaPIDFile = new File(cordaPidCache);
-        if (cordaPIDFile.exists()) {
-            throw new Exception("Cannot start the Combined worker\nCached process ID file " + cordaPIDFile + " existing.\nWas the combined worker already started?");
-        }
-
-        PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPIDFile));
+    public void startCorda() throws IOException {
+        PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPidCache));
         File combinedWorkerJar = project.getConfigurations().getByName("combinedWorker").getSingleFile();
 
         new ProcessBuilder(
@@ -454,4 +620,26 @@ public class CsdeRpcInterface {
         }
     }
 
+    // Helper to extract a string from a  JSON node and strip quotes
+    private String jsonNodeToString(com.fasterxml.jackson.databind.JsonNode jsonNode) {
+        String jsonString = jsonNode.toString();
+        return jsonString.substring(1, jsonString.length()-1);
+    }
+
+    private String getMemberRegistrationBody(String memberX500Name) throws ConfigurationException, IOException {
+        Map<String, String> notaryReps = getNotaryRepresentatives();
+
+        String context = "\"corda.key.scheme\" : \"CORDA.ECDSA.SECP256R1\"" + (
+                notaryReps.containsKey(memberX500Name)
+                ? ", \"corda.roles.0\" : \"notary\", " +
+                        "\"corda.notary.service.name\" : \"" + notaryReps.get(memberX500Name) + "\", " +
+                        // This will need revisiting in the long term when additional protocols are added, and will
+                        // need to be specified in config. We will also need to review the hard-coded name once
+                        // notary plugin selection logic is re-instated in CORE-7248.
+                        "\"corda.notary.service.plugin\" : \"net.corda.notary.NonValidatingNotary\""
+                : ""
+        );
+
+        return "{ \"memberRegistrationRequest\": { \"action\": \"requestJoin\",  \"context\": { " + context + " } } }";
+    }
 }

@@ -2,6 +2,15 @@
   "identities": [
     "CN=Daniel, OU=Test Dept, O=R3, L=London, C=GB",
     "CN=Emma, OU=Test Dept, O=R3, L=London, C=GB",
-    "CN=Felix, OU=Test Dept, O=R3, L=London, C=GB"
+    "CN=Felix, OU=Test Dept, O=R3, L=London, C=GB",
+    "CN=NotaryRep1, OU=Test Dept, O=R3, L=London, C=GB"
+  ],
+  "notaries": [
+    {
+      "serviceX500Name": "CN=NotaryService, OU=Test Dept, O=R3, L=London, C=GB",
+      "representatives": [
+        "CN=NotaryRep1, OU=Test Dept, O=R3, L=London, C=GB"
+      ]
+    }
   ]
 }
