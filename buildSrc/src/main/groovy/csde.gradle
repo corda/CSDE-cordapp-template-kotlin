@@ -81,13 +81,11 @@ def projectContext = new ProjectContext(project,
         keystoreCertFName,
         appCpiName,
         notaryCpiName,
-        devEnvWorkspace
-
+        devEnvWorkspace,
+        cordaCliBinDir
 )
 
 def projectUtils = new ProjectUtils()
-
-// todo: Start here -> Can the one off tasks be split into a separate file/ section, eg create group policy etc..
 
 // todo: move create and register vnodes to separate helper
 
@@ -99,6 +97,8 @@ def projectUtils = new ProjectUtils()
 // todo: question, is it possible to invoke the cli from java rather than gradle/ groovy
 // todo: rename deployCPIsHelper
 // todo: sort out the fully qualified class names in functions
+
+// add proper logging, rather than reading Stdout
 
 
 
@@ -181,8 +181,9 @@ tasks.register('projInit') {
 tasks.register("testJava") {
     group = pluginGroupName
     doLast {
-        println(testJavaClass.helloWorld())
-        buildCPIHelper.testExec()
+//        println(testJavaClass.helloWorld())
+//        buildCPIHelper.testExec()
+        buildCPIHelper.createGroupPolicy()
     }
 }
 
