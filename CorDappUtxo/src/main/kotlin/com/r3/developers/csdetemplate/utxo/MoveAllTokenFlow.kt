@@ -77,6 +77,23 @@ class MoveAllTokenFlow : RPCStartableFlow {
         val issuerMember = memberLookup.myInfo()
         val issuerParty = Party(issuerMember.name, issuerMember.sessionInitiationKey)
 
+        /*
+            val emko = utxoLedgerService.findUnconsumedStatesByType(TokenState::class.java)
+            => org.apache.avro.UnresolvedUnionException: Not in union [{"type":"record","name":"PersistTransaction","namespace":"net.corda.data.ledger.persistence","doc":"Persist the specified signed transaction. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"transaction","type":"bytes","doc":"the serialized transaction"},{"name":"status","type":{"type":"string","avro.java.string":"String"},"doc":"the transaction status"},{"name":"relevantStatesIndexes","type":{"type":"array","items":"int"},"doc":"indexes of the relevant states"}]},{"type":"record","name":"PersistTransactionIfDoesNotExist","namespace":"net.corda.data.ledger.persistence","doc":"Persist the specified signed transaction if it does not exist. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"transaction","type":"bytes","doc":"the serialized transaction"},{"name":"status","type":{"type":"string","avro.java.string":"String"},"doc":"the transaction status"}]},{"type":"record","name":"FindTransaction","namespace":"net.corda.data.ledger.persistence","doc":"Retrieve the specified signed transaction, specified by id. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"id","type":{"type":"string","avro.java.string":"String"},"doc":"The transaction ID, derived from the root hash of its Merkle tree"},{"name":"transactionStatus","type":{"type":"string","avro.java.string":"String"},"doc":"The status of the transaction"}]},{"type":"record","name":"UpdateTransactionStatus","namespace":"net.corda.data.ledger.persistence","doc":"Updates a transaction's status. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"id","type":{"type":"string","avro.java.string":"String"},"doc":"The transaction ID, derived from the root hash of its Merkle tree"},{"name":"transactionStatus","type":{"type":"string","avro.java.string":"String"},"doc":"The new status of the transaction"}]}]: {"stateClassName": "com.r3.developers.csdetemplate.utxo.TokenState"}
+	at org.apache.avro.generic.GenericData.resolveUnion(GenericData.java:896) ~[?:?]
+         */
+        /*
+            val emko = utxoLedgerService.findUnconsumedStatesByType(ContractState::class.java)
+            => org.apache.avro.UnresolvedUnionException: Not in union [{"type":"record","name":"PersistTransaction","namespace":"net.corda.data.ledger.persistence","doc":"Persist the specified signed transaction. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"transaction","type":"bytes","doc":"the serialized transaction"},{"name":"status","type":{"type":"string","avro.java.string":"String"},"doc":"the transaction status"},{"name":"relevantStatesIndexes","type":{"type":"array","items":"int"},"doc":"indexes of the relevant states"}]},{"type":"record","name":"PersistTransactionIfDoesNotExist","namespace":"net.corda.data.ledger.persistence","doc":"Persist the specified signed transaction if it does not exist. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"transaction","type":"bytes","doc":"the serialized transaction"},{"name":"status","type":{"type":"string","avro.java.string":"String"},"doc":"the transaction status"}]},{"type":"record","name":"FindTransaction","namespace":"net.corda.data.ledger.persistence","doc":"Retrieve the specified signed transaction, specified by id. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"id","type":{"type":"string","avro.java.string":"String"},"doc":"The transaction ID, derived from the root hash of its Merkle tree"},{"name":"transactionStatus","type":{"type":"string","avro.java.string":"String"},"doc":"The status of the transaction"}]},{"type":"record","name":"UpdateTransactionStatus","namespace":"net.corda.data.ledger.persistence","doc":"Updates a transaction's status. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"id","type":{"type":"string","avro.java.string":"String"},"doc":"The transaction ID, derived from the root hash of its Merkle tree"},{"name":"transactionStatus","type":{"type":"string","avro.java.string":"String"},"doc":"The new status of the transaction"}]}]: {"stateClassName": "net.corda.v5.ledger.utxo.ContractState"}
+	at org.apache.avro.generic.GenericData.resolveUnion(GenericData.java:896) ~[?:?]
+         */
+
+        /*
+            utxoLedgerService.findLedgerTransaction(inputTxHash) ?: throw IllegalArgumentException("Token not found!")
+            => java.lang.ClassCastException: class org.apache.avro.generic.GenericData$Array cannot be cast to class net.corda.v5.crypto.DigitalSignature$WithKey (org.apache.avro.generic.GenericData$Array is in unnamed module of loader org.apache.felix.framework.BundleWiringImpl$BundleClassLoader @4e387da1; net.corda.v5.crypto.DigitalSignature$WithKey is in unnamed module of loader org.apache.felix.framework.BundleWiringImpl$BundleClassLoader @527ba75a)
+	at net.corda.flow.application.crypto.SigningServiceImpl.sign(SigningServiceImpl.kt:32) ~[?:?]
+         */
+
         val inputTxHash = SecureHash.parse(request.input)
         val inputTx =
             utxoLedgerService.findSignedTransaction(inputTxHash) ?: throw IllegalArgumentException("Token not found!")
@@ -90,6 +107,7 @@ class MoveAllTokenFlow : RPCStartableFlow {
             .map { it.state.contractState as TokenState }
             .map { TokenState(it.issuer, ownerParty, it.amount) }
 
+        log.info("\n--- [MoveAllTokenFlow] 1")
         val utxoTxBuilder = utxoLedgerService.getTransactionBuilder()
             .setNotary(notaryParty)
             // a time windows is mandatory
@@ -101,9 +119,12 @@ class MoveAllTokenFlow : RPCStartableFlow {
             .addCommand(MoveAll())
             .addSignatories(listOf(issuerParty.owningKey))
 
+        log.info("\n--- [MoveAllTokenFlow] 2")
         @Suppress("DEPRECATION")
         val signedTx = utxoTxBuilder.toSignedTransaction(issuerParty.owningKey)
+        log.info("\n--- [MoveAllTokenFlow] 3")
         val sessions = listOf(flowMessaging.initiateFlow(ownerParty.name))
+        log.info("\n--- [MoveAllTokenFlow] 4")
         val finalizedTx = utxoLedgerService.finalize(signedTx, sessions)
         log.info("\n--- [MoveAllTokenFlow] Finalized Tx is $finalizedTx")
         finalizedTx.outputStateAndRefs.map { it.state.contractState }.forEachIndexed { i, it ->
@@ -130,6 +151,11 @@ class MoveAllTokenRespFlow : ResponderFlow, UtxoTransactionValidator {
     override fun call(session: FlowSession) {
         log.info("\n--- [MoveAllTokenRespFlow] Starting...")
         val finalizedTx = utxoLedgerService.receiveFinality(session, this)
+        /*
+            somewhere in between I have
+            => com.r3.corda.notary.plugin.common.NotaryException: Unable to notarise transaction SHA-256D:D106256B648EB997C14C0E24BB7A7F4904800C7EB1CA56CABCD19C2128DD9CD9 : NotaryErrorGeneralImpl(errorText=Error while processing request from client., cause=net.corda.v5.base.exceptions.CordaRuntimeException: java.lang.IllegalStateException: Error while verifying request signature. Cause: net.corda.v5.crypto.exceptions.CryptoSignatureException: Signature Verification failed!)
+	at com.r3.corda.notary.plugin.nonvalidating.client.NonValidatingNotaryClientFlowImpl.call(NonValidatingNotaryClientFlowImpl.kt:89) ~[?:?]
+         */
         val resultMessage = finalizedTx.id.toString()
         log.info("\n--- [MoveAllTokenRespFlow] Finalized Tx Id is $resultMessage")
     }
