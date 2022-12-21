@@ -89,7 +89,8 @@ class IssueTokenFlow : RPCStartableFlow {
         var utxoTxBuilder = utxoLedgerService.getTransactionBuilder()
             .setNotary(notaryParty)
             // a time windows is mandatory
-            // !!! => .setTimeWindowBetween(Instant.MIN, Instant.MAX) => string overflow exception
+            // emko:issue#3
+            // !!! => .setTimeWindowBetween(Instant.MIN, Instant.MAX) => java.lang.ArithmeticException: long overflow
             .setTimeWindowBetween(Instant.now(), Instant.now().plus(1, ChronoUnit.HOURS))
             .addCommand(Issue())
             .addSignatories(listOf(issuerParty.owningKey))

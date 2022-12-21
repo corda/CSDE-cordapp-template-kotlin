@@ -111,7 +111,8 @@ class MoveAllTokenFlow : RPCStartableFlow {
         val utxoTxBuilder = utxoLedgerService.getTransactionBuilder()
             .setNotary(notaryParty)
             // a time windows is mandatory
-            // !!! => .setTimeWindowBetween(Instant.MIN, Instant.MAX) => string overflow exception
+            // emko:issue#3
+            // !!! => .setTimeWindowBetween(Instant.MIN, Instant.MAX) => java.lang.ArithmeticException: long overflow
             .setTimeWindowBetween(Instant.now(), Instant.now().plus(1, ChronoUnit.HOURS))
             .addInputStates(inputStateRefs)
 //            .addReferenceInputStates(inputStateRefs)
@@ -152,6 +153,7 @@ class MoveAllTokenRespFlow : ResponderFlow, UtxoTransactionValidator {
         log.info("\n--- [MoveAllTokenRespFlow] Starting...")
         val finalizedTx = utxoLedgerService.receiveFinality(session, this)
         /*
+            emko:issue#2
             somewhere in between I have
             => com.r3.corda.notary.plugin.common.NotaryException: Unable to notarise transaction SHA-256D:D106256B648EB997C14C0E24BB7A7F4904800C7EB1CA56CABCD19C2128DD9CD9 : NotaryErrorGeneralImpl(errorText=Error while processing request from client., cause=net.corda.v5.base.exceptions.CordaRuntimeException: java.lang.IllegalStateException: Error while verifying request signature. Cause: net.corda.v5.crypto.exceptions.CryptoSignatureException: Signature Verification failed!)
 	at com.r3.corda.notary.plugin.nonvalidating.client.NonValidatingNotaryClientFlowImpl.call(NonValidatingNotaryClientFlowImpl.kt:89) ~[?:?]
