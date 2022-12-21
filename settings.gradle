@@ -65,4 +65,5 @@ pluginManagement {
 rootProject.name = 'csde-cordapp-template-kotlin'
 include ':workflows'
 include ':contracts'
+include ':utilities'
 
