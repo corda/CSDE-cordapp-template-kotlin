@@ -154,6 +154,7 @@ class DoorCodeQueryFlow : RPCStartableFlow {
 }
 
 /*
+// *** ONLY NEEDED FOR A DYNAMIC NETWORK  ***
 // Before running one will need to create a key for each party involved.
 // This can be done through the Swagger UI end point:
 //  "POST  /keys/{tenantid}/alias/alias}/category/{hsmcategory}/scheme/{scheme}
