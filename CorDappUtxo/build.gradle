@@ -121,8 +121,9 @@ dependencies {
     // The CorDapp uses the slf4j logging framework. Corda-API provides this so we need a 'cordaProvided' declaration.
     cordaProvided 'org.slf4j:slf4j-api'
 
-//    implementation 'net.corda:corda-schema-registry:5.0.0.0-Fox-beta-1671430748377'
-//    implementation 'net.corda:corda-schema-registry-impl:5.0.0.0-Fox-beta-1671430748377'
+//    implementation "com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-common:$cordaNotaryPluginsVersion"
+//    implementation "com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-client:$cordaNotaryPluginsVersion"
+//    implementation "com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-server:$cordaNotaryPluginsVersion"
 //    implementation 'net.corda:corda-flows:$combinedWorkerVersion'
 //    implementation 'net.corda:corda-flow-service:$combinedWorkerVersion'
 //    implementation 'net.corda:corda-ledger-common-flow:$combinedWorkerVersion'
