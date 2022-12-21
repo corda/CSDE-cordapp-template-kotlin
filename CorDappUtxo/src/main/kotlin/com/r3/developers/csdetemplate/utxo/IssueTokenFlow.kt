@@ -94,6 +94,7 @@ class IssueTokenFlow : RPCStartableFlow {
             .setTimeWindowBetween(Instant.now(), Instant.now().plus(1, ChronoUnit.HOURS))
             .addCommand(Issue())
             .addSignatories(listOf(issuerParty.owningKey))
+        // emko:issue#6
         // !!! be sure not to add them twice ... maybe some checks in the builder are needed?
         utxoTxBuilder = if (request.withEncumbrance) {
             utxoTxBuilder.addEncumberedOutputStates("all-for-one", outputTokenStates)
