@@ -10,7 +10,6 @@ import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
-import net.corda.v5.crypto.SecureHash
 import net.corda.v5.ledger.common.NotaryLookup
 import net.corda.v5.ledger.common.Party
 import net.corda.v5.ledger.utxo.*
@@ -20,7 +19,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 @CordaSerializable
-data class TokenMoveRequest(val input: String, val maxIndex: Int = 1, val owner: MemberX500Name)
+data class TokenMoveRequest(val maxIndex: Int = 1, val owner: MemberX500Name)
 
 /*
 As "CN=Bob, OU=Test Dept, O=R3, L=London, C=GB":
@@ -29,8 +28,7 @@ As "CN=Bob, OU=Test Dept, O=R3, L=London, C=GB":
   "flowClassName": "com.r3.developers.csdetemplate.utxo.MoveAllTokenFlow",
   "requestData": {
     "owner": "CN=Charlie, OU=Test Dept, O=R3, L=London, C=GB",
-    "input": "SHA-256D:5645A8DFD7089C5C8A65B675F815C34C30E160387733A4F53DC3EBA91605530E",
-    "maxIndex": 3
+    "maxIndex": 2
   }
 }
 */
@@ -77,18 +75,12 @@ class MoveAllTokenFlow : RPCStartableFlow {
         val issuerMember = memberLookup.myInfo()
         val issuerParty = Party(issuerMember.name, issuerMember.sessionInitiationKey)
 
-        /*
-        // emko:issue#4
-            val emko = utxoLedgerService.findUnconsumedStatesByType(TokenState::class.java)
-            => org.apache.avro.UnresolvedUnionException: Not in union [{"type":"record","name":"PersistTransaction","namespace":"net.corda.data.ledger.persistence","doc":"Persist the specified signed transaction. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"transaction","type":"bytes","doc":"the serialized transaction"},{"name":"status","type":{"type":"string","avro.java.string":"String"},"doc":"the transaction status"},{"name":"relevantStatesIndexes","type":{"type":"array","items":"int"},"doc":"indexes of the relevant states"}]},{"type":"record","name":"PersistTransactionIfDoesNotExist","namespace":"net.corda.data.ledger.persistence","doc":"Persist the specified signed transaction if it does not exist. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"transaction","type":"bytes","doc":"the serialized transaction"},{"name":"status","type":{"type":"string","avro.java.string":"String"},"doc":"the transaction status"}]},{"type":"record","name":"FindTransaction","namespace":"net.corda.data.ledger.persistence","doc":"Retrieve the specified signed transaction, specified by id. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"id","type":{"type":"string","avro.java.string":"String"},"doc":"The transaction ID, derived from the root hash of its Merkle tree"},{"name":"transactionStatus","type":{"type":"string","avro.java.string":"String"},"doc":"The status of the transaction"}]},{"type":"record","name":"UpdateTransactionStatus","namespace":"net.corda.data.ledger.persistence","doc":"Updates a transaction's status. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"id","type":{"type":"string","avro.java.string":"String"},"doc":"The transaction ID, derived from the root hash of its Merkle tree"},{"name":"transactionStatus","type":{"type":"string","avro.java.string":"String"},"doc":"The new status of the transaction"}]}]: {"stateClassName": "com.r3.developers.csdetemplate.utxo.TokenState"}
-	at org.apache.avro.generic.GenericData.resolveUnion(GenericData.java:896) ~[?:?]
-         */
-        /*
-        // emko:issue#4
-            val emko = utxoLedgerService.findUnconsumedStatesByType(ContractState::class.java)
-            => org.apache.avro.UnresolvedUnionException: Not in union [{"type":"record","name":"PersistTransaction","namespace":"net.corda.data.ledger.persistence","doc":"Persist the specified signed transaction. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"transaction","type":"bytes","doc":"the serialized transaction"},{"name":"status","type":{"type":"string","avro.java.string":"String"},"doc":"the transaction status"},{"name":"relevantStatesIndexes","type":{"type":"array","items":"int"},"doc":"indexes of the relevant states"}]},{"type":"record","name":"PersistTransactionIfDoesNotExist","namespace":"net.corda.data.ledger.persistence","doc":"Persist the specified signed transaction if it does not exist. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"transaction","type":"bytes","doc":"the serialized transaction"},{"name":"status","type":{"type":"string","avro.java.string":"String"},"doc":"the transaction status"}]},{"type":"record","name":"FindTransaction","namespace":"net.corda.data.ledger.persistence","doc":"Retrieve the specified signed transaction, specified by id. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"id","type":{"type":"string","avro.java.string":"String"},"doc":"The transaction ID, derived from the root hash of its Merkle tree"},{"name":"transactionStatus","type":{"type":"string","avro.java.string":"String"},"doc":"The status of the transaction"}]},{"type":"record","name":"UpdateTransactionStatus","namespace":"net.corda.data.ledger.persistence","doc":"Updates a transaction's status. One of several types of ledger persistence request {@link LedgerPersistenceRequest}","fields":[{"name":"id","type":{"type":"string","avro.java.string":"String"},"doc":"The transaction ID, derived from the root hash of its Merkle tree"},{"name":"transactionStatus","type":{"type":"string","avro.java.string":"String"},"doc":"The new status of the transaction"}]}]: {"stateClassName": "net.corda.v5.ledger.utxo.ContractState"}
-	at org.apache.avro.generic.GenericData.resolveUnion(GenericData.java:896) ~[?:?]
-         */
+//        try {
+//            val emko = utxoLedgerService.findUnconsumedStatesByType(ContractState::class.java)
+//            log.info("\n--- [MoveAllTokenFlow] >>> ${emko.size}")
+//        } catch (e:Exception) {
+//            log.info("\n--- [MoveAllTokenFlow] !!! $e")
+//        }
 
         /*
         // emko:issue#5
@@ -97,17 +89,16 @@ class MoveAllTokenFlow : RPCStartableFlow {
 	at net.corda.flow.application.crypto.SigningServiceImpl.sign(SigningServiceImpl.kt:32) ~[?:?]
          */
 
-        val inputTxHash = SecureHash.parse(request.input)
-        val inputTx =
-            utxoLedgerService.findSignedTransaction(inputTxHash) ?: throw IllegalArgumentException("Token not found!")
+        val allUnusedTokens = utxoLedgerService.findUnconsumedStatesByType(TokenState::class.java)
+        val myUnusedTokens = allUnusedTokens.filter { it.state.contractState.owner.name.equals(issuerMember.name) }
 
-        inputTx.outputStateAndRefs.forEachIndexed { i, it ->
+        myUnusedTokens.forEachIndexed { i, it ->
             log.info("\n--- [MoveAllTokenFlow] InputState.$i with index ${it.ref.index} and with Encumbrance.name ${it.state.encumbrance ?: "n/a"}")
         }
-        val inputStateAndRefs = inputTx.outputStateAndRefs.filter { it.ref.index < request.maxIndex }
+        val inputStateAndRefs = myUnusedTokens.filter { it.ref.index < request.maxIndex }
         val inputStateRefs = inputStateAndRefs.map { it.ref }
         val outputTokenStates = inputStateAndRefs
-            .map { it.state.contractState as TokenState }
+            .map { it.state.contractState }
             .map { TokenState(it.issuer, ownerParty, it.amount) }
 
         log.info("\n--- [MoveAllTokenFlow] 1")
@@ -117,7 +108,7 @@ class MoveAllTokenFlow : RPCStartableFlow {
             // emko:issue#3
             // !!! => .setTimeWindowBetween(Instant.MIN, Instant.MAX) => java.lang.ArithmeticException: long overflow
             .setTimeWindowBetween(Instant.now(), Instant.now().plus(1, ChronoUnit.HOURS))
-            .addInputStates(inputStateRefs)
+//            .addInputStates(inputStateRefs)
 //            .addReferenceInputStates(inputStateRefs)
             .addOutputStates(outputTokenStates)
             .addCommand(MoveAll())
