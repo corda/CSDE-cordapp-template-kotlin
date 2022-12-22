@@ -33,7 +33,7 @@ As "CN=Bob, OU=Test Dept, O=R3, L=London, C=GB":
 }
 */
 
-@InitiatingFlow("utxo-token-moveAll-flow-protocol")
+@InitiatingFlow("utxo-moveAll-token-flow-protocol")
 class MoveAllTokenFlow : RPCStartableFlow {
 
     private companion object {
@@ -57,30 +57,16 @@ class MoveAllTokenFlow : RPCStartableFlow {
 
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
-        log.info("\n--- [MoveAllTokenFlow] Starting...")
+        log.info("\n--- [MoveAllTokenFlow] >>>")
 
-        val notaryInfo = notaryLookup.notaryServices.first()
-        // val notaryKey = notaryInfo.publicKey
-        // TODO CORE-6173 use proper notary key
-        val notaryKey = memberLookup.lookup().first {
-            it.memberProvidedContext["corda.notary.service.name"] == notaryInfo.name.toString()
-        }.ledgerKeys.first()
-        val notaryParty = Party(notaryInfo.name, notaryKey)
+        val notaryParty = getNotaryParty(notaryLookup, memberLookup)
 
         val request = requestBody.getRequestBodyAs<TokenMoveRequest>(jsonMarshallingService)
         val ownerMember = memberLookup.lookup(request.owner) ?: throw IllegalArgumentException("Owner not found!")
         val ownerParty = Party(ownerMember.name, ownerMember.sessionInitiationKey)
 
-        // issuer == old/current owner
-        val issuerMember = memberLookup.myInfo()
-        val issuerParty = Party(issuerMember.name, issuerMember.sessionInitiationKey)
-
-//        try {
-//            val emko = utxoLedgerService.findUnconsumedStatesByType(ContractState::class.java)
-//            log.info("\n--- [MoveAllTokenFlow] >>> ${emko.size}")
-//        } catch (e:Exception) {
-//            log.info("\n--- [MoveAllTokenFlow] !!! $e")
-//        }
+        val myInfo = memberLookup.myInfo()
+        val meAsAnOwner = Party(myInfo.name, myInfo.sessionInitiationKey)
 
         /*
         // emko:issue#5
@@ -90,7 +76,7 @@ class MoveAllTokenFlow : RPCStartableFlow {
          */
 
         val allUnusedTokens = utxoLedgerService.findUnconsumedStatesByType(TokenState::class.java)
-        val myUnusedTokens = allUnusedTokens.filter { it.state.contractState.owner.name.equals(issuerMember.name) }
+        val myUnusedTokens = allUnusedTokens.filter { it.state.contractState.owner.name == myInfo.name }
 
         myUnusedTokens.forEachIndexed { i, it ->
             log.info("\n--- [MoveAllTokenFlow] InputState.$i with index ${it.ref.index} and with Encumbrance.name ${it.state.encumbrance ?: "n/a"}")
@@ -101,7 +87,6 @@ class MoveAllTokenFlow : RPCStartableFlow {
             .map { it.state.contractState }
             .map { TokenState(it.issuer, ownerParty, it.amount) }
 
-        log.info("\n--- [MoveAllTokenFlow] 1")
         val utxoTxBuilder = utxoLedgerService.getTransactionBuilder()
             .setNotary(notaryParty)
             // a time windows is mandatory
@@ -112,14 +97,12 @@ class MoveAllTokenFlow : RPCStartableFlow {
 //            .addReferenceInputStates(inputStateRefs)
             .addOutputStates(outputTokenStates)
             .addCommand(MoveAll())
-            .addSignatories(listOf(issuerParty.owningKey))
+            .addSignatories(listOf(meAsAnOwner.owningKey))
 
-        log.info("\n--- [MoveAllTokenFlow] 2")
         @Suppress("DEPRECATION")
-        val signedTx = utxoTxBuilder.toSignedTransaction(issuerParty.owningKey)
-        log.info("\n--- [MoveAllTokenFlow] 3")
+        val signedTx = utxoTxBuilder.toSignedTransaction(meAsAnOwner.owningKey)
+
         val sessions = listOf(flowMessaging.initiateFlow(ownerParty.name))
-        log.info("\n--- [MoveAllTokenFlow] 4")
         val finalizedTx = utxoLedgerService.finalize(signedTx, sessions)
         log.info("\n--- [MoveAllTokenFlow] Finalized Tx is $finalizedTx")
         finalizedTx.outputStateAndRefs.map { it.state.contractState }.forEachIndexed { i, it ->
@@ -128,11 +111,12 @@ class MoveAllTokenFlow : RPCStartableFlow {
 
         val resultMessage = finalizedTx.id.toString()
         log.info("\n--- [MoveAllTokenFlow] Finalized Tx Id is $resultMessage")
+        log.info("\n--- [MoveAllTokenFlow] <<<")
         return resultMessage
     }
 }
 
-@InitiatedBy("utxo-token-moveAll-flow-protocol")
+@InitiatedBy("utxo-moveAll-token-flow-protocol")
 class MoveAllTokenRespFlow : ResponderFlow, UtxoTransactionValidator {
 
     private companion object {
@@ -144,7 +128,7 @@ class MoveAllTokenRespFlow : ResponderFlow, UtxoTransactionValidator {
 
     @Suspendable
     override fun call(session: FlowSession) {
-        log.info("\n--- [MoveAllTokenRespFlow] Starting...")
+        log.info("\n--- [MoveAllTokenRespFlow] >>>")
         val finalizedTx = utxoLedgerService.receiveFinality(session, this)
         /*
             emko:issue#2
@@ -154,6 +138,7 @@ class MoveAllTokenRespFlow : ResponderFlow, UtxoTransactionValidator {
          */
         val resultMessage = finalizedTx.id.toString()
         log.info("\n--- [MoveAllTokenRespFlow] Finalized Tx Id is $resultMessage")
+        log.info("\n--- [MoveAllTokenRespFlow] <<<")
     }
 
     @Suspendable

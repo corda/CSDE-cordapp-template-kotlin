@@ -17,8 +17,8 @@ internal class IssueTokenFlowTest {
     private val danielX500 = MemberX500Name.parse("CN=Daniel, OU=Test Dept, O=R3, L=London, C=GB")
 
     private lateinit var simulator: Simulator
-    private lateinit var aliceNode: SimulatedVirtualNode;
-    private lateinit var bobNode: SimulatedVirtualNode;
+    private lateinit var aliceNode: SimulatedVirtualNode
+    private lateinit var bobNode: SimulatedVirtualNode
 
     @BeforeEach
     fun setUp() {

@@ -40,7 +40,7 @@ As "CN=Alice, OU=Test Dept, O=R3, L=London, C=GB":
 }
 */
 
-@InitiatingFlow("utxo-token-issue-flow-protocol")
+@InitiatingFlow("utxo-issue-token-flow-protocol")
 class IssueTokenFlow : RPCStartableFlow {
 
     private companion object {
@@ -64,26 +64,20 @@ class IssueTokenFlow : RPCStartableFlow {
 
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
-        log.info("\n--- [IssueTokenFlow] Starting...")
+        log.info("\n--- [IssueTokenFlow] >>>")
 
-        val notaryInfo = notaryLookup.notaryServices.first()
-        // val notaryKey = notaryInfo.publicKey
-        // TODO CORE-6173 use proper notary key
-        val notaryKey = memberLookup.lookup().first {
-            it.memberProvidedContext["corda.notary.service.name"] == notaryInfo.name.toString()
-        }.ledgerKeys.first()
-        val notaryParty = Party(notaryInfo.name, notaryKey)
+        val notaryParty = getNotaryParty(notaryLookup, memberLookup)
 
         val request = requestBody.getRequestBodyAs<TokenIssueRequest>(jsonMarshallingService)
         val ownerMember = memberLookup.lookup(request.owner) ?: throw IllegalArgumentException("Owner not found!")
         val ownerParty = Party(ownerMember.name, ownerMember.sessionInitiationKey)
 
-        val issuerMember = memberLookup.myInfo()
-        val issuerParty = Party(issuerMember.name, issuerMember.sessionInitiationKey)
+        val myInfo = memberLookup.myInfo()
+        val meAsAnIssuer = Party(myInfo.name, myInfo.sessionInitiationKey)
 
         val outputTokenStates = mutableListOf<TokenState>()
         for (i in 1..request.times) {
-            outputTokenStates.add(TokenState(issuerParty, ownerParty, request.amount))
+            outputTokenStates.add(TokenState(meAsAnIssuer, ownerParty, request.amount))
         }
 
         var utxoTxBuilder = utxoLedgerService.getTransactionBuilder()
@@ -93,7 +87,8 @@ class IssueTokenFlow : RPCStartableFlow {
             // !!! => .setTimeWindowBetween(Instant.MIN, Instant.MAX) => java.lang.ArithmeticException: long overflow
             .setTimeWindowBetween(Instant.now(), Instant.now().plus(1, ChronoUnit.HOURS))
             .addCommand(Issue())
-            .addSignatories(listOf(issuerParty.owningKey))
+            .addSignatories(listOf(meAsAnIssuer.owningKey))
+
         // emko:issue#6
         // !!! be sure not to add them twice ... maybe some checks in the builder are needed?
         utxoTxBuilder = if (request.withEncumbrance) {
@@ -106,7 +101,8 @@ class IssueTokenFlow : RPCStartableFlow {
         }
 
         @Suppress("DEPRECATION")
-        val signedTx = utxoTxBuilder.toSignedTransaction(issuerParty.owningKey)
+        val signedTx = utxoTxBuilder.toSignedTransaction(meAsAnIssuer.owningKey)
+
         val sessions = listOf(flowMessaging.initiateFlow(ownerParty.name))
         val finalizedTx = utxoLedgerService.finalize(signedTx, sessions)
         log.info("\n--- [IssueTokenFlow] Finalized Tx is $finalizedTx")
@@ -116,11 +112,12 @@ class IssueTokenFlow : RPCStartableFlow {
 
         val resultMessage = finalizedTx.id.toString()
         log.info("\n--- [IssueTokenFlow] Finalized Tx Id is $resultMessage")
+        log.info("\n--- [IssueTokenFlow] <<<")
         return resultMessage
     }
 }
 
-@InitiatedBy("utxo-token-issue-flow-protocol")
+@InitiatedBy("utxo-issue-token-flow-protocol")
 class IssueTokenRespFlow : ResponderFlow, UtxoTransactionValidator {
 
     private companion object {
@@ -132,10 +129,11 @@ class IssueTokenRespFlow : ResponderFlow, UtxoTransactionValidator {
 
     @Suspendable
     override fun call(session: FlowSession) {
-        log.info("\n--- [IssueTokenRespFlow] Starting...")
+        log.info("\n--- [IssueTokenRespFlow] >>>")
         val finalizedTx = utxoLedgerService.receiveFinality(session, this)
         val resultMessage = finalizedTx.id.toString()
         log.info("\n--- [IssueTokenRespFlow] Finalized Tx Id is $resultMessage")
+        log.info("\n--- [IssueTokenRespFlow] <<<")
     }
 
     @Suspendable

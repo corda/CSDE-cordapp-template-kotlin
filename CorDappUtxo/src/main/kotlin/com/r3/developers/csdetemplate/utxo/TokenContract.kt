@@ -52,7 +52,7 @@ class TokenContract : Contract {
 
             //signers
             if (!transaction.signatories.contains(tokenState.issuer.owningKey)) {
-                throw IllegalArgumentException("[Issue] Output.TokenState.Issuer must be required signer!");
+                throw IllegalArgumentException("[Issue] Output.TokenState.Issuer must be required signer!")
             }
         }
     }
