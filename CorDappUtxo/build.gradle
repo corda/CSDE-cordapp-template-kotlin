@@ -124,8 +124,10 @@ dependencies {
 //    implementation "com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-common:$cordaNotaryPluginsVersion"
 //    implementation "com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-client:$cordaNotaryPluginsVersion"
 //    implementation "com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-server:$cordaNotaryPluginsVersion"
-//    implementation 'net.corda:corda-flows:$combinedWorkerVersion'
-//    implementation 'net.corda:corda-flow-service:$combinedWorkerVersion'
+//    implementation "net.corda:corda-flows:$combinedWorkerVersion"
+//    implementation "net.corda:corda-flow-service:$combinedWorkerVersion"
+//    implementation "net.corda:corda-serialization:$combinedWorkerVersion"
+//    implementation "net.corda:corda-serialization-kryo:$combinedWorkerVersion"
 //    implementation 'net.corda:corda-ledger-common-flow:$combinedWorkerVersion'
 //    implementation 'net.corda:corda-ledger-utxo-flow:$combinedWorkerVersion'
 

@@ -21,13 +21,13 @@ class TokenContract : Contract {
 
     @Throws(IllegalArgumentException::class)
     override fun verify(transaction: UtxoLedgerTransaction) {
-        log.info("\n--- [TokenContract] commands ${transaction.commands.size}")
-        log.info("\n--- [TokenContract] inputStateRefs ${transaction.inputStateRefs.size}")
-        log.info("\n--- [TokenContract] inputStateAndRefs ${transaction.inputStateAndRefs.size}")
-        log.info("\n--- [TokenContract] inputTransactionStates ${transaction.inputTransactionStates.size}")
-        log.info("\n--- [TokenContract] inputContractStates ${transaction.inputContractStates.size}")
-        log.info("\n--- [TokenContract] outputStateAndRefs ${transaction.outputStateAndRefs.size}")
-        log.info("\n--- [TokenContract] outputContractStates ${transaction.outputContractStates.size}")
+        log.info("\n--- [TokenContract] commands are ${transaction.commands}")
+        log.info("\n--- [TokenContract] inputStateRefs count is ${transaction.inputStateRefs.size}")
+        log.info("\n--- [TokenContract] inputStateAndRefs count is ${transaction.inputStateAndRefs.size}")
+        log.info("\n--- [TokenContract] inputTransactionStates count is ${transaction.inputTransactionStates.size}")
+        log.info("\n--- [TokenContract] inputContractStates count is ${transaction.inputContractStates.size}")
+        log.info("\n--- [TokenContract] outputStateAndRefs count is ${transaction.outputStateAndRefs.size}")
+        log.info("\n--- [TokenContract] outputContractStates count is ${transaction.outputContractStates.size}")
 
         val commands = transaction.commands
         require(commands.size == 1) { "Commands must be one, but are ${commands.size}!" }
