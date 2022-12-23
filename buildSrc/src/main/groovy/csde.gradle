@@ -1,3 +1,6 @@
+// Note, IntelliJ does not recognise the imported Java Classes, hence they are
+// highlighted in Red. However, they are recognised in the gradle compilation.
+
 import com.r3.csde.TestJavaClass
 import com.r3.csde.CordaLifeCycleHelper
 import com.r3.csde.ProjectContext
@@ -70,6 +73,7 @@ def projectContext = new ProjectContext(project,
         cordaRpcUser,
         cordaRpcPasswd,
         devEnvWorkspace,
+        // todo: why is this not obtained in the groovy def's abouve - its inconsistent.
         new String("${System.getProperty("java.home")}/bin"),
         dbContainerName,
         cordaJDBCDir,
@@ -182,9 +186,7 @@ tasks.register('projInit') {
 tasks.register("testJava") {
     group = pluginGroupName
     doLast {
-//        println(testJavaClass.helloWorld())
-//        buildCPIHelper.testExec()
-//        buildCPIHelper.createGroupPolicy()
+
     }
 }
 
@@ -193,39 +195,8 @@ tasks.register("createGroupPolicy") {
     dependsOn('projInit')
     doLast {
         buildCPIHelper.createGroupPolicy()
-//            def groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json")
-//            def devnetFName = new String("$rootDir/config/dev-net.json")
-//            File groupPolicyFile = new File(groupPolicyFName)
-//            File devnetFile = new File(devnetFName)
-//            if (!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
-//                def configX500Ids = projectUtils.getConfigX500Ids(projectContext.X500ConfigFile)
-//
-//                println("createGroupPolicy: Creating a GroupPolicy")
-//
-//                javaexec {
-//                    classpath = files("$cordaCliBinDir/corda-cli.jar")
-//                    jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
-//                    standardOutput = new FileOutputStream(groupPolicyFName)
-//                    LinkedList<String> myArgs = new LinkedList<String>()
-//                    myArgs.add("mgm")
-//                    myArgs.add("groupPolicy")
-//                    configX500Ids.forEach {
-//                        myArgs.add("--name")
-//                        myArgs.add("$it")
-//                    }
-//
-//                    myArgs.add("--endpoint-protocol=1")
-//                    myArgs.add("--endpoint=http://localhost:1080")
-//                    args = myArgs
-//                }
-//
-//            } else {
-//                println("createPolicyTask: everything up to date; nothing to do.")
-//            }
-
     }
 }
-
 
 tasks.register("getNotaryServerCPB", Copy) {
     group = pluginImplGroupName
@@ -237,41 +208,7 @@ tasks.register('createKeystore') {
     group = pluginImplGroupName
     dependsOn('projInit')
     doLast {
-        File keystoreFile = new File(keystoreFName)
-        if(!keystoreFile.exists()) {
-            println('createKeystore: Create a keystore')
-            exec {
-                commandLine "${System.getProperty("java.home")}/bin/keytool", "-genkeypair",
-                        "-alias", keystoreAlias,
-                        "-keystore", keystoreFName,
-                        "-storepass", "keystore password",
-                        "-dname", "CN=CPI Example - My Signing Key, O=CorpOrgCorp, L=London, C=GB",
-                        "-keyalg", "RSA",
-                        "-storetype", "pkcs12",
-                        "-validity", "4000"
-            }
-            // Need to add the default signing key to the keystore
-            exec {
-                commandLine "${System.getProperty("java.home")}/bin/keytool", "-importcert",
-                        "-keystore", keystoreFName,
-                        "-storepass", "keystore password",
-                        "-noprompt",
-                        "-alias", signingCertAlias,
-                        "-file", signingCertFName
-            }
-            // keytool -exportcert -rfc -alias "signing key 1" -keystore signingkeys.pfx -storepass "keystore password" -file signingkey1.pem
-            exec {
-                commandLine "${System.getProperty("java.home")}/bin/keytool",
-                        "-exportcert", "-rfc", "-alias", keystoreAlias,
-                        "-keystore", keystoreFName,
-                        "-storepass", "keystore password",
-                        "-file", keystoreCertFName
-            }
-        }
-        else {
-            println('createKeystore:  keystore already created; nothing to do.')
-        }
-
+        buildCPIHelper.createKeyStore()
     }
 }
 
