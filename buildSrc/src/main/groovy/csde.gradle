@@ -100,7 +100,8 @@ def projectUtils = new ProjectUtils()
 
 // add proper logging, rather than reading Stdout
 
-
+// todo: add test corda running task
+// todo: terminate deploy Corda with a list of VNodes short hashes
 
 def deployCPIsHelper = new DeployCPIsHelper(projectContext)
 
@@ -183,7 +184,7 @@ tasks.register("testJava") {
     doLast {
 //        println(testJavaClass.helloWorld())
 //        buildCPIHelper.testExec()
-        buildCPIHelper.createGroupPolicy()
+//        buildCPIHelper.createGroupPolicy()
     }
 }
 
@@ -191,36 +192,36 @@ tasks.register("createGroupPolicy") {
     group = pluginImplGroupName
     dependsOn('projInit')
     doLast {
-
-            def groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json")
-            def devnetFName = new String("$rootDir/config/dev-net.json")
-            File groupPolicyFile = new File(groupPolicyFName)
-            File devnetFile = new File(devnetFName)
-            if (!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
-                def configX500Ids = projectUtils.getConfigX500Ids(projectContext.X500ConfigFile)
-
-                println("createGroupPolicy: Creating a GroupPolicy")
-
-                javaexec {
-                    classpath = files("$cordaCliBinDir/corda-cli.jar")
-                    jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
-                    standardOutput = new FileOutputStream(groupPolicyFName)
-                    LinkedList<String> myArgs = new LinkedList<String>()
-                    myArgs.add("mgm")
-                    myArgs.add("groupPolicy")
-                    configX500Ids.forEach {
-                        myArgs.add("--name")
-                        myArgs.add("$it")
-                    }
-
-                    myArgs.add("--endpoint-protocol=1")
-                    myArgs.add("--endpoint=http://localhost:1080")
-                    args = myArgs
-                }
-
-            } else {
-                println("createPolicyTask: everything up to date; nothing to do.")
-            }
+        buildCPIHelper.createGroupPolicy()
+//            def groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json")
+//            def devnetFName = new String("$rootDir/config/dev-net.json")
+//            File groupPolicyFile = new File(groupPolicyFName)
+//            File devnetFile = new File(devnetFName)
+//            if (!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
+//                def configX500Ids = projectUtils.getConfigX500Ids(projectContext.X500ConfigFile)
+//
+//                println("createGroupPolicy: Creating a GroupPolicy")
+//
+//                javaexec {
+//                    classpath = files("$cordaCliBinDir/corda-cli.jar")
+//                    jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
+//                    standardOutput = new FileOutputStream(groupPolicyFName)
+//                    LinkedList<String> myArgs = new LinkedList<String>()
+//                    myArgs.add("mgm")
+//                    myArgs.add("groupPolicy")
+//                    configX500Ids.forEach {
+//                        myArgs.add("--name")
+//                        myArgs.add("$it")
+//                    }
+//
+//                    myArgs.add("--endpoint-protocol=1")
+//                    myArgs.add("--endpoint=http://localhost:1080")
+//                    args = myArgs
+//                }
+//
+//            } else {
+//                println("createPolicyTask: everything up to date; nothing to do.")
+//            }
 
     }
 }

@@ -58,6 +58,7 @@ public BuildCPIHelper(ProjectContext _pc) {
             Process proc = pb.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 
+            // todo add exception
             FileWriter fileWriter = new FileWriter(groupPolicyFile);
             String line;
             while (( line = reader.readLine()) != null){
