@@ -34,6 +34,20 @@ class ListMyTokenFlow : RPCStartableFlow {
         log.info("\n--- [ListMyTokenFlow] >>>")
 
         val myInfo = memberLookup.myInfo()
+        log.info("\n--- [ListMyTokenFlow] I am ${myInfo.name}")
+
+//        try {
+//            log.info("\n--- [ListMyTokenFlow] ? ${ContractState::class.java}")
+//            /*
+//            !!! =>
+//            net.corda.sandbox.SandboxException: Class net.corda.v5.ledger.utxo.ContractState was not found in any sandbox in the sandbox group.
+//	at net.corda.sandbox.internal.SandboxGroupImpl.loadClassFromMainBundles(SandboxGroupImpl.kt:70) ~[?:?]
+//             */
+//            val allUnusedTokens = utxoLedgerService.findUnconsumedStatesByType(ContractState::class.java)
+//            log.info("\n--- [ListMyTokenFlow] ALL UnusedTokens are ${allUnusedTokens.size}")
+//        } catch (e: Exception) {
+//            log.error("emko", e)
+//        }
 
         val allUnusedTokens = utxoLedgerService.findUnconsumedStatesByType(TokenState::class.java)
         log.info("\n--- [ListMyTokenFlow] ALL UnusedTokens are ${allUnusedTokens.size}")

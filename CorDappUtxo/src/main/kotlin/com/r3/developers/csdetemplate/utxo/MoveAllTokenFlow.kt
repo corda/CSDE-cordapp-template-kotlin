@@ -93,8 +93,7 @@ class MoveAllTokenFlow : RPCStartableFlow {
             // emko:issue#3
             // !!! => .setTimeWindowBetween(Instant.MIN, Instant.MAX) => java.lang.ArithmeticException: long overflow
             .setTimeWindowBetween(Instant.now(), Instant.now().plus(1, ChronoUnit.HOURS))
-//            .addInputStates(inputStateRefs)
-//            .addReferenceInputStates(inputStateRefs)
+            .addInputStates(inputStateRefs)
             .addOutputStates(outputTokenStates)
             .addCommand(MoveAll())
             .addSignatories(listOf(meAsAnOwner.owningKey))
