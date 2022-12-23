@@ -31,7 +31,7 @@ public class ProjectContext {
     String notaryCPIName;
     String devEnvWorkspace;
     String cordaCliBinDir;
-
+    String cordaNotaryServiceDir;
 
     public ProjectContext (Project inProject,
                            String inBaseUrl,
@@ -50,7 +50,8 @@ public class ProjectContext {
                            String inAppCPIName,
                            String inNotaryCPIName,
                            String inDevEnvWorkspace,
-                           String inCordaCLiBinDir
+                           String inCordaCLiBinDir,
+                           String inCordaNotaryServiceDir
     ) {
         project = inProject;
         baseURL = inBaseUrl;
@@ -71,5 +72,6 @@ public class ProjectContext {
         notaryCPIName = inNotaryCPIName;
         devEnvWorkspace = inDevEnvWorkspace;
         cordaCliBinDir = inCordaCLiBinDir;
+        cordaNotaryServiceDir = inCordaNotaryServiceDir;
      }
 }

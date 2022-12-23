@@ -7,7 +7,7 @@ import java.io.PrintStream;
 import java.util.Scanner;
 
 /**
- * Manages Bringing corda up, testing for liveness and takign corda down
+ * Manages Bringing corda up, testing for liveness and taking corda down
  */
 
 public class CordaLifeCycleHelper {
@@ -25,6 +25,8 @@ public class CordaLifeCycleHelper {
         PrintStream pidStore = new PrintStream(new FileOutputStream(pc.cordaPidCache));
         File combinedWorkerJar = pc.project.getConfigurations().getByName("combinedWorker").getSingleFile();
 
+
+        // todo: make consistent with other ProcessBuilder set ups (use cmdArray)
         new ProcessBuilder(
                 "docker",
                 "run", "-d", "--rm",
@@ -34,6 +36,7 @@ public class CordaLifeCycleHelper {
                 "-e", "POSTGRES_USER=postgres",
                 "-e", "POSTGRES_PASSWORD=password",
                 "postgres:latest").start();
+        // todo: is there a better way of doing this - ie poll for readiness
         utils.rpcWait(10000);
 
         ProcessBuilder procBuild = new ProcessBuilder(pc.javaBinDir + "/java",
@@ -57,6 +60,8 @@ public class CordaLifeCycleHelper {
         Process proc = procBuild.start();
         pidStore.print(proc.pid());
         pc.out.println("Corda Process-id="+proc.pid());
+
+        // todo: should poll for readiness before returning
     }
 
 

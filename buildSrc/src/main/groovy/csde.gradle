@@ -1,11 +1,29 @@
 // Note, IntelliJ does not recognise the imported Java Classes, hence they are
 // highlighted in Red. However, they are recognised in the gradle compilation.
 
+
+// todo: START HERE - move more of the control flow over to JAVA.
+//  Sequence the steps in JAVA rather than Gradle
+
+
+// todo: look at the declaration of the script variables,
+// can they be combined with the declaration of the Project Context
+
+// todo investigate adding corda-cli to the class path then executing it directly - might not work as
+// gradle has to set up the jar file, so its not their when you start.
+
+// Todo: write a test flow runner helper function
+// todo: Write a final output message for deployCordapp which lists the set up VNodes
+// todo: rename deployCPIsHelper
+// todo: sort out the fully qualified class names in functions
+// todo: add proper logging, rather than reading Stdout
+// todo: add test corda running/live task
+
 import com.r3.csde.TestJavaClass
 import com.r3.csde.CordaLifeCycleHelper
 import com.r3.csde.ProjectContext
 import com.r3.csde.DeployCPIsHelper
-import com.r3.csde.BuildCPIHelper
+import com.r3.csde.BuildCPIsHelper
 import com.r3.csde.ProjectUtils
 import com.r3.csde.CordaStatusQueries
 import com.r3.csde.CreateAndRegisterVNodesHelper
@@ -65,7 +83,7 @@ def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
 
 
 // Need to read things from cordapp plugin
-def appCpiName =  'cpi name'
+def appCpiName =  'cpiname'
 def notaryCpiName =  'CSDE Notary Server CPI'
 
 def projectContext = new ProjectContext(project,
@@ -86,26 +104,11 @@ def projectContext = new ProjectContext(project,
         appCpiName,
         notaryCpiName,
         devEnvWorkspace,
-        cordaCliBinDir
+        cordaCliBinDir,
+        cordaNotaryServerDir
 )
 
 def projectUtils = new ProjectUtils()
-
-// todo: move create and register vnodes to separate helper
-
-// todo investigate adding corda-cli to the class path then executing it directly - might not work as
-// gradle has to set up the jar file, so its not their when you start.
-
-// Todo: write a test flow runner helper function
-// todo: Write a final output message which give the set up VNodes
-// todo: question, is it possible to invoke the cli from java rather than gradle/ groovy
-// todo: rename deployCPIsHelper
-// todo: sort out the fully qualified class names in functions
-
-// add proper logging, rather than reading Stdout
-
-// todo: add test corda running task
-// todo: terminate deploy Corda with a list of VNodes short hashes
 
 def deployCPIsHelper = new DeployCPIsHelper(projectContext)
 
@@ -173,7 +176,7 @@ tasks.register('listCPIs') {
 
 // Build CPI tasks
 
-def buildCPIHelper = new BuildCPIHelper(projectContext)
+def buildCPIsHelper = new BuildCPIsHelper(projectContext)
 
 tasks.register('projInit') {
     group = pluginImplGroupName
@@ -186,7 +189,7 @@ tasks.register('projInit') {
 tasks.register("testJava") {
     group = pluginGroupName
     doLast {
-
+        buildCPIsHelper.buildCPIs()
     }
 }
 
@@ -194,7 +197,7 @@ tasks.register("createGroupPolicy") {
     group = pluginImplGroupName
     dependsOn('projInit')
     doLast {
-        buildCPIHelper.createGroupPolicy()
+        buildCPIsHelper.createGroupPolicy()
     }
 }
 
@@ -208,73 +211,18 @@ tasks.register('createKeystore') {
     group = pluginImplGroupName
     dependsOn('projInit')
     doLast {
-        buildCPIHelper.createKeyStore()
+        buildCPIsHelper.createKeyStore()
     }
 }
 
 tasks.register('buildCPIs') {
     group = pluginGroupName
+    // todo: do we benefit from using depends on here, there's isn't the option to skip if already done
     dependsOn('build', 'createGroupPolicy', 'createKeystore', 'getNotaryServerCPB')
 
     doLast{
-        // Application CPI
-        def appCpiFile = buildDir.toString() + "/" + project.archivesBaseName + "-" + project.version + ".cpi"
-        delete { delete appCpiFile }
-        File srcDir
-        srcDir = file('build/libs')
-
-        // Create a file collection using a closure
-        def appCollection = layout.files { srcDir.listFiles() }
-        def appCpbs = appCollection.filter { it.getName().endsWith(".cpb") }
-
-        println("appCpbs:")
-        appCpbs.forEach {
-            println(it)
-        }
-
-        javaexec {
-            classpath = files("$cordaCliBinDir/corda-cli.jar")
-            jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
-            args = ['package', 'create-cpi',
-                    '--cpb', appCpbs.singleFile.absolutePath,
-                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
-                    '--cpi-name', appCpiName,
-                    '--cpi-version', project.version,
-                    '--file', appCpiFile,
-                    '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
-                    '--storepass', 'keystore password',
-                    '--key', 'my-signing-key' ]
-        }
-
-        // Notary CPI
-        def notaryCpiFile = buildDir.toString() + "/" +
-                notaryCpiName.replace(' ', '-').toLowerCase() + "-" + project.version + ".cpi"
-        delete { delete notaryCpiFile }
-
-        // Create a file collection using a closure
-        def notaryCpbs = layout
-                .files { file(cordaNotaryServerDir).listFiles() }
-                .filter { it.getName().endsWith(".cpb") }
-
-        println("notaryCpbs:")
-        notaryCpbs.forEach {
-            println(it)
-        }
-        javaexec {
-            classpath = files("$cordaCliBinDir/corda-cli.jar")
-            jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
-            args = ['package', 'create-cpi',
-                    '--cpb', notaryCpbs.singleFile.absolutePath,
-                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
-                    '--cpi-name', notaryCpiName,
-                    '--cpi-version', project.version,
-                    '--file', notaryCpiFile,
-                    '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
-                    '--storepass', 'keystore password',
-                    '--key', 'my-signing-key' ]
-        }
+        buildCPIsHelper.buildCPIs()
     }
-
 }
 
 
