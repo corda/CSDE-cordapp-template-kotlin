@@ -78,7 +78,7 @@ class MoveAllTokenFlow : RPCStartableFlow {
         val allUnusedTokens = utxoLedgerService.findUnconsumedStatesByType(TokenState::class.java)
         val myUnusedTokens = allUnusedTokens.filter { it.state.contractState.owner.name == myInfo.name }
 
-        val inputStateAndRefs = myUnusedTokens.filterIndexed() { i, _ -> i < request.maxIndex }
+        val inputStateAndRefs = myUnusedTokens.filterIndexed { i, _ -> i < request.maxIndex }
         inputStateAndRefs.forEachIndexed { i, it ->
             log.info("\n--- [MoveAllTokenFlow] InputState.$i with index ${it.ref.index} and with Encumbrance.name ${it.state.encumbrance ?: "n/a"}")
         }
