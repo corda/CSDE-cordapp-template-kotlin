@@ -1,4 +1,4 @@
-package net.cordacon.exmaple.doorcode.contracts
+package net.cordacon.example.doorcode.contracts
 
 import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.ledger.consensual.ConsensualState

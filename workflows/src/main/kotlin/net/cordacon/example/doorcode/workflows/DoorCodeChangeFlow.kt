@@ -22,8 +22,8 @@ import net.corda.v5.crypto.SecureHash
 import net.corda.v5.ledger.consensual.ConsensualLedgerService
 import net.corda.v5.ledger.consensual.ConsensualState
 import net.corda.v5.ledger.consensual.transaction.ConsensualLedgerTransaction
-import net.cordacon.exmaple.doorcode.contracts.DoorCode
-import net.cordacon.exmaple.doorcode.contracts.DoorCodeConsensualState
+import net.cordacon.example.doorcode.contracts.DoorCode
+import net.cordacon.example.doorcode.contracts.DoorCodeConsensualState
 import java.security.PublicKey
 
 /**
