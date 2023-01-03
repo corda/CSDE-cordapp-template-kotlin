@@ -109,7 +109,7 @@ def projectContext = new ProjectContext(project,
 
 def projectUtils = new ProjectUtils()
 
-def deployCPIsHelper = new DeployCPIsHelper(projectContext)
+
 
 def testJavaClass = new TestJavaClass()
 
@@ -223,14 +223,27 @@ tasks.register('buildCPIs') {
     dependsOnTasks.add('getNotaryServerCPB')
     println("dependsOnTasks=${dependsOnTasks}")
 
-//    dependsOn('build', 'createGroupPolicy', 'createKeystore', 'getNotaryServerCPB')
     dependsOn dependsOnTasks
-
 
     doLast{
         buildCPIsHelper.buildCPIs()
     }
 }
+
+
+// deploy CPI tasks
+
+def deployCPIsHelper = new DeployCPIsHelper(projectContext)
+
+tasks.register("deployCPIs") {
+    group = pluginImplGroupName
+    dependsOn('buildCPIs')
+    doLast {
+        deployCPIsHelper.deployCPIs()
+    }
+}
+
+
 
 
 

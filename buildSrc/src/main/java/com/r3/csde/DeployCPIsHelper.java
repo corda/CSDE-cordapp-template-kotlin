@@ -33,13 +33,13 @@ public class DeployCPIsHelper {
         uploadCertificate(pc.keystoreAlias, pc.keystoreCertFName);
 
         String appCPILocation = String.format("%s/%s-%s.cpi",
-                pc.project.getBuildDir(),
+                pc.workflowBuildDir,
                 pc.project.getName(),
                 pc.project.getVersion());
         deployCPI(appCPILocation, pc.appCPIName,pc.project.getVersion().toString());
 
         String notaryCPILocation = String.format("%s/%s-%s.cpi",
-                pc.project.getBuildDir(),
+                pc.workflowBuildDir,
                 pc.notaryCPIName.replace(' ','-').toLowerCase(),
                 pc.project.getVersion());
         deployCPI(notaryCPILocation,
