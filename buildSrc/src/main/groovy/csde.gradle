@@ -7,10 +7,10 @@
 
 
 // todo: look at the declaration of the script variables,
-// can they be combined with the declaration of the Project Context
+//  can they be combined with the declaration of the Project Context
 
 // todo investigate adding corda-cli to the class path then executing it directly - might not work as
-// gradle has to set up the jar file, so its not their when you start.
+//  gradle has to set up the jar file, so its not their when you start.
 
 // Todo: write a test flow runner helper function
 // todo: Write a final output message for deployCordapp which lists the set up VNodes
@@ -18,6 +18,7 @@
 // todo: sort out the fully qualified class names in functions
 // todo: add proper logging, rather than reading Stdout
 // todo: add test corda running/live task
+// todo: add a test to check docker is running and display error if not + halt start corda
 
 import com.r3.csde.TestJavaClass
 import com.r3.csde.CordaLifeCycleHelper
