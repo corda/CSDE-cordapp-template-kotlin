@@ -1,5 +1,15 @@
-import com.r3.csde.CsdeRpcInterface
+//import com.r3.csde.CsdeRpcInterface
 // import net.corda.plugins.cpb2
+
+import com.r3.csde.TestJavaClass
+import com.r3.csde.CordaLifeCycleHelper
+import com.r3.csde.ProjectContext
+import com.r3.csde.DeployCPIsHelper
+import com.r3.csde.BuildCPIsHelper
+import com.r3.csde.ProjectUtils
+import com.r3.csde.CordaStatusQueries
+import com.r3.csde.CreateAndRegisterVNodesHelper
+
 
 plugins {
     id 'java-library'
@@ -54,6 +64,8 @@ def keystoreAlias = "my-signing-key"
 def keystoreFName = devEnvWorkspace + "/signingkeys.pfx"
 def keystoreCertFName = devEnvWorkspace + "/signingkey1.pem"
 def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
+// todo: can we rely on the build directory always being /workflow/build? aslo, is the
+//  workflow directory the correct place to build the cpb to. shoudl it be the main build directory.
 def workflowBuildDir = rootDir.toString() + "/workflows/build"
 
 
@@ -61,17 +73,76 @@ def workflowBuildDir = rootDir.toString() + "/workflows/build"
 def appCpiName =  'cpi name'
 def notaryCpiName =  'CSDE Notary Server CPI'
 
-def csdeHelper = new CsdeRpcInterface(project,
+//def csdeHelper = new CsdeRpcInterface(project,
+//        cordaClusterURL.toString(),
+//        cordaRpcUser,
+//        cordaRpcPasswd,
+//        devEnvWorkspace,
+//        new String("${System.getProperty("java.home")}/bin"),
+//        dbContainerName,
+//        cordaJDBCDir,
+//        combiWorkerPidCacheFile
+//)
+
+def projectContext = new ProjectContext(project,
         cordaClusterURL.toString(),
         cordaRpcUser,
         cordaRpcPasswd,
         devEnvWorkspace,
+        // todo: why is this not obtained in the groovy def's abouve - its inconsistent.
         new String("${System.getProperty("java.home")}/bin"),
         dbContainerName,
         cordaJDBCDir,
-        combiWorkerPidCacheFile
+        combiWorkerPidCacheFile,
+        signingCertAlias,
+        signingCertFName,
+        keystoreAlias,
+        keystoreFName,
+        keystoreCertFName,
+        appCpiName,
+        notaryCpiName,
+        devEnvWorkspace,
+        cordaCliBinDir,
+        cordaNotaryServerDir,
+        workflowBuildDir
 )
 
+def projectUtils = new ProjectUtils()
+
+def deployCPIsHelper = new DeployCPIsHelper(projectContext)
+
+def testJavaClass = new TestJavaClass()
+
+
+// Initiate workspace folder
+
+tasks.register('projInit') {
+    group = pluginImplGroupName
+    doLast {
+        mkdir devEnvWorkspace
+    }
+}
+
+
+// CordaLifeCycle tasks
+
+def cordaLifeCycle = new CordaLifeCycleHelper(projectContext)
+
+tasks.register("startCorda") {
+    group = pluginGroupName
+    dependsOn('getDevCordaLite', 'getPostgresJDBC')
+    doLast {
+        mkdir devEnvWorkspace
+        cordaLifeCycle.startCorda()
+    }
+}
+
+tasks.register("stopCorda") {
+    group = pluginGroupName
+    doLast {
+        cordaLifeCycle.stopCorda()
+    }
+}
 
 tasks.register("getPostgresJDBC") {
     group = pluginImplGroupName
@@ -83,10 +154,40 @@ tasks.register("getPostgresJDBC") {
     }
 }
 
-tasks.register('projInit') {
+tasks.register("getDevCordaLite", Copy) {
+    group = pluginImplGroupName
+    from configurations.combinedWorker
+    into cordaBinDir
+}
+
+
+// Corda status queries
+
+def cordaStatusQueries = new CordaStatusQueries(projectContext)
+
+
+tasks.register('listVNodes') {
+    group = pluginGroupName
+    doLast {
+        cordaStatusQueries.listVNodes()
+    }
+}
+
+tasks.register('listCPIs') {
     group = pluginImplGroupName
     doLast {
-         mkdir devEnvWorkspace
+        cordaStatusQueries.listCPIs()
+    }
+}
+
+// Build CPI tasks
+
+def buildCPIsHelper = new BuildCPIsHelper(projectContext)
+
+tasks.register("testJava") {
+    group = pluginGroupName
+    doLast {
+        buildCPIsHelper.buildCPIs()
     }
 }
 
@@ -94,44 +195,8 @@ tasks.register("createGroupPolicy") {
     group = pluginImplGroupName
     dependsOn('projInit')
     doLast {
-
-            def groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json")
-            def devnetFName = new String("$rootDir/config/dev-net.json")
-            File groupPolicyFile = new File(groupPolicyFName)
-            File devnetFile = new File(devnetFName)
-            if (!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
-                def configX500Ids = csdeHelper.getConfigX500Ids()
-
-                println("createGroupPolicy: Creating a GroupPolicy")
-
-                javaexec {
-                    classpath = files("$cordaCliBinDir/corda-cli.jar")
-                    jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
-                    standardOutput = new FileOutputStream(groupPolicyFName)
-                    LinkedList<String> myArgs = new LinkedList<String>()
-                    myArgs.add("mgm")
-                    myArgs.add("groupPolicy")
-                    configX500Ids.forEach {
-                        myArgs.add("--name")
-                        myArgs.add("$it")
-                    }
-
-                    myArgs.add("--endpoint-protocol=1")
-                    myArgs.add("--endpoint=http://localhost:1080")
-                    args = myArgs
-                }
-
-            } else {
-                println("createPolicyTask: everything up to date; nothing to do.")
-            }
-
+        buildCPIsHelper.createGroupPolicy()
     }
-}
-
-tasks.register("getDevCordaLite", Copy) {
-    group = pluginImplGroupName
-    from configurations.combinedWorker
-    into cordaBinDir
 }
 
 tasks.register("getNotaryServerCPB", Copy) {
@@ -144,176 +209,237 @@ tasks.register('createKeystore') {
     group = pluginImplGroupName
     dependsOn('projInit')
     doLast {
-        File keystoreFile = new File(keystoreFName)
-        if(!keystoreFile.exists()) {
-            println('createKeystore: Create a keystore')
-            exec {
-                commandLine "${System.getProperty("java.home")}/bin/keytool", "-genkeypair",
-                        "-alias", keystoreAlias,
-                        "-keystore", keystoreFName,
-                        "-storepass", "keystore password",
-                        "-dname", "CN=CPI Example - My Signing Key, O=CorpOrgCorp, L=London, C=GB",
-                        "-keyalg", "RSA",
-                        "-storetype", "pkcs12",
-                        "-validity", "4000"
-            }
-            // Need to add the default signing key to the keystore
-            exec {
-                commandLine "${System.getProperty("java.home")}/bin/keytool", "-importcert",
-                        "-keystore", keystoreFName,
-                        "-storepass", "keystore password",
-                        "-noprompt",
-                        "-alias", signingCertAlias,
-                        "-file", signingCertFName
-            }
-            // keytool -exportcert -rfc -alias "signing key 1" -keystore signingkeys.pfx -storepass "keystore password" -file signingkey1.pem
-            exec {
-                commandLine "${System.getProperty("java.home")}/bin/keytool",
-                        "-exportcert", "-rfc", "-alias", keystoreAlias,
-                        "-keystore", keystoreFName,
-                        "-storepass", "keystore password",
-                        "-file", keystoreCertFName
-            }
-        }
-        else {
-            println('createKeystore:  keystore already created; nothing to do.')
-        }
-
+        buildCPIsHelper.createKeyStore()
     }
 }
 
-
 tasks.register('buildCPIs') {
     group = pluginGroupName
+    // todo: do we benefit from using depends on here, there's isn't the option to skip if already done
+
     def dependsOnTasks = subprojects.collect {it.tasks.findByName("build") }
     dependsOnTasks.add('createGroupPolicy')
     dependsOnTasks.add('createKeystore')
     dependsOnTasks.add('getNotaryServerCPB')
     println("dependsOnTasks=${dependsOnTasks}")
 
+//    dependsOn('build', 'createGroupPolicy', 'createKeystore', 'getNotaryServerCPB')
     dependsOn dependsOnTasks
 
+
     doLast{
-        // Application CPI
-        def appCpiFile = workflowBuildDir.toString() + "/" + project.archivesBaseName + "-" + project.version + ".cpi"
-        println("DEBUG appCpiFile=$appCpiFile")
-        delete { delete appCpiFile }
-        File cpbSrcDir
-        cpbSrcDir = file("${workflowBuildDir}/libs")
-        println("DEBUG cpbSrcDir=$cpbSrcDir")
-
-        // Create a file collection using a closure
-        def appCollection = layout.files { cpbSrcDir.listFiles() }
-        def appCpbs = appCollection.filter { it.getName().endsWith(".cpb") }
-
-        println("appCpbs:")
-        appCpbs.forEach {
-            println(it)
-        }
-
-        javaexec {
-            classpath = files("$cordaCliBinDir/corda-cli.jar")
-            jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
-            args = ['package', 'create-cpi',
-                    '--cpb', appCpbs.singleFile.absolutePath,
-                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
-                    '--cpi-name', appCpiName,
-                    '--cpi-version', project.version,
-                    '--file', appCpiFile,
-                    '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
-                    '--storepass', 'keystore password',
-                    '--key', 'my-signing-key' ]
-        }
-
-        // Notary CPI
-        def notaryCpiFile = workflowBuildDir.toString() + "/" +
-                notaryCpiName.replace(' ', '-').toLowerCase() + "-" + project.version + ".cpi"
-        delete { delete notaryCpiFile }
-
-        // Create a file collection using a closure
-        def notaryCpbs = layout
-                .files { file(cordaNotaryServerDir).listFiles() }
-                .filter { it.getName().endsWith(".cpb") && it.getName().contains(cordaNotaryPluginsVersion) }
-
-        println("notaryCpbs:")
-        notaryCpbs.forEach {
-            println(it)
-        }
-        javaexec {
-            classpath = files("$cordaCliBinDir/corda-cli.jar")
-            jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
-            args = ['package', 'create-cpi',
-                    '--cpb', notaryCpbs.singleFile.absolutePath,
-                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
-                    '--cpi-name', notaryCpiName,
-                    '--cpi-version', project.version,
-                    '--file', notaryCpiFile,
-                    '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
-                    '--storepass', 'keystore password',
-                    '--key', 'my-signing-key' ]
-        }
-    }
-
-}
-
-tasks.register("deployCPIs") {
-    group = pluginImplGroupName
-    dependsOn('buildCPIs')
-    doLast {
-        csdeHelper.uploadCertificate(signingCertAlias, signingCertFName)
-        csdeHelper.uploadCertificate(keystoreAlias, keystoreCertFName)
-        csdeHelper.deployCPI("${workflowBuildDir}/${project.archivesBaseName}-${project.version}.cpi", appCpiName, project.version)
-        csdeHelper.deployCPI(
-                "${workflowBuildDir}/${notaryCpiName.replace(' ', '-').toLowerCase()}-${project.version}.cpi",
-                notaryCpiName,
-                project.version,
-                "-NotaryServer")
+        buildCPIsHelper.buildCPIs()
     }
 }
 
-tasks.register("createAndRegVNodes") {
-    group = pluginImplGroupName
-    dependsOn('deployCPIs')
-    doLast {
-        csdeHelper.createAndRegVNodes()
-    }
-}
 
-tasks.register('listVNodes') {
-    group = pluginGroupName
-    doLast {
-        csdeHelper.listVNodes()
-    }
-}
 
-tasks.register('listCPIs') {
-    group = pluginImplGroupName
-    doLast {
-        csdeHelper.listCPIs()
-    }
-}
 
-// Empty task, just acts as the Task user entry point task.
-tasks.register('deployCordapp') {
-    group = pluginGroupName
-    dependsOn("createAndRegVNodes")
-}
+//tasks.register("createGroupPolicy") {
+//    group = pluginImplGroupName
+//    dependsOn('projInit')
+//    doLast {
+//
+//            def groupPolicyFName = new String("${devEnvWorkspace}/GroupPolicy.json")
+//            def devnetFName = new String("$rootDir/config/dev-net.json")
+//            File groupPolicyFile = new File(groupPolicyFName)
+//            File devnetFile = new File(devnetFName)
+//            if (!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
+//                def configX500Ids = csdeHelper.getConfigX500Ids()
+//
+//                println("createGroupPolicy: Creating a GroupPolicy")
+//
+//                javaexec {
+//                    classpath = files("$cordaCliBinDir/corda-cli.jar")
+//                    jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
+//                    standardOutput = new FileOutputStream(groupPolicyFName)
+//                    LinkedList<String> myArgs = new LinkedList<String>()
+//                    myArgs.add("mgm")
+//                    myArgs.add("groupPolicy")
+//                    configX500Ids.forEach {
+//                        myArgs.add("--name")
+//                        myArgs.add("$it")
+//                    }
+//
+//                    myArgs.add("--endpoint-protocol=1")
+//                    myArgs.add("--endpoint=http://localhost:1080")
+//                    args = myArgs
+//                }
+//
+//            } else {
+//                println("createPolicyTask: everything up to date; nothing to do.")
+//            }
+//
+//    }
+//}
+//
+//
+//
+//tasks.register("getNotaryServerCPB", Copy) {
+//    group = pluginImplGroupName
+//    from configurations.notaryServerCPB
+//    into cordaNotaryServerDir
+//}
+//
+//tasks.register('createKeystore') {
+//    group = pluginImplGroupName
+//    dependsOn('projInit')
+//    doLast {
+//        File keystoreFile = new File(keystoreFName)
+//        if(!keystoreFile.exists()) {
+//            println('createKeystore: Create a keystore')
+//            exec {
+//                commandLine "${System.getProperty("java.home")}/bin/keytool", "-genkeypair",
+//                        "-alias", keystoreAlias,
+//                        "-keystore", keystoreFName,
+//                        "-storepass", "keystore password",
+//                        "-dname", "CN=CPI Example - My Signing Key, O=CorpOrgCorp, L=London, C=GB",
+//                        "-keyalg", "RSA",
+//                        "-storetype", "pkcs12",
+//                        "-validity", "4000"
+//            }
+//            // Need to add the default signing key to the keystore
+//            exec {
+//                commandLine "${System.getProperty("java.home")}/bin/keytool", "-importcert",
+//                        "-keystore", keystoreFName,
+//                        "-storepass", "keystore password",
+//                        "-noprompt",
+//                        "-alias", signingCertAlias,
+//                        "-file", signingCertFName
+//            }
+//            // keytool -exportcert -rfc -alias "signing key 1" -keystore signingkeys.pfx -storepass "keystore password" -file signingkey1.pem
+//            exec {
+//                commandLine "${System.getProperty("java.home")}/bin/keytool",
+//                        "-exportcert", "-rfc", "-alias", keystoreAlias,
+//                        "-keystore", keystoreFName,
+//                        "-storepass", "keystore password",
+//                        "-file", keystoreCertFName
+//            }
+//        }
+//        else {
+//            println('createKeystore:  keystore already created; nothing to do.')
+//        }
+//
+//    }
+//}
+//
+//
+//tasks.register('buildCPIs') {
+//    group = pluginGroupName
+//    def dependsOnTasks = subprojects.collect {it.tasks.findByName("build") }
+//    dependsOnTasks.add('createGroupPolicy')
+//    dependsOnTasks.add('createKeystore')
+//    dependsOnTasks.add('getNotaryServerCPB')
+//    println("dependsOnTasks=${dependsOnTasks}")
+//
+//    dependsOn dependsOnTasks
+//
+//    doLast{
+//        // Application CPI
+//        def appCpiFile = workflowBuildDir.toString() + "/" + project.archivesBaseName + "-" + project.version + ".cpi"
+//        println("DEBUG appCpiFile=$appCpiFile")
+//        delete { delete appCpiFile }
+//        File cpbSrcDir
+//        cpbSrcDir = file("${workflowBuildDir}/libs")
+//        println("DEBUG cpbSrcDir=$cpbSrcDir")
+//
+//        // Create a file collection using a closure
+//        def appCollection = layout.files { cpbSrcDir.listFiles() }
+//        def appCpbs = appCollection.filter { it.getName().endsWith(".cpb") }
+//
+//        println("appCpbs:")
+//        appCpbs.forEach {
+//            println(it)
+//        }
+//
+//        javaexec {
+//            classpath = files("$cordaCliBinDir/corda-cli.jar")
+//            jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
+//            args = ['package', 'create-cpi',
+//                    '--cpb', appCpbs.singleFile.absolutePath,
+//                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
+//                    '--cpi-name', appCpiName,
+//                    '--cpi-version', project.version,
+//                    '--file', appCpiFile,
+//                    '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
+//                    '--storepass', 'keystore password',
+//                    '--key', 'my-signing-key' ]
+//        }
+//
+//        // Notary CPI
+//        def notaryCpiFile = workflowBuildDir.toString() + "/" +
+//                notaryCpiName.replace(' ', '-').toLowerCase() + "-" + project.version + ".cpi"
+//        delete { delete notaryCpiFile }
+//
+//        // Create a file collection using a closure
+//        def notaryCpbs = layout
+//                .files { file(cordaNotaryServerDir).listFiles() }
+//                .filter { it.getName().endsWith(".cpb") && it.getName().contains(cordaNotaryPluginsVersion) }
+//
+//        println("notaryCpbs:")
+//        notaryCpbs.forEach {
+//            println(it)
+//        }
+//        javaexec {
+//            classpath = files("$cordaCliBinDir/corda-cli.jar")
+//            jvmArgs = ["-Dpf4j.pluginsDir=$cordaCliBinDir/plugins/"]
+//            args = ['package', 'create-cpi',
+//                    '--cpb', notaryCpbs.singleFile.absolutePath,
+//                    '--group-policy', "${devEnvWorkspace}/GroupPolicy.json",
+//                    '--cpi-name', notaryCpiName,
+//                    '--cpi-version', project.version,
+//                    '--file', notaryCpiFile,
+//                    '--keystore', "${devEnvWorkspace}/signingkeys.pfx",
+//                    '--storepass', 'keystore password',
+//                    '--key', 'my-signing-key' ]
+//        }
+//    }
+//
+//}
 
-tasks.register("startCorda") {
-    group = pluginGroupName
-    dependsOn('getDevCordaLite', 'getPostgresJDBC')
-    doLast {
-        mkdir devEnvWorkspace
-        csdeHelper.startCorda()
-    }
-}
+//tasks.register("deployCPIs") {
+//    group = pluginImplGroupName
+//    dependsOn('buildCPIs')
+//    doLast {
+//        csdeHelper.uploadCertificate(signingCertAlias, signingCertFName)
+//        csdeHelper.uploadCertificate(keystoreAlias, keystoreCertFName)
+//        csdeHelper.deployCPI("${workflowBuildDir}/${project.archivesBaseName}-${project.version}.cpi", appCpiName, project.version)
+//        csdeHelper.deployCPI(
+//                "${workflowBuildDir}/${notaryCpiName.replace(' ', '-').toLowerCase()}-${project.version}.cpi",
+//                notaryCpiName,
+//                project.version,
+//                "-NotaryServer")
+//    }
+//}
+//
+//tasks.register("createAndRegVNodes") {
+//    group = pluginImplGroupName
+//    dependsOn('deployCPIs')
+//    doLast {
+//        csdeHelper.createAndRegVNodes()
+//    }
+//}
 
-tasks.register("stopCorda") {
-    group = pluginGroupName
-    doLast {
-        csdeHelper.stopCorda()
-    }
-}
+//tasks.register('listVNodes') {
+//    group = pluginGroupName
+//    doLast {
+//        csdeHelper.listVNodes()
+//    }
+//}
+
+//tasks.register('listCPIs') {
+//    group = pluginImplGroupName
+//    doLast {
+//        csdeHelper.listCPIs()
+//    }
+//}
+//
+//// Empty task, just acts as the Task user entry point task.
+//tasks.register('deployCordapp') {
+//    group = pluginGroupName
+//    dependsOn("createAndRegVNodes")
+//}
+//
 
 tasks.register("listBuildDirs") {
     doLast {
