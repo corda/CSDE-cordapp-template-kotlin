@@ -9,6 +9,53 @@ repositories {
     maven {
         url = "$artifactoryContextUrl/"
     }
+
+    /*
+    // Internal artifactory repos for dev
+    // R3 Internal repositories
+    // Repository the provides kotlin-stdlib-jdk8-osgi created by R3.
+    // Final location to be decided.
+    maven {
+        url = "$artifactoryContextUrl/corda-dependencies"
+    }
+    // Repository provides Corda 5 binaries that implement Corda-API.
+    // These will be made publicly available.
+    // Final location to be decided.
+    // Repository subject to change
+    maven {
+        url = "$artifactoryContextUrl/corda-os-maven"
+        credentials {
+            username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
+            password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+        }
+    }
+    // Provides the combined-worker Jars
+    // These will be made publicly available.
+    // Final location to be decided.
+    maven {
+        url = "$artifactoryContextUrl/corda-ent-maven-unstable-local"
+        credentials {
+            username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
+            password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+        }
+    }
+    maven {
+        url = "$artifactoryContextUrl/corda-ent-maven"
+        credentials {
+            username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
+            password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+        }
+    }
+    maven {
+        url = "$artifactoryContextUrl/engineering-tools-maven-unstable"
+        credentials {
+            username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
+            password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+
+        }
+    }
+
+     */
 }
 
 dependencies {
