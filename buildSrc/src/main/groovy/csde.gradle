@@ -16,8 +16,8 @@
 // todo: add test corda running/live task
 // todo: add a test to check docker is running and display error if not + halt start corda
 // todo: add a clean corda task.
+// todo: name exceptions properly
 
-import com.r3.csde.TestJavaClass
 import com.r3.csde.CordaLifeCycleHelper
 import com.r3.csde.ProjectContext
 import com.r3.csde.DeployCPIsHelper
@@ -88,7 +88,7 @@ def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
 def workflowBuildDir = rootDir.toString() + "/workflows/build"
 
 
-// Need to read things from cordapp plugin
+// todo: Need to read things from cordapp plugin - the cordapp names will be changed by the user
 def appCpiName =  'cpi name'
 def notaryCpiName =  'CSDE Notary Server CPI'
 
@@ -119,9 +119,6 @@ def projectContext = new ProjectContext(project,
 )
 
 def utils = new ProjectUtils()
-
-def testJavaClass = new TestJavaClass()
-
 
 // Initiate workspace folder
 
@@ -217,16 +214,11 @@ tasks.register('2-createKeystore') {
 
 tasks.register('3-buildCPIs') {
     group = cordappGroup
-    // todo: do we benefit from using depends on here, there's isn't the option to skip if already done
-
     def dependsOnTasks = subprojects.collect {it.tasks.findByName("build") }
-    dependsOnTasks.add('createGroupPolicy')
-    dependsOnTasks.add('createKeystore')
+    dependsOnTasks.add('1-createGroupPolicy')
+    dependsOnTasks.add('2-createKeystore')
     dependsOnTasks.add('getNotaryServerCPB')
-    println("dependsOnTasks=${dependsOnTasks}")
-
     dependsOn dependsOnTasks
-
     doLast{
         buildCPIsHelper.buildCPIs()
     }
@@ -239,7 +231,7 @@ def deployCPIsHelper = new DeployCPIsHelper(projectContext)
 
 tasks.register("4-deployCPIs") {
     group = cordappGroup
-    dependsOn('buildCPIs')
+    dependsOn('3-buildCPIs')
     doLast {
         deployCPIsHelper.deployCPIs()
     }
@@ -251,7 +243,7 @@ def createAndRegisterVNodesHelper = new CreateAndRegisterVNodesHelper(projectCon
 
 tasks.register("5-createAndRegVNodes") {
     group = cordappGroup
-    dependsOn('deployCPIs')
+    dependsOn('4-deployCPIs')
     doLast {
         createAndRegisterVNodesHelper.createAndRegVNodes()
     }
@@ -260,7 +252,7 @@ tasks.register("5-createAndRegVNodes") {
 // Empty task, just acts as the Task user entry point task.
 tasks.register('quickDeployCordapp') {
     group = cordappGroup
-    dependsOn("createAndRegVNodes")
+    dependsOn("5-createAndRegVNodes")
 }
 
 

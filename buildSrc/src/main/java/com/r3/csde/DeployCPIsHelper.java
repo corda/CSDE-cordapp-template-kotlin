@@ -4,6 +4,7 @@ import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
+import kong.unirest.HttpResponse;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,6 +33,7 @@ public class DeployCPIsHelper {
         uploadCertificate(pc.signingCertAlias, pc.signingCertFName);
         uploadCertificate(pc.keystoreAlias, pc.keystoreCertFName);
 
+        // todo: make consistent with other string building code - remove String.format
         String appCPILocation = String.format("%s/%s-%s.cpi",
                 pc.workflowBuildDir,
                 pc.project.getName(),
@@ -51,7 +53,7 @@ public class DeployCPIsHelper {
 
     public void uploadCertificate(String certAlias, String certFName) {
         Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<JsonNode> uploadResponse = Unirest.put(pc.baseURL + "/api/v1/certificates/cluster/code-signer")
+        HttpResponse<JsonNode> uploadResponse = Unirest.put(pc.baseURL + "/api/v1/certificates/cluster/code-signer")
                 .field("alias", certAlias)
                 .field("certificate", new File(certFName))
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
@@ -66,7 +68,7 @@ public class DeployCPIsHelper {
 
     public void forceuploadCPI(String cpiFName, String uploadStatusQualifier) throws FileNotFoundException, CsdeException {
         Unirest.config().verifySsl(false);
-        kong.unirest.HttpResponse<JsonNode> jsonResponse = Unirest.post(pc.baseURL + "/api/v1/maintenance/virtualnode/forcecpiupload/")
+        HttpResponse<JsonNode> jsonResponse = Unirest.post(pc.baseURL + "/api/v1/maintenance/virtualnode/forcecpiupload/")
                 .field("upload", new File(cpiFName))
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
@@ -74,7 +76,7 @@ public class DeployCPIsHelper {
         if(jsonResponse.getStatus() == HTTP_OK) {
             String id = (String) jsonResponse.getBody().getObject().get("id");
             pc.out.println("get id:\n" +id);
-            kong.unirest.HttpResponse<JsonNode> statusResponse = uploadStatus(id);
+            HttpResponse<JsonNode> statusResponse = uploadStatus(id);
 
             if (statusResponse.getStatus() == HTTP_OK) {
                 PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
@@ -90,7 +92,7 @@ public class DeployCPIsHelper {
         }
     }
 
-    private boolean uploadStatusRetry(kong.unirest.HttpResponse<JsonNode> response) {
+    private boolean uploadStatusRetry(HttpResponse<JsonNode> response) {
         int status = response.getStatus();
         JsonNode body = response.getBody();
         // Do not retry on success // todo: need to think through the possible outcomes here - what if the bodyTitle is null, it won't retry
@@ -105,8 +107,8 @@ public class DeployCPIsHelper {
         return false;
     }
 
-    public kong.unirest.HttpResponse<JsonNode> uploadStatus(String requestId) {
-        kong.unirest.HttpResponse<JsonNode> statusResponse = null;
+    public HttpResponse<JsonNode> uploadStatus(String requestId) {
+        HttpResponse<JsonNode> statusResponse = null;
         do {
             utils.rpcWait(1000);
             statusResponse = Unirest
@@ -128,9 +130,10 @@ public class DeployCPIsHelper {
                           String cpiName,
                           String cpiVersion,
                           String uploadStatusQualifier) throws FileNotFoundException, CsdeException {
+        // todo: where is the primary instance declared?
         Unirest.config().verifySsl(false);
 
-        kong.unirest.HttpResponse<JsonNode> cpiResponse  = queries.getCpiInfo();
+        HttpResponse<JsonNode> cpiResponse  = queries.getCpiInfo();
         JSONArray jArray = (JSONArray) cpiResponse.getBody().getObject().get("cpis");
 
         int matches = 0;
@@ -146,7 +149,7 @@ public class DeployCPIsHelper {
         pc.out.println("Matching CPIS="+matches);
 
         if(matches == 0) {
-            kong.unirest.HttpResponse<JsonNode> uploadResponse = Unirest.post(pc.baseURL + "/api/v1/cpi/")
+            HttpResponse<JsonNode> uploadResponse = Unirest.post(pc.baseURL + "/api/v1/cpi/")
                     .field("upload", new File(cpiFName))
                     .basicAuth(pc.rpcUser, pc.rpcPasswd)
                     .asJson();
@@ -163,7 +166,7 @@ public class DeployCPIsHelper {
                 String id = (String) body.getObject().get("id");
                 pc.out.println("get id:\n" + id);
 
-                kong.unirest.HttpResponse<JsonNode> statusResponse = uploadStatus(id);
+                HttpResponse<JsonNode> statusResponse = uploadStatus(id);
                 if (statusResponse.getStatus() == HTTP_OK) {
                     PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
                             pc.CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));

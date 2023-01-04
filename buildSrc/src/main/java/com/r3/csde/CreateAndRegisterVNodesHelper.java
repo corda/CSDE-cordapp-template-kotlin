@@ -36,8 +36,6 @@ public class CreateAndRegisterVNodesHelper {
         String notaryCpiCheckSum = getLastCPIUploadChkSum( pc.CPIUploadStatusFName, "-NotaryServer" );
 
         LinkedList<String> x500Ids = utils.getConfigX500Ids(pc.X500ConfigFile);
-        // Map of X500 name to short hash
-//        Map<String, String> OKHoldingX500AndShortIds = new HashMap<>();
 
         // For each identity check that it already exists.
         Set<MemberX500Name> existingX500 = new HashSet<>();
@@ -73,27 +71,6 @@ public class CreateAndRegisterVNodesHelper {
         }
 
         pc.out.println("Waiting for VNode creation results...");
-
-//        for (Map.Entry<String, CompletableFuture<HttpResponse<JsonNode>>> response: responses.entrySet()) {
-//            try {
-//                HttpResponse<JsonNode> jsonNode = response.getValue().get();
-//                // need to check this and report errors.
-//                // 200/HTTP_OK - OK
-//                // 409/HTTP_CONFLICT - Vnode already exists
-//                if (jsonNode.getStatus() != HTTP_CONFLICT) {
-//                    if (jsonNode.getStatus() != HTTP_OK) {
-//                        utils.reportError(jsonNode);
-//                    } else {
-//                        JSONObject thing = jsonNode.getBody().getObject().getJSONObject("holdingIdentity");
-//                        String shortHash = (String) thing.get("shortHash");
-//                        OKHoldingX500AndShortIds.put(response.getKey(), shortHash);
-//                    }
-//                }
-//            } catch (ExecutionException | InterruptedException e) {
-//                throw new CsdeException("Unexpected exception while waiting for response to " +
-//                        "membership submission for holding identity" + response.getKey());
-//            }
-//        }
 
         for (Map.Entry<String, CompletableFuture<HttpResponse<JsonNode>>> response: responses.entrySet()) {
             try {
@@ -232,29 +209,6 @@ public class CreateAndRegisterVNodesHelper {
         return "{ \"memberRegistrationRequest\": { \"action\": \"requestJoin\",  \"context\": { " + context + " } } }";
     }
 
-//    private void pollForCompleteMembershipRegistration(Map<String, String> X500ToShortIdHash) throws CsdeException {
-//        HashSet<String> vnodesToCheck = new HashSet<String>(X500ToShortIdHash.keySet());
-//        LinkedList<String> approved = new LinkedList<String>();
-//        while (!vnodesToCheck.isEmpty()) {
-//            utils.rpcWait(2000);
-//            approved.clear();
-//            for (String vnodeX500 : vnodesToCheck) {
-//                try {
-//                    pc.out.println("Checking membership registration progress for v-node '" + vnodeX500 + "':");
-//                    HttpResponse<JsonNode> statusResponse = Unirest
-//                            .get(pc.baseURL + "/api/v1/membership/" + X500ToShortIdHash.get(vnodeX500) + "/")
-//                            .basicAuth(pc.rpcUser, pc.rpcPasswd)
-//                            .asJson();
-//                    if (isMembershipRegComplete(statusResponse)) {
-//                        approved.add(vnodeX500);
-//                    }
-//                } catch (Exception e) {
-//                    throw new CsdeException("Error when registering V-Node '" + vnodeX500 + "'", e);
-//                }
-//            }
-//            approved.forEach(vnodesToCheck::remove);
-//        }
-//    }
 
     Map<String, String> pollForVNodeShortHoldingHashIds(List<String> x500Ids, int retryCount, int coolDownMs ) throws CsdeException {
         HashMap<String, String> x500NameToShortHashes = new HashMap<>();
@@ -291,7 +245,7 @@ public class CreateAndRegisterVNodesHelper {
             for (String vnodeX500 : vnodesToCheck) {
                 try {
                     pc.out.println("Checking membership registration progress for v-node '" + vnodeX500 + "':");
-                    kong.unirest.HttpResponse<kong.unirest.JsonNode> statusResponse = Unirest
+                    HttpResponse<JsonNode> statusResponse = Unirest
                             .get(pc.baseURL + "/api/v1/membership/" + X500ToShortIdHash.get(vnodeX500) + "/")
                             .basicAuth(pc.rpcUser, pc.rpcPasswd)
                             .asJson();
