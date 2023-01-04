@@ -39,24 +39,6 @@ dependencies {
     // The CorDapp uses the slf4j logging framework. Corda-API provides this so we need a 'cordaProvided' declaration.
     cordaProvided 'org.slf4j:slf4j-api'
 
-
-    /*
-    // Dependencies Required By Test Tooling
-    testImplementation "net.corda:corda-simulator-api:$simulatorVersion"
-    testRuntimeOnly "net.corda:corda-simulator-runtime:$simulatorVersion"
-
-    // 3rd party libraries
-    // Required
-    testImplementation "org.slf4j:slf4j-simple:2.0.0"
-    testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
-
-    // Optional but used by exmaple tests.
-    testImplementation "org.mockito:mockito-core:$mockitoVersion"
-    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
-    testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
-
-     */
 }
 
 // The CordApp section.

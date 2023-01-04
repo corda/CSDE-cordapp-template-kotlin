@@ -62,6 +62,11 @@ public class CordaLifeCycleHelper {
         pc.out.println("Corda Process-id="+proc.pid());
 
         // todo: should poll for readiness before returning
+         // Chris comment - We probably do not want to poll for readiness here.
+         // The combined-worker takes serveral minutes to come up.
+         // It might be better to warn the user of that and have the readiness detection and polling logic used in other tasks involved in creating v-nodes and deploying the CPI.
+        // Matt comment - I'm not sure I agree, we need to investigate
+
     }
 
 
