@@ -15,6 +15,7 @@
 // todo: add proper logging, rather than reading Stdout
 // todo: add test corda running/live task
 // todo: add a test to check docker is running and display error if not + halt start corda
+// todo: add a clean corda task.
 
 import com.r3.csde.TestJavaClass
 import com.r3.csde.CordaLifeCycleHelper
@@ -63,9 +64,13 @@ dependencies {
     implementation "org.codehaus.groovy:groovy-json:3.0.9"
 }
 
+// task groupings
+def cordaGroup = 'csde-corda'       // corda lifecycle tasks
+def cordappGroup = 'csde-cordapp'   // tasks to build and deploy corDapps
+def queriesGroup = 'csde-queries'   // tasks which query corda status
+def supportingGroup = 'supporting'  // tasks which should be hidden from the csde user
 
-def pluginGroupName = "CSDE"
-def pluginImplGroupName = "other"
+
 def cordaBinDir = System.getenv("CSDE_CORDA_BIN") ?: System.getProperty('user.home') + "/.corda/corda5"
 def cordaCliBinDir =  System.getenv("CSDE_CORDA_CLI") ?:System.getProperty('user.home') + "/.corda/cli"
 def cordaJDBCDir = cordaBinDir + "/jdbcDrivers"
@@ -121,7 +126,7 @@ def testJavaClass = new TestJavaClass()
 // Initiate workspace folder
 
 tasks.register('projInit') {
-    group = pluginImplGroupName
+    group = supportingGroup
     doLast {
         mkdir devEnvWorkspace
     }
@@ -133,7 +138,7 @@ tasks.register('projInit') {
 def cordaLifeCycle = new CordaLifeCycleHelper(projectContext)
 
 tasks.register("startCorda") {
-    group = pluginGroupName
+    group = cordaGroup
     dependsOn('getDevCordaLite', 'getPostgresJDBC')
     doLast {
         mkdir devEnvWorkspace
@@ -142,14 +147,14 @@ tasks.register("startCorda") {
 }
 
 tasks.register("stopCorda") {
-    group = pluginGroupName
+    group = cordaGroup
     doLast {
         cordaLifeCycle.stopCorda()
     }
 }
 
 tasks.register("getPostgresJDBC") {
-    group = pluginImplGroupName
+    group = supportingGroup
     doLast {
         copy {
             from configurations.myPostgresJDBC
@@ -159,7 +164,7 @@ tasks.register("getPostgresJDBC") {
 }
 
 tasks.register("getDevCordaLite", Copy) {
-    group = pluginImplGroupName
+    group = supportingGroup
     from configurations.combinedWorker
     into cordaBinDir
 }
@@ -171,14 +176,14 @@ def cordaStatusQueries = new CordaStatusQueries(projectContext)
 
 
 tasks.register('listVNodes') {
-    group = pluginGroupName
+    group = queriesGroup
     doLast {
         cordaStatusQueries.listVNodes()
     }
 }
 
 tasks.register('listCPIs') {
-    group = pluginImplGroupName
+    group = queriesGroup
     doLast {
         cordaStatusQueries.listCPIs()
     }
@@ -188,15 +193,8 @@ tasks.register('listCPIs') {
 
 def buildCPIsHelper = new BuildCPIsHelper(projectContext)
 
-tasks.register("testJava") {
-    group = pluginGroupName
-    doLast {
-        buildCPIsHelper.buildCPIs()
-    }
-}
-
-tasks.register("createGroupPolicy") {
-    group = pluginImplGroupName
+tasks.register("1-createGroupPolicy") {
+    group = cordappGroup
     dependsOn('projInit')
     doLast {
         buildCPIsHelper.createGroupPolicy()
@@ -204,21 +202,21 @@ tasks.register("createGroupPolicy") {
 }
 
 tasks.register("getNotaryServerCPB", Copy) {
-    group = pluginImplGroupName
+    group = supportingGroup
     from configurations.notaryServerCPB
     into cordaNotaryServerDir
 }
 
-tasks.register('createKeystore') {
-    group = pluginImplGroupName
+tasks.register('2-createKeystore') {
+    group = cordappGroup
     dependsOn('projInit')
     doLast {
         buildCPIsHelper.createKeyStore()
     }
 }
 
-tasks.register('buildCPIs') {
-    group = pluginGroupName
+tasks.register('3-buildCPIs') {
+    group = cordappGroup
     // todo: do we benefit from using depends on here, there's isn't the option to skip if already done
 
     def dependsOnTasks = subprojects.collect {it.tasks.findByName("build") }
@@ -239,8 +237,8 @@ tasks.register('buildCPIs') {
 
 def deployCPIsHelper = new DeployCPIsHelper(projectContext)
 
-tasks.register("deployCPIs") {
-    group = pluginImplGroupName
+tasks.register("4-deployCPIs") {
+    group = cordappGroup
     dependsOn('buildCPIs')
     doLast {
         deployCPIsHelper.deployCPIs()
@@ -251,8 +249,8 @@ tasks.register("deployCPIs") {
 
 def createAndRegisterVNodesHelper = new CreateAndRegisterVNodesHelper(projectContext)
 
-tasks.register("createAndRegVNodes") {
-    group = pluginImplGroupName
+tasks.register("5-createAndRegVNodes") {
+    group = cordappGroup
     dependsOn('deployCPIs')
     doLast {
         createAndRegisterVNodesHelper.createAndRegVNodes()
@@ -260,8 +258,8 @@ tasks.register("createAndRegVNodes") {
 }
 
 // Empty task, just acts as the Task user entry point task.
-tasks.register('deployCordapp') {
-    group = pluginGroupName
+tasks.register('quickDeployCordapp') {
+    group = cordappGroup
     dependsOn("createAndRegVNodes")
 }
 
