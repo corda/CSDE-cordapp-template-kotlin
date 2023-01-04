@@ -3,11 +3,6 @@ import static org.gradle.api.JavaVersion.VERSION_11
 plugins {
     id 'org.jetbrains.kotlin.jvm'
 
-    // Include the cordapp-cpb plugin. This automatically includes the cordapp-cpk plugin as well.
-    // These extend existing build environment so that CPB and CPK files can be built.
-    // This includes a CorDapp DSL that allows the developer to supply metadata for the CorDapp
-    // required by Corda.
-    //id 'net.corda.plugins.cordapp-cpb2'
     id 'net.corda.cordapp.cordapp-configuration'
 
     id 'org.jetbrains.kotlin.plugin.jpa'
