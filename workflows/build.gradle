@@ -1,10 +1,16 @@
 plugins {
+    // Include the cordapp-cpb plugin. This automatically includes the cordapp-cpk plugin as well.
+    // These extend existing build environment so that CPB and CPK files can be built.
+    // This includes a CorDapp DSL that allows the developer to supply metadata for the CorDapp
+    // required by Corda.
     id 'net.corda.plugins.cordapp-cpb2'
     id 'org.jetbrains.kotlin.jvm'
     id 'maven-publish'
 }
 
-
+// Declare dependencies for the modules we will use.
+// A cordaProvided declaration is required for anything that we use that the Corda API provides.
+// This is required to allow us to build CorDapp modules as OSGi bundles that CPI and CPB files are built on.
 dependencies {
     // From other subprojects:
     cordapp project(':contracts')
@@ -38,6 +44,22 @@ dependencies {
 
     // The CorDapp uses the slf4j logging framework. Corda-API provides this so we need a 'cordaProvided' declaration.
     cordaProvided 'org.slf4j:slf4j-api'
+
+    // This are shared so should be here.
+    // Dependencies Required By Test Tooling
+    testImplementation "net.corda:corda-simulator-api:$simulatorVersion"
+    testRuntimeOnly "net.corda:corda-simulator-runtime:$simulatorVersion"
+
+    // 3rd party libraries
+    // Required
+    testImplementation "org.slf4j:slf4j-simple:2.0.0"
+    testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+
+    // Optional but used by exmaple tests.
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
+    testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
 
 }
 
