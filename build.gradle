@@ -13,15 +13,13 @@ plugins {
     id 'csde'
 }
 
-// subprojects {
 allprojects {
     group 'com.r3.hellocorda'
     version '1.0-SNAPSHOT'
 
     def javaVersion = VERSION_11
 
-
-// Declare the set of Kotlin compiler options we need to build a CorDapp.
+    // Declare the set of Kotlin compiler options we need to build a CorDapp.
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         kotlinOptions {
             allWarningsAsErrors = false
@@ -103,72 +101,8 @@ allprojects {
      */
     }
 
-// Declare dependencies for the modules we will use.
-// A cordaProvided declaration is required for anything that we use that the Corda API provides.
-// This is required to allow us to build CorDapp modules as OSGi bundles that CPI and CPB files are built on.
-    plugins.withType(JavaPlugin) {
-
-        dependencies {
-
-            /*
-
-        // We need a version of kotlin-stdlib-jdk8 built as an OSGi bundle, this is "kotlin-stdlib-jdk8-osgi".
-        // R3 builds kotlin-stdlib-jdk8-osgi from Kotlin's kotlin-stdlib-jdk8.
-        // NB:
-        //   Kotlin's kotlin-osgi-bundle does not provide all of the Kotlin API that is required,
-        //   There is no kotlin-stdlib-jdk11, but one is not needed even though we are targetting Java 11.
-        cordaProvided 'net.corda.kotlin:kotlin-stdlib-jdk8-osgi'
-
-        // Declare a "platform" so that we use the correct set of dependency versions for the version of the
-        // Corda API specified.
-        cordaProvided platform("net.corda:corda-api:$cordaApiVersion")
-
-        // If using transistive dependencies this will provide most of Corda-API:
-        // cordaProvided 'net.corda:corda-application'
-
-        // Alternatively we can explicitly specify all our Corda-API dependencies:
-        cordaProvided 'net.corda:corda-base'
-        cordaProvided 'net.corda:corda-application'
-        cordaProvided 'net.corda:corda-crypto'
-        cordaProvided 'net.corda:corda-membership'
-        // cordaProvided 'net.corda:corda-persistence'
-        cordaProvided 'net.corda:corda-serialization'
-
-        // Not yet fully implemented:
-        // cordaProvided 'net.corda:corda-ledger'
-
-        // CorDapps that use the UTXO ledger must include at least one notary client plugin
-        cordapp "com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-client:$cordaNotaryPluginsVersion"
-
-        // The CorDapp uses the slf4j logging framework. Corda-API provides this so we need a 'cordaProvided' declaration.
-        cordaProvided 'org.slf4j:slf4j-api'
-
-        */
-
-
-        // This are shared so should be here.
-        // Dependencies Required By Test Tooling
-        testImplementation "net.corda:corda-simulator-api:$simulatorVersion"
-        testRuntimeOnly "net.corda:corda-simulator-runtime:$simulatorVersion"
-
-        // 3rd party libraries
-        // Required
-        testImplementation "org.slf4j:slf4j-simple:2.0.0"
-        testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
-
-    // Optional but used by exmaple tests.
-    testImplementation "org.mockito:mockito-core:$mockitoVersion"
-    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
-    testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
-
-
-        }
-    }
-
-
-    test {
-     useJUnitPlatform()
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
     }
 
     publishing {
