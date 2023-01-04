@@ -93,21 +93,14 @@ public class DeployCPIsHelper {
     private boolean uploadStatusRetry(kong.unirest.HttpResponse<JsonNode> response) {
         int status = response.getStatus();
         JsonNode body = response.getBody();
-        // Do not retry on success
+        // Do not retry on success // todo: need to think through the possible outcomes here - what if the bodyTitle is null, it won't retry
         if(status == HTTP_OK) {
             // Keep retrying until we get "OK" may move through "Validating upload", "Persisting CPI"
             return !(body.getObject().get("status").equals("OK"));
         }
         else if (status == HTTP_BAD_REQUEST){
-            JSONObject details = response.getBody().getObject().getJSONObject("details");
-            if( details != null ){
-                String code = (String) details.getString("code");
-                return !code.equals("BAD_REQUEST");
-            }
-            else {
-                // Not HTTP_BAD_REQUEST implies some transient problem
-                return true;
-            }
+            String bodyTitle = response.getBody().getObject().getString("title");
+            return bodyTitle != null && bodyTitle.matches("No such requestId=[-0-9a-f]+");
         }
         return false;
     }

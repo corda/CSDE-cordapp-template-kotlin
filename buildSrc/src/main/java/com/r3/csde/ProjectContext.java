@@ -33,6 +33,7 @@ public class ProjectContext {
     String cordaCliBinDir;
     String cordaNotaryServiceDir;
     String workflowBuildDir;
+    String cordaNotaryPluginsVersion;
 
     public ProjectContext (Project inProject,
                            String inBaseUrl,
@@ -53,7 +54,8 @@ public class ProjectContext {
                            String inDevEnvWorkspace,
                            String inCordaCLiBinDir,
                            String inCordaNotaryServiceDir,
-                           String inWorkflowBuildDir
+                           String inWorkflowBuildDir,
+                           String inCordaNotaryPluginsVersion
     ) {
         project = inProject;
         baseURL = inBaseUrl;
@@ -76,5 +78,6 @@ public class ProjectContext {
         cordaCliBinDir = inCordaCLiBinDir;
         cordaNotaryServiceDir = inCordaNotaryServiceDir;
         workflowBuildDir = inWorkflowBuildDir;
+        cordaNotaryPluginsVersion = inCordaNotaryPluginsVersion;
      }
 }

@@ -67,5 +67,4 @@ public class ProjectUtils {
         pc.out.println("*** *** ***");
         throw new CsdeException("Error: unexpected response from Corda.");
     }
-
 }

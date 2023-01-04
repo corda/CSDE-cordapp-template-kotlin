@@ -221,7 +221,7 @@ public class BuildCPIsHelper {
         notaryCPIFile.delete();
 
         File srcDir = new File(pc.cordaNotaryServiceDir);
-        File[] notaryCPBs = srcDir.listFiles(( x , name ) -> name.endsWith(".cpb"));
+        File[] notaryCPBs = srcDir.listFiles(( x , name ) -> name.endsWith(".cpb") && name.contains(pc.cordaNotaryPluginsVersion));
         if (notaryCPBs == null) throw new CsdeException("Expecting exactly one notary CPB but no CPB found.");
         if (notaryCPBs.length != 1) throw new CsdeException("Expecting exactly one notary CPB but more than one found.");
 
