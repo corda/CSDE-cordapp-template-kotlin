@@ -65,7 +65,7 @@ public class CordaLifeCycleHelper {
     }
 
 
-    public void stopCorda() throws IOException, NoPidFile {
+    public void stopCorda() throws IOException, CsdeException {
         File cordaPIDFile = new File(pc.cordaPidCache);
         if(cordaPIDFile.exists()) {
             Scanner sc = new Scanner(cordaPIDFile);
@@ -83,9 +83,7 @@ public class CordaLifeCycleHelper {
             cordaPIDFile.delete();
         }
         else {
-            throw new NoPidFile("Cannot stop the Combined worker\nCached process ID file " + pc.cordaPidCache + " missing.\nWas the combined worker not started?");
+            throw new CsdeException("Cannot stop the Combined worker\nCached process ID file " + pc.cordaPidCache + " missing.\nWas the combined worker not started?");
         }
     }
-
-
 }

@@ -2,14 +2,12 @@
 // highlighted in Red. However, they are recognised in the gradle compilation.
 
 
-// todo: Move more of the control flow over to JAVA. Sequence the steps in JAVA rather than Gradle
 // todo: look at the declaration of the script variables, can they be combined with the declaration of the Project Context
 
 // todo: investigate adding corda-cli to the class path then executing it directly - might not work as
 //  gradle has to set up the jar file, so its not their when you start.
 
 // Todo: write a test flow runner helper function
-// todo: Write a final output message for deployCordapp which lists the set up VNodes
 // todo: rename deployCPIsHelper
 // todo: sort out the fully qualified class names in functions
 // todo: add proper logging, rather than reading Stdout
