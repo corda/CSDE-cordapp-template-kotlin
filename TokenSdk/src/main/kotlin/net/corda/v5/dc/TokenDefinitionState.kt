@@ -17,7 +17,7 @@ data class TokenDefinitionState(
     val issuer: Party,
     val customPropsMutable: Map<String, String>,
     val customPropsImmutable: Map<String, String>,
-    //TOTO: val rules: Set<Rules> ...
+    //TODO: val rules: Set<Rules> ...
     val id: UUID = UUID.randomUUID(),
     val version: Int = 1
 ) : ContractState {
