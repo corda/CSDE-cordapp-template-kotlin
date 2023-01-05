@@ -58,9 +58,10 @@ dependencies {
     testImplementation "net.corda:corda-base:$cordaApiVersion"
 
     // Required
-//    testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    testImplementation "com.squareup.okhttp3:okhttp:$okhttp3Version"
     testImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
-    testImplementation "com.squareup.okhttp3:okhttp:4.10.0"
+    testImplementation "com.konghq:unirest-java:$unirestVersion"
+    testImplementation "com.konghq:unirest-objectmapper-jackson:$unirestVersion"
     testImplementation "org.slf4j:slf4j-simple:2.0.6"
     testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
