@@ -48,4 +48,5 @@ include 'cpkServiceProvider'
 include 'CorDappServiceConsumer'
 
 include 'CorDappUtxo'
+include 'CorDappUtxoIntegTest'
 include 'TokenSdk'

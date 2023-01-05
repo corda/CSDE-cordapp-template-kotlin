@@ -1,0 +1,86 @@
+import static org.gradle.api.JavaVersion.VERSION_11
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+
+    id 'java'
+    id 'maven-publish'
+}
+
+group 'com.r3.hellocorda'
+version '1.0-SNAPSHOT'
+
+def javaVersion = VERSION_11
+
+// Declare the set of Kotlin compiler options we need to build a CorDapp.
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        allWarningsAsErrors = false
+
+        // Specify the version of Kotlin that we are that we will be developing. 
+        languageVersion = '1.7'
+        // Specify the Kotlin libraries that code is compatible with
+        apiVersion = '1.7'
+        // Note that we Need to use a version of Kotlin that will be compatible with the Corda API.
+        // Currently that is developed in Kotlin 1.7 so picking the same version ensures compatibility with that.
+
+        // Specify the version of Java to target.
+        jvmTarget = javaVersion
+
+        // Needed for reflection to work correctly.
+        javaParameters = true
+
+        // -Xjvm-default determines how Kotlin supports default methods.
+        // JetBrains currently recommends developers use -Xjvm-default=all
+        // https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-default/
+        freeCompilerArgs += [
+                "-Xjvm-default=all"
+        ]
+    }
+}
+
+repositories {
+    // All dependencies are held in Maven Central
+    mavenCentral()
+    maven {
+        url = "$artifactoryContextUrl/"
+    }
+    maven {
+        url "https://software.r3.com/artifactory/corda-os-maven-unstable/"
+        credentials {
+            username = System.getenv('CORDA_ARTIFACTORY_USERNAME')
+            password = System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+        }
+    }
+}
+
+dependencies {
+    testImplementation "net.corda:corda-base:$cordaApiVersion"
+
+    // Required
+//    testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    testImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+    testImplementation "com.squareup.okhttp3:okhttp:4.10.0"
+    testImplementation "org.slf4j:slf4j-simple:2.0.6"
+    testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+
+//    // Optional but used by example tests.
+//    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+//    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
+//    testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId "corda-CSDE-kotlin-sample1"
+            groupId project.group
+            artifact jar
+        }
+    }
+}
