@@ -55,7 +55,6 @@ class CreateNewChatFlow: RPCStartableFlow {
             val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, CreateNewChatFlowArgs::class.java)
 
             val myInfo = memberLookup.myInfo()
-
             val otherMember = memberLookup.lookup(MemberX500Name.parse(flowArgs.otherMember)) ?: throw IllegalArgumentException("can't find other member")
 
 
@@ -70,15 +69,15 @@ class CreateNewChatFlow: RPCStartableFlow {
             }.ledgerKeys.first()
 
 
-            var txb= utxoLedgerService.getTransactionBuilder()
+            var txBuilder= utxoLedgerService.getTransactionBuilder()
                 .setNotary(Party(notary.name, notaryKey))
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
                 .addOutputState(chatState)
-                .addCommand(ChatContract.Fail())
+                .addCommand(ChatContract.Create())
                 .addSignatories(chatState.participants)
 
             @Suppress("DEPRECATION")
-            val signedTransaction = txb.toSignedTransaction(myInfo.ledgerKeys.first())
+            val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
 
             val session = flowMessaging.initiateFlow(otherMember.name)
 
