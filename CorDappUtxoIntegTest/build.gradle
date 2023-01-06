@@ -62,6 +62,8 @@ dependencies {
     testImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
     testImplementation "com.konghq:unirest-java:$unirestVersion"
     testImplementation "com.konghq:unirest-objectmapper-jackson:$unirestVersion"
+    testImplementation "io.rest-assured:rest-assured:5.3.0"
+    testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
     testImplementation "org.slf4j:slf4j-simple:2.0.6"
     testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
@@ -69,7 +71,6 @@ dependencies {
 //    // Optional but used by example tests.
 //    testImplementation "org.mockito:mockito-core:$mockitoVersion"
 //    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
-//    testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
 }
 
 test {
