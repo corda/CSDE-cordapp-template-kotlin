@@ -1,10 +1,10 @@
 package com.r3.csde;
 
+import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
-import kong.unirest.HttpResponse;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,6 +18,7 @@ public class DeployCPIsHelper {
 
     public DeployCPIsHelper() {
     }
+
     ProjectContext pc;
     CordaStatusQueries queries;
     ProjectUtils utils;
@@ -28,7 +29,7 @@ public class DeployCPIsHelper {
         utils = new ProjectUtils(pc);
     }
 
-    public void deployCPIs() throws FileNotFoundException, CsdeException{
+    public void deployCPIs() throws FileNotFoundException, CsdeException {
 
         uploadCertificate(pc.signingCertAlias, pc.signingCertFName);
         uploadCertificate(pc.keystoreAlias, pc.keystoreCertFName);
@@ -38,16 +39,16 @@ public class DeployCPIsHelper {
                 pc.workflowBuildDir,
                 pc.project.getName(),
                 pc.project.getVersion());
-        deployCPI(appCPILocation, pc.appCPIName,pc.project.getVersion().toString());
+        deployCPI(appCPILocation, pc.appCPIName, pc.project.getVersion().toString());
 
         String notaryCPILocation = String.format("%s/%s-%s.cpi",
                 pc.workflowBuildDir,
-                pc.notaryCPIName.replace(' ','-').toLowerCase(),
+                pc.notaryCPIName.replace(' ', '-').toLowerCase(),
                 pc.project.getVersion());
         deployCPI(notaryCPILocation,
                 pc.notaryCPIName,
                 pc.project.getVersion().toString(),
-                "-NotaryServer" );
+                "-NotaryServer");
 
     }
 
@@ -58,7 +59,7 @@ public class DeployCPIsHelper {
                 .field("certificate", new File(certFName))
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
-        pc.out.println("Certificate/key upload, alias "+certAlias+" certificate/key file "+certFName);
+        pc.out.println("Certificate/key upload, alias " + certAlias + " certificate/key file " + certFName);
         pc.out.println(uploadResponse.getBody().toPrettyString());
     }
 
@@ -73,21 +74,20 @@ public class DeployCPIsHelper {
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
 
-        if(jsonResponse.getStatus() == HTTP_OK) {
+        if (jsonResponse.getStatus() == HTTP_OK) {
             String id = (String) jsonResponse.getBody().getObject().get("id");
-            pc.out.println("get id:\n" +id);
+            pc.out.println("get id:\n" + id);
             HttpResponse<JsonNode> statusResponse = uploadStatus(id);
 
             if (statusResponse.getStatus() == HTTP_OK) {
                 PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
-                        pc.CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));
+                        pc.CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json")));
                 cpiUploadStatus.print(statusResponse.getBody());
                 pc.out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
             } else {
                 utils.reportError(statusResponse);
             }
-        }
-        else {
+        } else {
             utils.reportError(jsonResponse);
         }
     }
@@ -96,11 +96,10 @@ public class DeployCPIsHelper {
         int status = response.getStatus();
         JsonNode body = response.getBody();
         // Do not retry on success // todo: need to think through the possible outcomes here - what if the bodyTitle is null, it won't retry
-        if(status == HTTP_OK) {
+        if (status == HTTP_OK) {
             // Keep retrying until we get "OK" may move through "Validating upload", "Persisting CPI"
             return !(body.getObject().get("status").equals("OK"));
-        }
-        else if (status == HTTP_BAD_REQUEST){
+        } else if (status == HTTP_BAD_REQUEST) {
             String bodyTitle = response.getBody().getObject().getString("title");
             return bodyTitle != null && bodyTitle.matches("No such requestId=[-0-9a-f]+");
         }
@@ -108,16 +107,16 @@ public class DeployCPIsHelper {
     }
 
     public HttpResponse<JsonNode> uploadStatus(String requestId) {
-        HttpResponse<JsonNode> statusResponse = null;
+        HttpResponse<JsonNode> statusResponse;
         do {
             utils.rpcWait(1000);
             statusResponse = Unirest
                     .get(pc.baseURL + "/api/v1/cpi/status/" + requestId + "/")
                     .basicAuth(pc.rpcUser, pc.rpcPasswd)
                     .asJson();
-            pc.out.println("Upload status="+statusResponse.getStatus()+", status query response:\n"+statusResponse.getBody().toPrettyString());
+            pc.out.println("Upload status=" + statusResponse.getStatus() + ", status query response:\n" + statusResponse.getBody().toPrettyString());
         }
-        while(uploadStatusRetry(statusResponse));
+        while (uploadStatusRetry(statusResponse));
 
         return statusResponse;
     }
@@ -133,22 +132,22 @@ public class DeployCPIsHelper {
         // todo: where is the primary instance declared?
         Unirest.config().verifySsl(false);
 
-        HttpResponse<JsonNode> cpiResponse  = queries.getCpiInfo();
+        HttpResponse<JsonNode> cpiResponse = queries.getCpiInfo();
         JSONArray jArray = (JSONArray) cpiResponse.getBody().getObject().get("cpis");
 
         int matches = 0;
-        for(Object o: jArray.toList() ) {
-            if(o instanceof JSONObject) {
+        for (Object o : jArray.toList()) {
+            if (o instanceof JSONObject) {
                 JSONObject idObj = ((JSONObject) o).getJSONObject("id");
-                if((idObj.get("cpiName").toString().equals(cpiName)
+                if ((idObj.get("cpiName").toString().equals(cpiName)
                         && idObj.get("cpiVersion").toString().equals(cpiVersion))) {
                     matches++;
                 }
             }
         }
-        pc.out.println("Matching CPIS="+matches);
+        pc.out.println("Matching CPIS=" + matches);
 
-        if(matches == 0) {
+        if (matches == 0) {
             HttpResponse<JsonNode> uploadResponse = Unirest.post(pc.baseURL + "/api/v1/cpi/")
                     .field("upload", new File(cpiFName))
                     .basicAuth(pc.rpcUser, pc.rpcPasswd)
@@ -169,7 +168,7 @@ public class DeployCPIsHelper {
                 HttpResponse<JsonNode> statusResponse = uploadStatus(id);
                 if (statusResponse.getStatus() == HTTP_OK) {
                     PrintStream cpiUploadStatus = new PrintStream(new FileOutputStream(
-                            pc.CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json" )));
+                            pc.CPIUploadStatusFName.replace(".json", uploadStatusQualifier + ".json")));
                     cpiUploadStatus.print(statusResponse.getBody());
                     pc.out.println("Caching CPI file upload status:\n" + statusResponse.getBody());
                 } else {
@@ -178,8 +177,7 @@ public class DeployCPIsHelper {
             } else {
                 utils.reportError(uploadResponse);
             }
-        }
-        else {
+        } else {
             pc.out.println("CPI already uploaded doing a 'force' upload.");
             forceuploadCPI(cpiFName);
         }

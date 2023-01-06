@@ -20,12 +20,9 @@ import net.corda.v5.base.util.contextLogger
 import net.corda.v5.crypto.SecureHash
 import net.corda.v5.ledger.common.Party
 import net.corda.v5.ledger.utxo.BelongsToContract
-import net.corda.v5.ledger.utxo.Command
-import net.corda.v5.ledger.utxo.Contract
 import net.corda.v5.ledger.utxo.ContractState
 import net.corda.v5.ledger.utxo.StateRef
 import net.corda.v5.ledger.utxo.UtxoLedgerService
-import net.corda.v5.ledger.utxo.transaction.UtxoLedgerTransaction
 import java.security.PublicKey
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -39,7 +36,6 @@ class UtxoBackchainResolutionDemoFlow : RPCStartableFlow {
         val testField: String,
         override val participants: List<PublicKey>
     ) : ContractState
-
 
     private companion object {
         val log = contextLogger()
@@ -202,7 +198,21 @@ class UtxoBackchainResolutionDemoFlow : RPCStartableFlow {
              */
 
             for (session in sessions) {
-                session.send(listOf(signedTransaction.id, tx2.id, tx3.id, tx4.id, tx5.id, tx6.id, tx7.id, tx8.id, tx9.id, tx10.id, tx11.id))
+                session.send(
+                    listOf(
+                        signedTransaction.id,
+                        tx2.id,
+                        tx3.id,
+                        tx4.id,
+                        tx5.id,
+                        tx6.id,
+                        tx7.id,
+                        tx8.id,
+                        tx9.id,
+                        tx10.id,
+                        tx11.id
+                    )
+                )
             }
 
             utxoLedgerService.finalize(signedTransaction, emptyList())
@@ -237,8 +247,6 @@ class UtxoBackchainResolutionDemoResponderFlow : ResponderFlow {
     @CordaInject
     lateinit var utxoLedgerService: UtxoLedgerService
 
-
-    @Suppress("DEPRECATION")
     @Suspendable
     override fun call(session: FlowSession) {
         val txs = session.receive<List<SecureHash>>()

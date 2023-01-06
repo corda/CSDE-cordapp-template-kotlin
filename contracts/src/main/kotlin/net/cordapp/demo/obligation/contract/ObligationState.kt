@@ -4,7 +4,7 @@ import net.corda.v5.ledger.utxo.BelongsToContract
 import net.corda.v5.ledger.utxo.ContractState
 import java.math.BigDecimal
 import java.security.PublicKey
-import java.util.UUID
+import java.util.*
 
 @BelongsToContract(ObligationContract::class)
 data class ObligationState(

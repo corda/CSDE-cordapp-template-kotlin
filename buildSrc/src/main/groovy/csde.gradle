@@ -1,7 +1,6 @@
 // Note, IntelliJ does not recognise the imported Java Classes, hence they are
 // highlighted in Red. However, they are recognised in the gradle compilation.
 
-
 // todo: look at the declaration of the script variables, can they be combined with the declaration of the Project Context
 // todo: investigate adding corda-cli to the class path then executing it directly - might not work as gradle has to set up the jar file, so its not their when you start.
 // Todo: write a test flow runner helper function??
@@ -10,7 +9,6 @@
 // todo: add test corda running/live task
 // todo: add a test to check docker is running and display error if not + halt start corda
 // todo: add a clean corda task.
-
 
 import com.r3.csde.CordaLifeCycleHelper
 import com.r3.csde.ProjectContext
@@ -26,11 +24,10 @@ plugins {
     id 'java'
 }
 
-
 configurations {
-    combinedWorker{
+    combinedWorker {
         canBeConsumed = false
-        canBeResolved= true
+        canBeResolved = true
     }
 
     myPostgresJDBC {
@@ -64,12 +61,11 @@ def cordappGroup = 'csde-cordapp'   // tasks to build and deploy corDapps
 def queriesGroup = 'csde-queries'   // tasks which query corda status
 def supportingGroup = 'supporting'  // tasks which should be hidden from the csde user
 
-
 def cordaBinDir = System.getenv("CSDE_CORDA_BIN") ?: System.getProperty('user.home') + "/.corda/corda5"
-def cordaCliBinDir =  System.getenv("CSDE_CORDA_CLI") ?:System.getProperty('user.home') + "/.corda/cli"
+def cordaCliBinDir = System.getenv("CSDE_CORDA_CLI") ?: System.getProperty('user.home') + "/.corda/cli"
 def cordaJDBCDir = cordaBinDir + "/jdbcDrivers"
 def cordaNotaryServerDir = cordaBinDir + "/notaryserver"
-def signingCertAlias="gradle-plugin-default-key"
+def signingCertAlias = "gradle-plugin-default-key"
 // Get error if this is not a autotyped object
 // def signingCertFName = "$rootDir/config/gradle-plugin-default-key.pem"
 def signingCertFName = rootDir.toString() + "/config/gradle-plugin-default-key.pem"
@@ -81,11 +77,9 @@ def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
 //  workflow directory the correct place to build the cpb to. shoudl it be the main build directory.
 def workflowBuildDir = rootDir.toString() + "/workflows/build"
 
-
 // todo: Need to read things from cordapp plugin - the cordapp names will be changed by the user
-def appCpiName =  'cpi name'
-def notaryCpiName =  'CSDE Notary Server CPI'
-
+def appCpiName = 'cpi name'
+def notaryCpiName = 'CSDE Notary Server CPI'
 
 // todo: there should be a better way to set up these project context variables.
 def projectContext = new ProjectContext(project,
@@ -123,7 +117,6 @@ tasks.register('projInit') {
     }
 }
 
-
 // CordaLifeCycle tasks
 
 def cordaLifeCycle = new CordaLifeCycleHelper(projectContext)
@@ -160,11 +153,9 @@ tasks.register("getDevCordaLite", Copy) {
     into cordaBinDir
 }
 
-
 // Corda status queries
 
 def cordaStatusQueries = new CordaStatusQueries(projectContext)
-
 
 tasks.register('listVNodes') {
     group = queriesGroup
@@ -208,16 +199,15 @@ tasks.register('2-createKeystore') {
 
 tasks.register('3-buildCPIs') {
     group = cordappGroup
-    def dependsOnTasks = subprojects.collect {it.tasks.findByName("build") }
+    def dependsOnTasks = subprojects.collect { it.tasks.findByName("build") }
     dependsOnTasks.add('1-createGroupPolicy')
     dependsOnTasks.add('2-createKeystore')
     dependsOnTasks.add('getNotaryServerCPB')
     dependsOn dependsOnTasks
-    doLast{
+    doLast {
         buildCPIsHelper.buildCPIs()
     }
 }
-
 
 // deploy CPI tasks
 

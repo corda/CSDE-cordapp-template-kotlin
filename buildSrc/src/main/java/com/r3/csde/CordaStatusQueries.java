@@ -1,15 +1,18 @@
 package com.r3.csde;
 
+import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
-import kong.unirest.HttpResponse;
 
 public class CordaStatusQueries {
 
     ProjectContext pc;
-    public CordaStatusQueries(ProjectContext _pc){ pc = _pc; }
+
+    public CordaStatusQueries(ProjectContext _pc) {
+        pc = _pc;
+    }
 
 
     public HttpResponse<JsonNode> getVNodeInfo() {
@@ -18,6 +21,7 @@ public class CordaStatusQueries {
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
     }
+
     public void listVNodesVerbose() {
         HttpResponse<JsonNode> vnodeResponse = getVNodeInfo();
         pc.out.println("VNodes:\n" + vnodeResponse.getBody().toPrettyString());
@@ -29,8 +33,8 @@ public class CordaStatusQueries {
 
         JSONArray virtualNodesJson = (JSONArray) vnodeResponse.getBody().getObject().get("virtualNodes");
         pc.out.println("X500 Name\tHolding identity short hash\tCPI Name");
-        for(Object o: virtualNodesJson){
-            if(o instanceof JSONObject) {
+        for (Object o : virtualNodesJson) {
+            if (o instanceof JSONObject) {
                 JSONObject idObj = ((JSONObject) o).getJSONObject("holdingIdentity");
                 JSONObject cpiObj = ((JSONObject) o).getJSONObject("cpiIdentifier");
                 pc.out.print("\"" + idObj.get("x500Name") + "\"");
@@ -48,11 +52,11 @@ public class CordaStatusQueries {
     }
 
     public void listCPIs() {
-        HttpResponse<JsonNode> cpiResponse  = getCpiInfo();
+        HttpResponse<JsonNode> cpiResponse = getCpiInfo();
         JSONArray jArray = (JSONArray) cpiResponse.getBody().getObject().get("cpis");
 
-        for(Object o: jArray){
-            if(o instanceof JSONObject) {
+        for (Object o : jArray) {
+            if (o instanceof JSONObject) {
                 JSONObject idObj = ((JSONObject) o).getJSONObject("id");
                 pc.out.print("cpiName=" + idObj.get("cpiName"));
                 pc.out.println(", cpiVersion=" + idObj.get("cpiVersion"));

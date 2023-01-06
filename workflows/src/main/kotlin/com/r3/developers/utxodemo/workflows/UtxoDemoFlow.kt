@@ -111,7 +111,6 @@ class UtxoDemoFlow : RPCStartableFlow {
                 finalizedSignedTransaction.id.toString().also {
                     log.info("Success! Response: $it")
                 }
-
             } catch (e: Exception) {
                 log.warn("Finality failed", e)
                 "Finality failed, ${e.message}"

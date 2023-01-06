@@ -91,7 +91,7 @@ class CreateObligationFlow(
             val holder = memberLookup.lookup(request.holder)
                 ?: throw IllegalArgumentException("Unknown holder: ${request.holder}.")
 
-            val notary = memberLookup.lookup(request.notary)?.getNotaryParty(memberLookup, request.notaryService)
+            val notary = getNotaryParty(memberLookup, request.notaryService)
                 ?: throw IllegalArgumentException("Unknown notary: ${request.notaryService}.")
 
             val sessions = flowMessaging.initiateFlows(holder)

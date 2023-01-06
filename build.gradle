@@ -53,7 +53,6 @@ allprojects {
             url = "$artifactoryContextUrl/"
         }
 
-
         /*
     // Internal artifactory repos for dev
     // R3 Internal repositories
@@ -104,15 +103,14 @@ allprojects {
     tasks.withType(Test).configureEach {
         useJUnitPlatform()
     }
-
 }
 
 publishing {
     publications {
-            maven(MavenPublication) {
-                artifactId "corda-CSDE-kotlin-sample"
-                groupId project.group
-                artifact jar
-         }
+        maven(MavenPublication) {
+            artifactId "corda-CSDE-kotlin-sample"
+            groupId project.group
+            artifact jar
+        }
     }
 }

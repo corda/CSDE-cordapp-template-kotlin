@@ -89,7 +89,6 @@ class DeleteObligationFlow(
                 utxoLedgerService.findUnconsumedStatesByType(ObligationState::class.java)
                     .first { it.state.contractState.id == request.id }
 
-
             val issuer = memberLookup.lookup(oldObligation.state.contractState.issuer)
                 ?: throw IllegalArgumentException("Unknown issuer: ${oldObligation.state.contractState.issuer}.")
 

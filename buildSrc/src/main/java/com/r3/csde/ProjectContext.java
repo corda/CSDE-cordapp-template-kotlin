@@ -10,7 +10,7 @@ public class ProjectContext {
     String baseURL = "https://localhost:8888";
     String rpcUser = "admin";
     String rpcPasswd = "admin";
-     String workspaceDir = "workspace";
+    String workspaceDir = "workspace";
     int retryWaitMs = 1000;
     PrintStream out = System.out;
     String CPIUploadStatusBaseName = "CPIFileStatus.json";
@@ -20,7 +20,6 @@ public class ProjectContext {
     String cordaPidCache = "CordaPIDCache.dat";
     String dbContainerName;
     String JDBCDir;
-    String combinedWorkerBinRe;
     Map<String, String> notaryRepresentatives = null;
     String signingCertAlias;
     String signingCertFName;
@@ -35,27 +34,27 @@ public class ProjectContext {
     String workflowBuildDir;
     String cordaNotaryPluginsVersion;
 
-    public ProjectContext (Project inProject,
-                           String inBaseUrl,
-                           String inRpcUser,
-                           String inRpcPasswd,
-                           String inWorkspaceDir,
-                           String inJavaBinDir,
-                           String inDbContainerName,
-                           String inJDBCDir,
-                           String inCordaPidCache,
-                           String inSigningCertAlias,
-                           String inSigningCertFName,
-                           String inKeystoreAlias,
-                           String inKeystoreFName,
-                           String inKeystoreCertFName,
-                           String inAppCPIName,
-                           String inNotaryCPIName,
-                           String inDevEnvWorkspace,
-                           String inCordaCLiBinDir,
-                           String inCordaNotaryServiceDir,
-                           String inWorkflowBuildDir,
-                           String inCordaNotaryPluginsVersion
+    public ProjectContext(Project inProject,
+                          String inBaseUrl,
+                          String inRpcUser,
+                          String inRpcPasswd,
+                          String inWorkspaceDir,
+                          String inJavaBinDir,
+                          String inDbContainerName,
+                          String inJDBCDir,
+                          String inCordaPidCache,
+                          String inSigningCertAlias,
+                          String inSigningCertFName,
+                          String inKeystoreAlias,
+                          String inKeystoreFName,
+                          String inKeystoreCertFName,
+                          String inAppCPIName,
+                          String inNotaryCPIName,
+                          String inDevEnvWorkspace,
+                          String inCordaCLiBinDir,
+                          String inCordaNotaryServiceDir,
+                          String inWorkflowBuildDir,
+                          String inCordaNotaryPluginsVersion
     ) {
         project = inProject;
         baseURL = inBaseUrl;
@@ -79,5 +78,5 @@ public class ProjectContext {
         cordaNotaryServiceDir = inCordaNotaryServiceDir;
         workflowBuildDir = inWorkflowBuildDir;
         cordaNotaryPluginsVersion = inCordaNotaryPluginsVersion;
-     }
+    }
 }

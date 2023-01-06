@@ -20,8 +20,6 @@ import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.crypto.SecureHash
 import net.corda.v5.ledger.consensual.ConsensualLedgerService
-import net.corda.v5.ledger.consensual.ConsensualState
-import net.corda.v5.ledger.consensual.transaction.ConsensualLedgerTransaction
 import net.cordacon.example.doorcode.contracts.DoorCode
 import net.cordacon.example.doorcode.contracts.DoorCodeConsensualState
 import java.security.PublicKey
@@ -57,6 +55,7 @@ class DoorCodeChangeFlow : RPCStartableFlow {
         val doorCodeState = DoorCodeConsensualState(newDoorCode, participants.map { getPublicKey(it) })
 
         val txBuilder = consensualLedgerService.getTransactionBuilder()
+
         @Suppress("DEPRECATION")
         val signedTransaction = txBuilder
             .withStates(doorCodeState)
@@ -114,7 +113,7 @@ class DoorCodeChangeResponderFlow : ResponderFlow {
             log.info("\"${memberLookup.myInfo().name}\" got the new door code ${doorCodeState.code}")
         }
         val requiredSignatories = finalizedSignedTransaction.toLedgerTransaction().requiredSignatories
-        val actualSignatories = finalizedSignedTransaction.signatures.map {it.by}.toSet()
+        val actualSignatories = finalizedSignedTransaction.signatures.map { it.by }.toSet()
         check(requiredSignatories == actualSignatories) {
             "Signatories were not as expected. Expected:\n    " + requiredSignatories.joinToString("\n    ") +
                     "and got:\n    " + actualSignatories.joinToString("\n    ")
@@ -142,13 +141,13 @@ class DoorCodeQueryFlow : RPCStartableFlow {
         val txId = requestBody.getRequestBodyAs<DoorCodeQuery>(jsonMarshallingService).txId
         val tx = consensualLedgerService.findSignedTransaction(txId)
 
-        checkNotNull(tx) {"No consensual ledger transaction was persisted for provided id"}
+        checkNotNull(tx) { "No consensual ledger transaction was persisted for provided id" }
 
         return jsonMarshallingService.format(
             DoorCodeQueryResponse(
-            (tx.toLedgerTransaction().states[0] as DoorCodeConsensualState).code,
-            tx.signatures.map { checkNotNull(memberLookup.lookup(it.by)?.name) }.toSet()
-        )
+                (tx.toLedgerTransaction().states[0] as DoorCodeConsensualState).code,
+                tx.signatures.map { checkNotNull(memberLookup.lookup(it.by)?.name) }.toSet()
+            )
         )
     }
 }
