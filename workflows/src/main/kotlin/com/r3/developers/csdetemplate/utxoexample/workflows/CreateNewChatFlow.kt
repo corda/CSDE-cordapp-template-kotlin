@@ -7,6 +7,7 @@ import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.application.messaging.FlowMessaging
 import net.corda.v5.application.messaging.FlowSession
+import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.base.util.days
@@ -43,12 +44,14 @@ class CreateNewChatFlow: RPCStartableFlow {
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
 
+    @Suspendable
     override fun call(requestBody: RPCRequestData): String {
 
 
         log.info("CNCF: CreateNewChatFlow.call() called")
 
         try {
+
             val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, CreateNewChatFlowArgs::class.java)
 
             val myInfo = memberLookup.myInfo()
@@ -71,8 +74,9 @@ class CreateNewChatFlow: RPCStartableFlow {
                 .setNotary(Party(notary.name, notaryKey))
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
                 .addOutputState(chatState)
-                .addCommand(ChatContract.Create())
+                .addCommand(ChatContract.Fail())
                 .addSignatories(chatState.participants)
+
             @Suppress("DEPRECATION")
             val signedTransaction = txb.toSignedTransaction(myInfo.ledgerKeys.first())
 
@@ -108,6 +112,7 @@ class CreateNewChatResponderFlow: ResponderFlow {
     @CordaInject
     lateinit var utxoLedgerService: UtxoLedgerService
 
+    @Suspendable
     override fun call(session: FlowSession) {
         try {
             val finalizedSignedTransaction = utxoLedgerService.receiveFinality(session) { ledgerTransaction ->
@@ -122,7 +127,7 @@ class CreateNewChatResponderFlow: ResponderFlow {
         }
     }
 
-    fun checkForBannedWords(str: String): Boolean {
+    private fun checkForBannedWords(str: String): Boolean {
         val bannedWords = listOf("banana", "apple", "pear")
         return bannedWords.any { str.contains(it) }
     }
