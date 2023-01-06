@@ -105,13 +105,14 @@ allprojects {
         useJUnitPlatform()
     }
 
-    publishing {
-        publications {
-                maven(MavenPublication) {
-                    artifactId "corda-CSDE-kotlin-sample"
-                    groupId project.group
-                    artifact jar
-             }
-        }
+}
+
+publishing {
+    publications {
+            maven(MavenPublication) {
+                artifactId "corda-CSDE-kotlin-sample"
+                groupId project.group
+                artifact jar
+         }
     }
 }
