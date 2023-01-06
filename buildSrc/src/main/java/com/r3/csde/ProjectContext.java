@@ -10,7 +10,7 @@ public class ProjectContext {
     String baseURL = "https://localhost:8888";
     String rpcUser = "admin";
     String rpcPasswd = "admin";
-    String workspaceDir = "workspace";
+    String workspaceDir = "./workspace";
     int retryWaitMs = 1000;
     PrintStream out = System.out;
     String CPIUploadStatusBaseName = "CPIFileStatus.json";
