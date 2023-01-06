@@ -77,7 +77,7 @@ def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
 def workflowBuildDir = rootDir.toString() + "/workflows/build"
 
 // todo: Need to read things from cordapp plugin - the cordapp names will be changed by the user
-def appCpiName = 'cpi name'
+def appCpiName = project.name
 def notaryCpiName = 'CSDE Notary Server CPI'
 
 // todo: there should be a better way to set up these project context variables.
