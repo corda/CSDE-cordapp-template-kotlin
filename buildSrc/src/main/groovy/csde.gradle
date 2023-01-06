@@ -50,8 +50,6 @@ dependencies {
             extension = 'cpb'
         }
     }
-
-    implementation "org.codehaus.groovy:groovy-json:3.0.9"
 }
 
 // task groupings
@@ -139,7 +137,7 @@ tasks.register("stopAndCleanCorda") {
     dependsOn('clean')
     doLast {
         try {
-            csdeHelper.stopCorda()
+            cordaLifeCycle.stopCorda()
         } catch (Exception ignored) {
         }
         delete devEnvWorkspace
