@@ -14,7 +14,6 @@ import com.r3.csde.CordaLifeCycleHelper
 import com.r3.csde.ProjectContext
 import com.r3.csde.DeployCPIsHelper
 import com.r3.csde.BuildCPIsHelper
-import com.r3.csde.ProjectUtils
 import com.r3.csde.CordaStatusQueries
 import com.r3.csde.CreateAndRegisterVNodesHelper
 
@@ -73,8 +72,8 @@ def keystoreAlias = "my-signing-key"
 def keystoreFName = devEnvWorkspace + "/signingkeys.pfx"
 def keystoreCertFName = devEnvWorkspace + "/signingkey1.pem"
 def combiWorkerPidCacheFile = devEnvWorkspace + "/CordaPID.dat"
-// todo: can we rely on the build directory always being /workflow/build? aslo, is the
-//  workflow directory the correct place to build the cpb to. shoudl it be the main build directory.
+// todo: can we rely on the build directory always being /workflow/build? also, is the
+//  workflow directory the correct place to build the cpb to. should it be the main build directory.
 def workflowBuildDir = rootDir.toString() + "/workflows/build"
 
 // todo: Need to read things from cordapp plugin - the cordapp names will be changed by the user
@@ -87,7 +86,7 @@ def projectContext = new ProjectContext(project,
         cordaRpcUser,
         cordaRpcPasswd,
         devEnvWorkspace,
-        // todo: why is this not obtained in the groovy def's abouve - its inconsistent.
+        // todo: why is this not obtained in the groovy def's above - its inconsistent.
         new String("${System.getProperty("java.home")}/bin"),
         dbContainerName,
         cordaJDBCDir,
@@ -105,8 +104,6 @@ def projectContext = new ProjectContext(project,
         workflowBuildDir,
         cordaNotaryPluginsVersion
 )
-
-def utils = new ProjectUtils()
 
 // Initiate workspace folder
 
@@ -134,6 +131,18 @@ tasks.register("stopCorda") {
     group = cordaGroup
     doLast {
         cordaLifeCycle.stopCorda()
+    }
+}
+
+tasks.register("stopAndCleanCorda") {
+    group = cordaGroup
+    dependsOn('clean')
+    doLast {
+        try {
+            csdeHelper.stopCorda()
+        } catch (Exception ignored) {
+        }
+        delete devEnvWorkspace
     }
 }
 
@@ -234,10 +243,7 @@ tasks.register("5-createAndRegVNodes") {
 }
 
 // Empty task, just acts as the Task user entry point task.
-tasks.register('quickDeployCordapp') {
+tasks.register('quickDeployCorDapp') {
     group = cordappGroup
     dependsOn("5-createAndRegVNodes")
 }
-
-
-
