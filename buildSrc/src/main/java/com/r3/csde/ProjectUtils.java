@@ -20,7 +20,6 @@ public class ProjectUtils {
         pc = _pc;
     }
 
-
     void rpcWait(int millis) {
         try {
             sleep(millis);
@@ -37,7 +36,6 @@ public class ProjectUtils {
         LinkedList<String> x500Ids = new LinkedList<>();
 //        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
         ObjectMapper mapper = new ObjectMapper();
-
 
         FileInputStream in = new FileInputStream(configFile);
         com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);

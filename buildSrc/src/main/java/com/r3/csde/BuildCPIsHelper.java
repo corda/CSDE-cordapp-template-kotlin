@@ -50,11 +50,9 @@ public class BuildCPIsHelper {
                 fileWriter.write(line + "\n");
             }
             fileWriter.close();
-
         } else {
             pc.out.println("createPolicyTask: everything up to date; nothing to do.");
         }
-
     }
 
     public void createKeyStore() throws IOException, InterruptedException {
@@ -66,11 +64,9 @@ public class BuildCPIsHelper {
             generateKeyPair();
             addDefaultSigningKey();
             exportCert();
-
         } else {
             pc.out.println("createKeystore:  keystore already created; nothing to do.");
         }
-
     }
 
     private void generateKeyPair() throws IOException, InterruptedException {
@@ -98,7 +94,6 @@ public class BuildCPIsHelper {
         pb.redirectErrorStream(true);
         Process proc = pb.start();
         proc.waitFor();
-
     }
 
     private void addDefaultSigningKey() throws IOException, InterruptedException {
@@ -143,7 +138,6 @@ public class BuildCPIsHelper {
         pb.redirectErrorStream(true);
         Process proc = pb.start();
         proc.waitFor();
-
     }
 
     public void buildCPIs() throws IOException, InterruptedException, CsdeException {
@@ -259,7 +253,6 @@ public class BuildCPIsHelper {
         pb.redirectErrorStream(true);
         Process proc = pb.start();
         proc.waitFor();
-
     }
 
     // todo: this might be needed for improved logging
@@ -268,5 +261,4 @@ public class BuildCPIsHelper {
             pc.out.print(s + " ");
         }
     }
-
 }

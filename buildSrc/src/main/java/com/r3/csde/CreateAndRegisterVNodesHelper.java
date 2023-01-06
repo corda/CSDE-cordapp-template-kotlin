@@ -91,7 +91,6 @@ public class CreateAndRegisterVNodesHelper {
                     default:
                         utils.reportError(jsonNode);
                 }
-
             } catch (ExecutionException | InterruptedException e) {
                 throw new CsdeException("Unexpected exception while waiting for response to " +
                         "membership submission for holding identity" + response.getKey());
@@ -211,7 +210,6 @@ public class CreateAndRegisterVNodesHelper {
         return "{ \"memberRegistrationRequest\": { \"action\": \"requestJoin\",  \"context\": { " + context + " } } }";
     }
 
-
     Map<String, String> pollForVNodeShortHoldingHashIds(List<String> x500Ids, int retryCount, int coolDownMs) throws CsdeException {
         HashMap<String, String> x500NameToShortHashes = new HashMap<>();
         Set<String> vnodesToCheck = new HashSet<>(x500Ids);
@@ -262,7 +260,6 @@ public class CreateAndRegisterVNodesHelper {
         }
     }
 
-
     private boolean isMembershipRegComplete(HttpResponse<JsonNode> response) throws CsdeException {
         if (response.getStatus() == HTTP_OK) {
             JsonNode responseBody = response.getBody();
@@ -284,6 +281,4 @@ public class CreateAndRegisterVNodesHelper {
         }
         return false;
     }
-
-
 }

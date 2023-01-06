@@ -49,7 +49,6 @@ public class DeployCPIsHelper {
                 pc.notaryCPIName,
                 pc.project.getVersion().toString(),
                 "-NotaryServer");
-
     }
 
     public void uploadCertificate(String certAlias, String certFName) {
@@ -182,5 +181,4 @@ public class DeployCPIsHelper {
             forceuploadCPI(cpiFName);
         }
     }
-
 }

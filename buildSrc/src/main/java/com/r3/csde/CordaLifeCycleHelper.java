@@ -20,11 +20,9 @@ public class CordaLifeCycleHelper {
         utils = new ProjectUtils(pc);
     }
 
-
     public void startCorda() throws IOException {
         PrintStream pidStore = new PrintStream(new FileOutputStream(pc.cordaPidCache));
         File combinedWorkerJar = pc.project.getConfigurations().getByName("combinedWorker").getSingleFile();
-
 
         // todo: make consistent with other ProcessBuilder set ups (use cmdArray)
         new ProcessBuilder(
@@ -55,7 +53,6 @@ public class CordaLifeCycleHelper {
                 "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
                 "-ddatabase.jdbc.directory=" + pc.JDBCDir);
 
-
         procBuild.redirectErrorStream(true);
         Process proc = procBuild.start();
         pidStore.print(proc.pid());
@@ -68,7 +65,6 @@ public class CordaLifeCycleHelper {
         // Matt comment - I'm not sure I agree, we need to investigate
 
     }
-
 
     public void stopCorda() throws IOException, CsdeException {
         File cordaPIDFile = new File(pc.cordaPidCache);
