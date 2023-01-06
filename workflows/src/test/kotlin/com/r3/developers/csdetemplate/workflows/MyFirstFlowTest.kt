@@ -3,6 +3,7 @@ package com.r3.developers.csdetemplate.workflows
 import net.corda.simulator.RequestData
 import net.corda.simulator.Simulator
 import net.corda.v5.base.types.MemberX500Name
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class MyFirstFlowTest {
@@ -12,7 +13,7 @@ class MyFirstFlowTest {
     private val bobX500 = MemberX500Name.parse("CN=Bob, OU=Test Dept, O=R3, L=London, C=GB")
 
     @Test
-    fun `test that MyFirstFLow returns correct message`() {
+    fun `test that MyFirstFlow returns correct message`() {
 
         // Instantiate an instance of the Simulator
         val simulator = Simulator()
@@ -36,6 +37,6 @@ class MyFirstFlowTest {
         val flowResponse = aliceVN.callFlow(requestData)
 
         // Check that the flow has returned the expected string
-        assert(flowResponse == "Hello Alice, best wishes from Bob")
+        assertEquals("Hello Alice, best wishes from Bob", flowResponse)
     }
 }

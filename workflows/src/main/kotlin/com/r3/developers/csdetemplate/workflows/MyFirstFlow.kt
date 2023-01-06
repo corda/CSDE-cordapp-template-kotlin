@@ -1,6 +1,5 @@
 package com.r3.developers.csdetemplate.workflows
 
-import com.r3.developers.csdetemplate.contracts.TestConsensualState
 import net.corda.v5.application.flows.CordaInject
 import net.corda.v5.application.flows.InitiatedBy
 import net.corda.v5.application.flows.InitiatingFlow
@@ -15,8 +14,6 @@ import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
-import java.security.PublicKey
-import java.util.*
 
 // A class to hold the arguments required to start the flow
 class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
@@ -66,8 +63,6 @@ class MyFirstFlow : RPCStartableFlow {
         // Show the requestBody in the logs - this can be used to help establish the format for starting a flow on corda
         log.info("MFF: requestBody: ${requestBody.getRequestBody()}")
 
-        val testConsensualState = TestConsensualState("Testing", LinkedList<PublicKey>())
-
         // Deserialize the Json requestBody into the MyfirstFlowStartArgs class using the JsonSerialisation Service
         val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, MyFirstFlowStartArgs::class.java)
 
@@ -78,7 +73,7 @@ class MyFirstFlow : RPCStartableFlow {
         val ourIdentity = memberLookup.myInfo().name
 
         // Create the message payload using the MessageClass we defined.
-        val message = Message(otherMember, "Hello from $ourIdentity.")
+        val message = Message(ourIdentity, "Hello from $ourIdentity.")
 
         // Log the message to be sent.
         log.info("MFF: message.message: ${message.message}")
@@ -126,7 +121,7 @@ class MyFirstFlowResponder : ResponderFlow {
     override fun call(session: FlowSession) {
 
         // Useful logging to follow what's happening in the console or logs
-        log.info("MFF: MyFirstResponderFlow.call() called")
+        log.info("MFF: MyFirstFlowResponder.call() called")
 
         // Receive the payload and deserialize it into a Message class
         val receivedMessage = session.receive(Message::class.java)
