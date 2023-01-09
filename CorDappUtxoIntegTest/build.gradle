@@ -63,6 +63,8 @@ dependencies {
     testImplementation "com.konghq:unirest-java:$unirestVersion"
     testImplementation "com.konghq:unirest-objectmapper-jackson:$unirestVersion"
     testImplementation "io.rest-assured:rest-assured:5.3.0"
+    testImplementation "com.squareup.retrofit2:retrofit:2.9.0"
+    testImplementation "com.squareup.retrofit2:converter-jackson:2.9.0"
     testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
     testImplementation "org.slf4j:slf4j-simple:2.0.6"
     testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
