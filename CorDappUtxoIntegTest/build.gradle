@@ -60,6 +60,8 @@ dependencies {
     // Required
     testImplementation "com.squareup.okhttp3:okhttp:$okhttp3Version"
     testImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+    testImplementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
+    testImplementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
     testImplementation "com.konghq:unirest-java:$unirestVersion"
     testImplementation "com.konghq:unirest-objectmapper-jackson:$unirestVersion"
     testImplementation "io.rest-assured:rest-assured:5.3.0"
