@@ -15,13 +15,6 @@ import org.junit.jupiter.api.Test
 import java.net.HttpURLConnection
 import java.util.*
 
-data class TokenIssueRequest(
-    val amount: Int,
-    val times: Int = 1,
-    val owner: MemberX500Name,
-    val withEncumbrance: Boolean = false
-)
-
 internal class IssueTokenFlowIntegTestWithUniRest {
 
     lateinit var cnNodes: Map<String, String>

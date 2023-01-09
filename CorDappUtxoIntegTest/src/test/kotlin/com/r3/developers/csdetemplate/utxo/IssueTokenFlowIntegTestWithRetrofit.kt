@@ -3,6 +3,7 @@ package com.r3.developers.csdetemplate.utxo
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import net.corda.flow.rpcops.v1.types.request.StartFlowParameters
 import net.corda.v5.base.types.MemberX500Name
 import okhttp3.Credentials
 import okhttp3.Interceptor
@@ -16,17 +17,22 @@ import retrofit2.converter.jackson.JacksonConverterFactory
 import java.net.HttpURLConnection
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+import java.util.*
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
 internal class IssueTokenFlowIntegTestWithRetrofit {
 
+    lateinit var cnNodes: Map<String, String>
+    lateinit var x500Nodes: Map<String, MemberX500Name>
+
     companion object {
         lateinit var client: OkHttpClient
         lateinit var mapper: ObjectMapper
         lateinit var retrofit: Retrofit
         lateinit var vNodeService: VNodeService
+        lateinit var flowService: FlowService
 
         @BeforeAll
         @JvmStatic
@@ -69,6 +75,7 @@ internal class IssueTokenFlowIntegTestWithRetrofit {
                 .build()
 
             vNodeService = retrofit.create(VNodeService::class.java)
+            flowService = retrofit.create(FlowService::class.java)
         }
     }
 
@@ -83,8 +90,38 @@ internal class IssueTokenFlowIntegTestWithRetrofit {
         val vNodes = responseBody!!
         assertEquals(5, vNodes.virtualNodes.size)
 
-        val cnNodes =
-            vNodes.virtualNodes.associate { MemberX500Name.parse(it.holdingIdentity.x500Name).commonName to it.holdingIdentity.shortHash }
+        cnNodes =
+            vNodes.virtualNodes.associate { MemberX500Name.parse(it.holdingIdentity.x500Name).commonName!! to it.holdingIdentity.shortHash }
         assertEquals(vNodes.virtualNodes.size, cnNodes.size)
+        x500Nodes =
+            vNodes.virtualNodes.associate { it.holdingIdentity.shortHash to MemberX500Name.parse(it.holdingIdentity.x500Name) }
+    }
+
+    @Test
+    fun postFlowTest() {
+        if (!::cnNodes.isInitialized) {
+            getVNodesTest()
+        }
+        val aliceHash = cnNodes["Alice"]!!
+        val bobHash = cnNodes["Bob"]
+
+        val tokenIssueRequest = TokenIssueRequest(1, 1, x500Nodes[bobHash]!!)
+        val startFlowParameters: StartFlowParameters = StartFlowParameters(
+            "issue#${UUID.randomUUID()}",
+            "com.r3.developers.csdetemplate.utxo.IssueTokenFlow",
+            mapper.writeValueAsString(tokenIssueRequest)
+        )
+
+        val call = flowService.start(aliceHash, startFlowParameters)
+        val response = call.execute()
+        assertEquals(HttpURLConnection.HTTP_ACCEPTED, response.code())
+
+        val responseBody = response.body()
+        assertNotNull(responseBody)
+
+        val flowStarted = responseBody!!
+        println(flowStarted)
+        assertEquals(aliceHash, flowStarted.holdingIdentityShortHash)
+        assertEquals(startFlowParameters.clientRequestId, flowStarted.clientRequestId)
     }
 }
