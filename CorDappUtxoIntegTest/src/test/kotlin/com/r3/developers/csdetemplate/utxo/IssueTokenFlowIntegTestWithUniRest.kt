@@ -6,19 +6,20 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kong.unirest.Unirest
 import net.corda.flow.rpcops.v1.types.request.StartFlowParameters
 import net.corda.flow.rpcops.v1.types.response.FlowStatusResponse
+import net.corda.flow.rpcops.v1.types.response.FlowStatusResponses
 import net.corda.libs.virtualnode.types.VirtualNodes
 import net.corda.v5.base.types.MemberX500Name
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.net.HttpURLConnection
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 internal class IssueTokenFlowIntegTestWithUniRest {
 
     lateinit var cnNodes: Map<String, String>
-    lateinit var x500Nodes: Map<String, MemberX500Name>
+    lateinit var x500Nodes: Map<String, String>
 
     companion object {
         lateinit var mapper: ObjectMapper
@@ -53,7 +54,7 @@ internal class IssueTokenFlowIntegTestWithUniRest {
             vNodes.virtualNodes.associate { MemberX500Name.parse(it.holdingIdentity.x500Name).commonName!! to it.holdingIdentity.shortHash }
         assertEquals(vNodes.virtualNodes.size, cnNodes.size)
         x500Nodes =
-            vNodes.virtualNodes.associate { it.holdingIdentity.shortHash to MemberX500Name.parse(it.holdingIdentity.x500Name) }
+            vNodes.virtualNodes.associate { it.holdingIdentity.shortHash to it.holdingIdentity.x500Name }
     }
 
     @Test
@@ -61,16 +62,17 @@ internal class IssueTokenFlowIntegTestWithUniRest {
         if (!::cnNodes.isInitialized) {
             getVNodesTest()
         }
-        val aliceHash = cnNodes["Alice"]
-        val bobHash = cnNodes["Bob"]
+        val aliceHash = cnNodes["Alice"]!!
+        val bobHash = cnNodes["Bob"]!!
 
         val tokenIssueRequest = TokenIssueRequest(1, 1, x500Nodes[bobHash]!!)
         val startFlowParameters: StartFlowParameters = StartFlowParameters(
             "issue#${UUID.randomUUID()}",
             "com.r3.developers.csdetemplate.utxo.IssueTokenFlow",
-            mapper.writeValueAsString(tokenIssueRequest)
+            tokenIssueRequest
         )
 
+        println(mapper.writeValueAsString(startFlowParameters))
         val response = Unirest
             .post("https://localhost:8888/api/v1/flow/$aliceHash")
             .body(mapper.writeValueAsString(startFlowParameters))
@@ -85,5 +87,50 @@ internal class IssueTokenFlowIntegTestWithUniRest {
         println(flowStarted)
         assertEquals(aliceHash, flowStarted.holdingIdentityShortHash)
         assertEquals(startFlowParameters.clientRequestId, flowStarted.clientRequestId)
+
+        TimeUnit.SECONDS.sleep(10)
+
+        val aliceFlow = getFlowByClientId(aliceHash, startFlowParameters.clientRequestId)
+        assertNotNull(aliceFlow)
+        println(aliceFlow)
+
+        val bobFlow = getFlowByClientId(bobHash, startFlowParameters.clientRequestId)
+        assertNotNull(bobFlow)
+        println(bobFlow)
+    }
+
+    @Test
+    fun getFlowsTest() {
+        if (!::cnNodes.isInitialized) {
+            getVNodesTest()
+        }
+        val aliceHash = cnNodes["Alice"]
+
+        val response = Unirest
+            .get("https://localhost:8888/api/v1/flow/$aliceHash")
+            .asString()
+
+        assertEquals(HttpURLConnection.HTTP_OK, response.status)
+
+        val responseBody = response.body
+        assertNotNull(responseBody)
+
+        val allFlows = mapper.readValue(responseBody, FlowStatusResponses::class.java)
+        assertTrue(allFlows.flowStatusResponses.isNotEmpty())
+        allFlows.flowStatusResponses.forEach { println(it) }
+    }
+
+    private fun getFlowByClientId(hash: String, id: String): FlowStatusResponse {
+        val response = Unirest
+            .get("https://localhost:8888/api/v1/flow/$hash/$id")
+            .asString()
+
+        assertEquals(HttpURLConnection.HTTP_OK, response.status)
+
+        val responseBody = response.body
+        assertNotNull(responseBody)
+
+        val flow = mapper.readValue(responseBody, FlowStatusResponse::class.java)
+        return flow;
     }
 }

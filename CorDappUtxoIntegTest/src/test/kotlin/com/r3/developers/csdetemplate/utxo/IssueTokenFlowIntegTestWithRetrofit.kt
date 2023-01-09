@@ -25,7 +25,7 @@ import javax.net.ssl.X509TrustManager
 internal class IssueTokenFlowIntegTestWithRetrofit {
 
     lateinit var cnNodes: Map<String, String>
-    lateinit var x500Nodes: Map<String, MemberX500Name>
+    lateinit var x500Nodes: Map<String, String>
 
     companion object {
         lateinit var client: OkHttpClient
@@ -94,7 +94,7 @@ internal class IssueTokenFlowIntegTestWithRetrofit {
             vNodes.virtualNodes.associate { MemberX500Name.parse(it.holdingIdentity.x500Name).commonName!! to it.holdingIdentity.shortHash }
         assertEquals(vNodes.virtualNodes.size, cnNodes.size)
         x500Nodes =
-            vNodes.virtualNodes.associate { it.holdingIdentity.shortHash to MemberX500Name.parse(it.holdingIdentity.x500Name) }
+            vNodes.virtualNodes.associate { it.holdingIdentity.shortHash to it.holdingIdentity.x500Name }
     }
 
     @Test
@@ -109,7 +109,7 @@ internal class IssueTokenFlowIntegTestWithRetrofit {
         val startFlowParameters: StartFlowParameters = StartFlowParameters(
             "issue#${UUID.randomUUID()}",
             "com.r3.developers.csdetemplate.utxo.IssueTokenFlow",
-            mapper.writeValueAsString(tokenIssueRequest)
+            tokenIssueRequest
         )
 
         val call = flowService.start(aliceHash, startFlowParameters)
