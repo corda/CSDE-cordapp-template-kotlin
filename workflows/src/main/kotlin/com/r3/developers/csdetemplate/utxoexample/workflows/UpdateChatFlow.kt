@@ -8,19 +8,17 @@ import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.application.messaging.FlowMessaging
 import net.corda.v5.application.messaging.FlowSession
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.base.util.days
-import net.corda.v5.ledger.common.NotaryLookup
-import net.corda.v5.ledger.common.Party
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import java.time.Instant
+import java.util.*
 
 
-data class CreateNewChatFlowArgs(val chatName: String, val message: String, val otherMember: String)
+data class UpdateChatFlowArgs(val id: UUID, val message: String)
 
-@InitiatingFlow("create-chat-protocol")
-class CreateNewChatFlow: RPCStartableFlow {
+@InitiatingFlow("update-chat-protocol")
+class UpdateChatFlow: RPCStartableFlow {
 
     private companion object {
         val log = contextLogger()
@@ -39,7 +37,7 @@ class CreateNewChatFlow: RPCStartableFlow {
     lateinit var utxoLedgerService: UtxoLedgerService
 
     @CordaInject
-    lateinit var notaryLookup: NotaryLookup
+    lateinit var ledgerService: UtxoLedgerService
 
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
@@ -47,40 +45,43 @@ class CreateNewChatFlow: RPCStartableFlow {
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
 
-
-        log.info("CNCF: CreateNewChatFlow.call() called")
+        log.info("UNCF: UpdateNewChatFlow.call() called")
 
         try {
 
-            val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, CreateNewChatFlowArgs::class.java)
+            val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, UpdateChatFlowArgs::class.java)
+
+            // look up state (this is very inefficient)
+
+            val stateAndRef = ledgerService.findUnconsumedStatesByType(ChatState::class.java).singleOrNull {
+                it.state.contractState.id == flowArgs.id
+            } ?: throw Exception("Multiple or zero Chat states with id ${flowArgs.id} found")
+
 
             val myInfo = memberLookup.myInfo()
-            val otherMember = memberLookup.lookup(MemberX500Name.parse(flowArgs.otherMember)) ?: throw IllegalArgumentException("can't find other member")
+            val state = stateAndRef.state.contractState
 
+            val members = state.participants.map {
+                memberLookup.lookup(it) ?: throw Exception("Member not found from Key")}
 
-            val chatState = ChatState(
-                chatName = flowArgs.chatName,
-                messages = listOf(flowArgs.message),
-                participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
-            )
+            val otherMember = (members - myInfo).single()
 
-            val notary = notaryLookup.notaryServices.first()
-            val notaryKey = memberLookup.lookup().first {
-                it.memberProvidedContext["corda.notary.service.name"] == notary.name.toString()
-            }.ledgerKeys.first()
-
+            // todo: use updateMessage function
+            val newChatState = state.copy(messages = state.messages + flowArgs.message)
 
             val txBuilder= utxoLedgerService.getTransactionBuilder()
-                .setNotary(Party(notary.name, notaryKey))
+                .setNotary(stateAndRef.state.notary)
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
-                .addOutputState(chatState)
-                .addCommand(ChatContract.Create())
-                .addSignatories(chatState.participants)
+                .addOutputState(newChatState)
+                .addInputState(stateAndRef.ref)
+                .addCommand(ChatContract.Update())
+                .addSignatories(newChatState.participants)
 
             @Suppress("DEPRECATION")
             val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
 
             val session = flowMessaging.initiateFlow(otherMember.name)
+
 
             return try {
                 val finalizedSignedTransaction = utxoLedgerService.finalize(
@@ -102,8 +103,8 @@ class CreateNewChatFlow: RPCStartableFlow {
     }
 }
 
-@InitiatedBy("create-chat-protocol")
-class CreateNewChatResponderFlow: ResponderFlow {
+@InitiatedBy("update-chat-protocol")
+class UpdateChatResponderFlow: ResponderFlow {
 
     private companion object {
         val log = contextLogger()
@@ -136,12 +137,11 @@ class CreateNewChatResponderFlow: ResponderFlow {
 /*
 RequestBody for triggering the flow via http-rpc:
 {
-    "clientRequestId": "create-1",
-    "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.CreateNewChatFlow",
+    "clientRequestId": "update-2",
+    "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.UpdateChatFlow",
     "requestData": {
-        "chatName":"Chat with Bob",
-        "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB",
-        "message": "Hello Bob"
+        "id":"e1e0e45d-1b8f-41df-821f-fe3052784f45",
+        "message": "How are you today?"
         }
 }
  */

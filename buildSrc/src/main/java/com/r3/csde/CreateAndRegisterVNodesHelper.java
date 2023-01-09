@@ -18,6 +18,13 @@ import java.util.concurrent.ExecutionException;
 
 import static java.net.HttpURLConnection.*;
 
+// todo: investigate resolving JsonNode name conflict with wrapper class eg:
+// class JacksonJsonNode() extends com.fasterxml.jackson.databind.JsonNode {
+//     public JacksonJsonNode(){ super() }
+// }
+
+// todo: check why using two types of JsonNode
+
 public class CreateAndRegisterVNodesHelper {
 
     ProjectContext pc;

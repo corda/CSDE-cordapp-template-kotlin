@@ -11,9 +11,9 @@ import net.corda.v5.ledger.utxo.UtxoLedgerService
 import java.util.*
 
 
-data class ChatStateResults(val id: UUID, val chatName: String, val lastMessage: String)
+data class GetChatFlowArgs(val id: UUID, val numberOfRecords: Int)
 
-class ListChatsFlow : RPCStartableFlow {
+class GetChatFlow: RPCStartableFlow {
 
     private companion object {
         val log = contextLogger()
@@ -28,22 +28,27 @@ class ListChatsFlow : RPCStartableFlow {
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
 
-    val states = ledgerService.findUnconsumedStatesByType(ChatState::class.java)
-    val results = states.map {
-        ChatStateResults(
-            it.state.contractState.id,
-            it.state.contractState.chatName,
-            it.state.contractState.messages.lastOrNull() ?: "") }
+        val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, GetChatFlowArgs::class.java)
 
-        return jsonMarshallingService.format(results)
+        val states = ledgerService.findUnconsumedStatesByType(ChatState::class.java)
+        val state = states.singleOrNull {it.state.contractState.id == flowArgs.id}
+            ?: throw Exception("contract state not found **fix error message**")
+
+        val messages = state.state.contractState.messages.takeLast(flowArgs.numberOfRecords)
+
+        return jsonMarshallingService.format(messages)
+
     }
 }
 
 /*
 RequestBody for triggering the flow via http-rpc:
 {
-    "clientRequestId": "list-1",
-    "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.ListChatsFlow",
-    "requestData": {}
+    "clientRequestId": "get-3",
+    "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.GetChatFlow",
+    "requestData": {
+        "id":"e1e0e45d-1b8f-41df-821f-fe3052784f45",
+        "numberOfRecords":"4"
+    }
 }
-*/
+ */
