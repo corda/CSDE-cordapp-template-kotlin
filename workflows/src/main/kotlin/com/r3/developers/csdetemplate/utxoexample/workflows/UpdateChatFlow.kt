@@ -46,7 +46,7 @@ class UpdateChatFlow: RPCStartableFlow {
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
 
-        log.info("UNCF: UpdateNewChatFlow.call() called")
+        log.info("UpdateNewChatFlow.call() called")
 
         try {
 
@@ -120,7 +120,7 @@ class UpdateChatResponderFlow: ResponderFlow {
         try {
             val finalizedSignedTransaction = utxoLedgerService.receiveFinality(session) { ledgerTransaction ->
                 val state = ledgerTransaction.outputContractStates.first() as ChatState
-                if (checkForBannedWords(state.message) && checkMessageFromMatchesKey(state)) throw IllegalStateException("Failed verification")
+                if (checkForBannedWords(state.message) && checkMessageFromMatchesCounterparty(state, session.counterparty)) throw IllegalStateException("Failed verification")
                 log.info("Verified the transaction- ${ledgerTransaction.id}")
             }
             log.info("Finished responder flow - ${finalizedSignedTransaction.id}")
@@ -129,10 +129,6 @@ class UpdateChatResponderFlow: ResponderFlow {
         }
     }
 
-//    private fun checkForBannedWords(str: String): Boolean {
-//        val bannedWords = listOf("banana", "apple", "pear")
-//        return bannedWords.any { str.contains(it) }
-//    }
 }
 
 /*

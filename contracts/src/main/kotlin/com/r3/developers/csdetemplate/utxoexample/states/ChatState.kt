@@ -19,9 +19,4 @@ data class ChatState(
     fun updateMessage(messageFrom: MemberX500Name, message: String) = copy(messageFrom = messageFrom, message = message)
 }
 
-// todo: consider recording just the next message and doing back chain resolution for the history
-// GetChatFlow could take the number of historic messages to retrieve
-
 //todo: simplify to one flow which creates if no id or updates if id given (error if id given that's not found
-
-// todo: need to record who made the update to the message
