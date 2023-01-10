@@ -8,6 +8,7 @@ import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.application.messaging.FlowMessaging
 import net.corda.v5.application.messaging.FlowSession
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.base.util.days
 import net.corda.v5.ledger.utxo.UtxoLedgerService
@@ -15,7 +16,7 @@ import java.time.Instant
 import java.util.*
 
 
-data class UpdateChatFlowArgs(val id: UUID, val message: String)
+data class UpdateChatFlowArgs(val id: UUID,val messageFrom: String,  val message: String)
 
 @InitiatingFlow("update-chat-protocol")
 class UpdateChatFlow: RPCStartableFlow {
@@ -66,8 +67,7 @@ class UpdateChatFlow: RPCStartableFlow {
 
             val otherMember = (members - myInfo).single()
 
-            // todo: use updateMessage function
-            val newChatState = state.copy(messages = state.messages + flowArgs.message)
+            val newChatState = state.updateMessage(MemberX500Name.parse(flowArgs.messageFrom), flowArgs.message)
 
             val txBuilder= utxoLedgerService.getTransactionBuilder()
                 .setNotary(stateAndRef.state.notary)
@@ -103,6 +103,8 @@ class UpdateChatFlow: RPCStartableFlow {
     }
 }
 
+
+// todo: Can create and update share a responder? or combine create/ update into one <- do this
 @InitiatedBy("update-chat-protocol")
 class UpdateChatResponderFlow: ResponderFlow {
 
@@ -118,8 +120,7 @@ class UpdateChatResponderFlow: ResponderFlow {
         try {
             val finalizedSignedTransaction = utxoLedgerService.receiveFinality(session) { ledgerTransaction ->
                 val state = ledgerTransaction.outputContractStates.first() as ChatState
-                val message = state.messages.lastOrNull() ?: throw IllegalStateException("Failed verification")
-                if (checkForBannedWords(message)) throw IllegalStateException("Failed verification")
+                if (checkForBannedWords(state.message) && checkMessageFromMatchesKey(state)) throw IllegalStateException("Failed verification")
                 log.info("Verified the transaction- ${ledgerTransaction.id}")
             }
             log.info("Finished responder flow - ${finalizedSignedTransaction.id}")
@@ -128,10 +129,10 @@ class UpdateChatResponderFlow: ResponderFlow {
         }
     }
 
-    private fun checkForBannedWords(str: String): Boolean {
-        val bannedWords = listOf("banana", "apple", "pear")
-        return bannedWords.any { str.contains(it) }
-    }
+//    private fun checkForBannedWords(str: String): Boolean {
+//        val bannedWords = listOf("banana", "apple", "pear")
+//        return bannedWords.any { str.contains(it) }
+//    }
 }
 
 /*

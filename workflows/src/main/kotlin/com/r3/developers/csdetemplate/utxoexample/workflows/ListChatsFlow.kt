@@ -11,7 +11,7 @@ import net.corda.v5.ledger.utxo.UtxoLedgerService
 import java.util.*
 
 
-data class ChatStateResults(val id: UUID, val chatName: String, val lastMessage: String)
+data class ChatStateResults(val id: UUID, val chatName: String,val messageFromName: String, val message: String)
 
 class ListChatsFlow : RPCStartableFlow {
 
@@ -33,7 +33,8 @@ class ListChatsFlow : RPCStartableFlow {
         ChatStateResults(
             it.state.contractState.id,
             it.state.contractState.chatName,
-            it.state.contractState.messages.lastOrNull() ?: "") }
+            it.state.contractState.messageFrom.toString(),
+            it.state.contractState.message) }
 
         return jsonMarshallingService.format(results)
     }

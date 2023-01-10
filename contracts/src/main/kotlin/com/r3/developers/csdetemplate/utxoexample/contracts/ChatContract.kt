@@ -30,10 +30,10 @@ class ChatContract: Contract {
         }
     }
 
-    infix fun String.using(expr: Boolean) {
+    private infix fun String.using(expr: Boolean) {
         if (!expr) throw IllegalArgumentException("Failed requirement: $this")
     }
-    infix fun String.using(expr: () -> Boolean) {
+    private infix fun String.using(expr: () -> Boolean) {
         if (!expr.invoke()) throw IllegalArgumentException("Failed requirement: $this")
     }
 }

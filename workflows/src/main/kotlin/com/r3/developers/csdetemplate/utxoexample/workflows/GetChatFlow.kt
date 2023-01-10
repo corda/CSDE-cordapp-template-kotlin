@@ -7,6 +7,7 @@ import net.corda.v5.application.flows.RPCStartableFlow
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger
+import net.corda.v5.ledger.utxo.StateAndRef
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import java.util.*
 
@@ -32,22 +33,57 @@ class GetChatFlow: RPCStartableFlow {
 
         val states = ledgerService.findUnconsumedStatesByType(ChatState::class.java)
         val state = states.singleOrNull {it.state.contractState.id == flowArgs.id}
-            ?: throw Exception("contract state not found **fix error message**")
+            ?: throw Exception("did not find an unique ChatState")
 
-        val messages = state.state.contractState.messages.takeLast(flowArgs.numberOfRecords)
+        return jsonMarshallingService.format(resolveMessagesFromBackchain(state, flowArgs.numberOfRecords ))
+    }
 
-        return jsonMarshallingService.format(messages)
+    @Suspendable
+    private fun resolveMessagesFromBackchain(stateAndRef: StateAndRef<ChatState>, numberOfRecords: Int): List<String>{
 
+        val messages = mutableListOf<String>()
+
+        var currentStateAndRef = stateAndRef
+        var recordsToFetch = numberOfRecords
+        var moreBackchain = true
+
+        while (moreBackchain) {
+            // Get transaction containing the state
+            val transactionId = currentStateAndRef.ref.transactionHash
+
+                val transaction = ledgerService.findLedgerTransaction(transactionId)
+                    ?: throw Exception("Transaction $transactionId not found")
+
+                // record message
+                val output = transaction.getOutputStates(ChatState::class.java).singleOrNull()
+                    ?: throw Exception("Expecting one and only one ChatState output for transaction $transactionId")
+                messages.add(output.message)
+                recordsToFetch--
+
+                // check that there is a single input, if not break
+                val inputStateAndRefs = transaction.inputStateAndRefs
+
+                if (inputStateAndRefs.isEmpty() || recordsToFetch == 0) {
+                    moreBackchain = false
+                } else if (inputStateAndRefs.size > 1) {
+                    throw Exception("More than one input state found for transaction $transactionId.")
+                } else {
+                    @Suppress("UNCHECKED_CAST")
+                    currentStateAndRef = inputStateAndRefs.single() as StateAndRef<ChatState>
+                }
+
+        }
+     return messages.toList()
     }
 }
 
 /*
 RequestBody for triggering the flow via http-rpc:
 {
-    "clientRequestId": "get-3",
+    "clientRequestId": "get-1",
     "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.GetChatFlow",
     "requestData": {
-        "id":"e1e0e45d-1b8f-41df-821f-fe3052784f45",
+        "id":"** fill in id **",
         "numberOfRecords":"4"
     }
 }

@@ -60,7 +60,8 @@ class CreateNewChatFlow: RPCStartableFlow {
 
             val chatState = ChatState(
                 chatName = flowArgs.chatName,
-                messages = listOf(flowArgs.message),
+                messageFrom = myInfo.name,
+                message = flowArgs.message,
                 participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
             )
 
@@ -117,19 +118,13 @@ class CreateNewChatResponderFlow: ResponderFlow {
         try {
             val finalizedSignedTransaction = utxoLedgerService.receiveFinality(session) { ledgerTransaction ->
                 val state = ledgerTransaction.outputContractStates.first() as ChatState
-                val message = state.messages.lastOrNull() ?: throw IllegalStateException("Failed verification")
-                if (checkForBannedWords(message)) throw IllegalStateException("Failed verification")
+                if (checkForBannedWords(state.message) && checkMessageFromMatchesKey(state)) throw IllegalStateException("Failed verification")
                 log.info("Verified the transaction- ${ledgerTransaction.id}")
             }
             log.info("Finished responder flow - ${finalizedSignedTransaction.id}")
         } catch (e: Exception) {
             log.warn("Exceptionally finished responder flow", e)
         }
-    }
-
-    private fun checkForBannedWords(str: String): Boolean {
-        val bannedWords = listOf("banana", "apple", "pear")
-        return bannedWords.any { str.contains(it) }
     }
 }
 
