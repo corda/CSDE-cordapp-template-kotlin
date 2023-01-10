@@ -19,4 +19,3 @@ data class ChatState(
     fun updateMessage(messageFrom: MemberX500Name, message: String) = copy(messageFrom = messageFrom, message = message)
 }
 
-//todo: simplify to one flow which creates if no id or updates if id given (error if id given that's not found

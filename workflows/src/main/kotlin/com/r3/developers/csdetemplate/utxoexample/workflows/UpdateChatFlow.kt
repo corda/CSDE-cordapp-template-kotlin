@@ -16,7 +16,7 @@ import java.time.Instant
 import java.util.*
 
 
-data class UpdateChatFlowArgs(val id: UUID,val messageFrom: String,  val message: String)
+data class UpdateChatFlowArgs(val id: UUID,val messageFrom: String, val message: String)
 
 @InitiatingFlow("update-chat-protocol")
 class UpdateChatFlow: RPCStartableFlow {

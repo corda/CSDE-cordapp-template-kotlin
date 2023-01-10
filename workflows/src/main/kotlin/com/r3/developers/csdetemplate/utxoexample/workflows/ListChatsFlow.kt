@@ -28,13 +28,15 @@ class ListChatsFlow : RPCStartableFlow {
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
 
-    val states = ledgerService.findUnconsumedStatesByType(ChatState::class.java)
-    val results = states.map {
-        ChatStateResults(
-            it.state.contractState.id,
-            it.state.contractState.chatName,
-            it.state.contractState.messageFrom.toString(),
-            it.state.contractState.message) }
+        log.info("ListChatsFlow.call() called")
+
+        val states = ledgerService.findUnconsumedStatesByType(ChatState::class.java)
+        val results = states.map {
+            ChatStateResults(
+                it.state.contractState.id,
+                it.state.contractState.chatName,
+                it.state.contractState.messageFrom.toString(),
+                it.state.contractState.message) }
 
         return jsonMarshallingService.format(results)
     }
