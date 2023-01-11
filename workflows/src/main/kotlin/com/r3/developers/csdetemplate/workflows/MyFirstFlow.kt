@@ -1,6 +1,5 @@
 package com.r3.developers.csdetemplate.workflows
 
-import com.r3.developers.csdetemplate.contracts.TestConsensualState
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
@@ -64,9 +63,6 @@ class MyFirstFlow: RPCStartableFlow {
 
         // Show the requestBody in the logs - this can be used to help establish the format for starting a flow on corda
         log.info("MFF: requestBody: ${requestBody.getRequestBody()}")
-
-        val testConsensualState = TestConsensualState("Testing", LinkedList<PublicKey>())
-
 
         // Deserialize the Json requestBody into the MyfirstFlowStartArgs class using the JsonSerialisation Service
         val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, MyFirstFlowStartArgs::class.java)
