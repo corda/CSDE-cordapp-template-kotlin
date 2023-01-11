@@ -1,10 +1,13 @@
 package com.r3.developers.csdetemplate.utxo
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.utxo.*
+import java.util.stream.Collectors
 
 /*
 As "CN=Bob, OU=Test Dept, O=R3, L=London, C=GB":
@@ -21,6 +24,9 @@ class ListMyTokenFlow : RPCStartableFlow {
 
     private companion object {
         val log = contextLogger()
+
+        var mapper = ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     }
 
     @CordaInject
@@ -61,6 +67,17 @@ class ListMyTokenFlow : RPCStartableFlow {
         val resultMessage = "${myUnusedTokens.size}"
 //        log.info("\n--- [ListMyTokenFlow] Finalized Tx Id is $resultMessage")
         log.info("\n--- [ListMyTokenFlow] <<<")
-        return resultMessage
+//        return resultMessage
+
+        log.info("\n--- [emko] 1")
+        val tokens = myUnusedTokens.stream()
+            .map { it.state.contractState }
+            .map { MyToken(it) }
+            .collect(Collectors.toList())
+        log.info("\n--- [emko] 2")
+        val writeValueAsString = mapper.writeValueAsString(MyTokens(tokens))
+        log.info("\n--- [emko] $writeValueAsString")
+        log.info("\n--- [emko] 3")
+        return writeValueAsString
     }
 }

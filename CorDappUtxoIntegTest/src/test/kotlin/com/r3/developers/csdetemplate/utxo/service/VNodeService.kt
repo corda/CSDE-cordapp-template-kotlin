@@ -40,7 +40,7 @@ class VNodeService {
             if (response.isSuccess) {
                 return mapper.readValue(response.body, VirtualNodes::class.java).virtualNodes
             }
-            throw IOException("${request.url} => ${response.statusText}")
+            throw IOException("${request.url} => ${response.body}")
         }
 
         fun listVNodesMap(): Map<String, HoldingIdentity> {

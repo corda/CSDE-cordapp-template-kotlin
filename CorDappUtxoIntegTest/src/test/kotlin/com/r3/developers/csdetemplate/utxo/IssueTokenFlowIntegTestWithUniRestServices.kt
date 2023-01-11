@@ -60,17 +60,21 @@ internal class IssueTokenFlowIntegTestWithUniRestServices {
         val alice = vNodes["Alice"]!!
         val bob = vNodes["Bob"]!!
 
-        val issueTokenFlow = TokenFlowService.issueToken(alice.shortHash, bob.x500Name, 1)
+        val initialTokens = TokenFlowService.listMyTokens(bob.shortHash)
+        val initialCount = initialTokens.size
+
+        var issueTokenFlow = TokenFlowService.issueToken(alice.shortHash, bob.x500Name, 1, 2)
         println(issueTokenFlow)
         assertEquals(alice.shortHash, issueTokenFlow.holdingIdentityShortHash)
         assertNotNull(issueTokenFlow.clientRequestId)
 
-        TimeUnit.SECONDS.sleep(10)//TODO: emko: re-tries
+        issueTokenFlow = FlowService.waitForFlowCompletion(issueTokenFlow)
 
         val aliceFlow = FlowService.getFlow(alice.shortHash, issueTokenFlow.clientRequestId!!)
         assertNotNull(aliceFlow)
         println(aliceFlow)
 
-        //...
+        val listMyTokens = TokenFlowService.listMyTokens(bob.shortHash)
+        assertEquals(initialCount + 2, listMyTokens.size)
     }
 }

@@ -1,5 +1,7 @@
 package com.r3.developers.csdetemplate.utxo.service
 
+import com.r3.developers.csdetemplate.utxo.MyToken
+import com.r3.developers.csdetemplate.utxo.MyTokens
 import com.r3.developers.csdetemplate.utxo.TokenIssueRequest
 import net.corda.flow.rpcops.v1.types.response.FlowStatusResponse
 
@@ -21,7 +23,7 @@ class TokenFlowService {
                 FlowService.startFlow(holdingIdentityShortHash, IssueTokenFlowName, tokenIssueRequest)
 
             //TODO: can have any "default" actions/checks here
-            println(issueTokenFlow)
+            println("issueToken > $issueTokenFlow")
             //TODO: depending on the flow response design, we can build an object out of it
 
             return issueTokenFlow;
@@ -29,15 +31,18 @@ class TokenFlowService {
 
         fun listMyTokens(
             holdingIdentityShortHash: String
-        ): FlowStatusResponse {
-            val listMyTokensFlow: FlowStatusResponse =
-                FlowService.startFlow(holdingIdentityShortHash, ListMyTokenFlow, null)
+        ): List<MyToken> {
+            var listMyTokensFlow: FlowStatusResponse =
+                FlowService.startFlow(holdingIdentityShortHash, ListMyTokenFlow, "")
+            listMyTokensFlow = FlowService.waitForFlowCompletion(listMyTokensFlow)
 
             //TODO: can have any "default" actions/checks here
-            println(listMyTokensFlow)
+            println("listMyTokens > $listMyTokensFlow")
             //TODO: depending on the flow response design, we can build an object out of it
 
-            return listMyTokensFlow;
+            val myTokens = FlowService.mapper.readValue(listMyTokensFlow.flowResult, MyTokens::class.java)
+
+            return myTokens.myTokens;
         }
     }
 }

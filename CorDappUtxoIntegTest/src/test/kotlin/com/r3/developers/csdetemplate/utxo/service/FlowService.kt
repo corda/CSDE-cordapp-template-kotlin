@@ -9,6 +9,8 @@ import net.corda.flow.rpcops.v1.types.response.FlowStatusResponse
 import net.corda.flow.rpcops.v1.types.response.FlowStatusResponses
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 //TODO: emko: retry
 //TODO: emko: error handling
@@ -31,6 +33,19 @@ class FlowService {
 //                .objectMapper = JacksonObjectMapper(mapper)
         }
 
+        fun waitForFlowCompletion(initialFlow: FlowStatusResponse): FlowStatusResponse {
+            TimeUnit.SECONDS.sleep(5)
+            for (i in 0..10) {
+                val flow = getFlow(initialFlow.holdingIdentityShortHash, initialFlow.clientRequestId!!)
+                if (flow.flowStatus != "COMPLETED") {
+                    TimeUnit.SECONDS.sleep(5)
+                } else {
+                    return flow
+                }
+            }
+            throw TimeoutException()
+        }
+
         /*
         /flow/{holdingidentityshorthash}
         This method returns an array containing the statuses of all flows running for a specified holding identity.
@@ -43,7 +58,7 @@ class FlowService {
             if (response.isSuccess) {
                 return mapper.readValue(response.body, FlowStatusResponses::class.java)
             }
-            throw IOException("${request.url} => ${response.statusText}")
+            throw IOException("${request.url} => ${response.body}")
         }
 
         /*
@@ -57,7 +72,7 @@ class FlowService {
             if (response.isSuccess) {
                 return mapper.readValue(response.body, FlowStatusResponse::class.java)
             }
-            throw IOException("${request.url} => ${response.statusText}")
+            throw IOException("${request.url} => ${response.body}")
         }
 
         /*
@@ -72,10 +87,10 @@ class FlowService {
             if (response.isSuccess) {
                 return mapper.readValue(response.body, FlowStatusResponse::class.java)
             }
-            throw IOException("${request.url} => ${response.statusText}")
+            throw IOException("${request.url} => ${response.body}")
         }
 
-        fun startFlow(holdingIdentityShortHash: String, flowClassName: String, requestData: Any?): FlowStatusResponse {
+        fun startFlow(holdingIdentityShortHash: String, flowClassName: String, requestData: Any): FlowStatusResponse {
             val startFlowParameters: StartFlowParameters = StartFlowParameters(
                 "${flowClassName.split(".").last()}-${UUID.randomUUID()}",
                 flowClassName,
