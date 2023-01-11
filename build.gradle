@@ -49,12 +49,12 @@ allprojects {
     repositories {
         // All dependencies are held in Maven Central
         mavenCentral()
+        /*
         maven {
             url = "$artifactoryContextUrl/"
         }
 
 
-        /*
     // Internal artifactory repos for dev
     // R3 Internal repositories
     // Repository the provides kotlin-stdlib-jdk8-osgi created by R3.
