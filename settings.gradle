@@ -2,50 +2,7 @@ pluginManagement {
     // Declare the repositories where plugins are stored.
     repositories {
         gradlePluginPortal()
-
-        maven {
-            url = "$artifactoryContextUrl/"
-        }
-
-        /*
-        // Internal R3 Repos while in dev mode
-        mavenCentral {
-            content {
-                includeGroupByRegex 'net\\.corda(\\..*)?'
-            }
-        }
-
-
-        // R3 internal repositories
-        maven {
-            url "${artifactoryContextUrl}/corda-dev"
-            content {
-                includeGroupByRegex 'net\\.corda\\.plugins(\\..*)?'
-            }
-        }
-        maven {
-            url = "$artifactoryContextUrl/corda-os-maven-unstable"
-            credentials {
-                username = settings.ext.find('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
-                password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
-            }
-        }
-        maven {
-            url = "$artifactoryContextUrl/corda-os-maven-unstable-local"
-            credentials {
-                username = settings.ext.find('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
-                password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
-            }
-        }
-        maven {
-            url = "$artifactoryContextUrl/corda-dev"
-            credentials {
-                username = settings.ext.find('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
-                password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
-            }
-        }
-
-*/
+        mavenCentral()
     }
 
     //  The plugin dependencies with versions of the plugins congruent with the specified CorDapp plugin version,
