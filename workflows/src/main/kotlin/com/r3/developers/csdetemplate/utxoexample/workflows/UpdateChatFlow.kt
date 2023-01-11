@@ -16,7 +16,7 @@ import java.time.Instant
 import java.util.*
 
 
-data class UpdateChatFlowArgs(val id: UUID,val messageFrom: String, val message: String)
+data class UpdateChatFlowArgs(val id: UUID, val message: String)
 
 @InitiatingFlow("update-chat-protocol")
 class UpdateChatFlow: RPCStartableFlow {
@@ -67,7 +67,7 @@ class UpdateChatFlow: RPCStartableFlow {
 
             val otherMember = (members - myInfo).single()
 
-            val newChatState = state.updateMessage(MemberX500Name.parse(flowArgs.messageFrom), flowArgs.message)
+            val newChatState = state.updateMessage(myInfo.name, flowArgs.message)
 
             val txBuilder= utxoLedgerService.getTransactionBuilder()
                 .setNotary(stateAndRef.state.notary)
