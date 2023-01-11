@@ -1,4 +1,4 @@
-package com.r3.developers.csdetemplate.workflows
+package com.r3.developers.csdetemplate.flowexample.workflows
 
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
@@ -9,8 +9,6 @@ import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
-import java.security.PublicKey
-import java.util.*
 
 // A class to hold the arguments required to start the flow
 class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
@@ -150,7 +148,7 @@ class MyFirstFlowResponder: ResponderFlow {
 RequestBody for triggering the flow via http-rpc:
 {
     "clientRequestId": "r1",
-    "flowClassName": "com.r3.developers.csdetemplate.workflows.MyFirstFlow",
+    "flowClassName": "com.r3.developers.csdetemplate.flowexample.workflows.MyFirstFlow",
     "requestData": {
         "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB"
         }
