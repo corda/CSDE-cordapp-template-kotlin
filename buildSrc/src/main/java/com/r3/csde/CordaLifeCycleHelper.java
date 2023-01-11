@@ -20,11 +20,9 @@ public class CordaLifeCycleHelper {
         utils = new ProjectUtils(pc);
     }
 
-
     public void startCorda() throws IOException {
         PrintStream pidStore = new PrintStream(new FileOutputStream(pc.cordaPidCache));
         File combinedWorkerJar = pc.project.getConfigurations().getByName("combinedWorker").getSingleFile();
-
 
         // todo: make consistent with other ProcessBuilder set ups (use cmdArray)
         new ProcessBuilder(
@@ -53,26 +51,24 @@ public class CordaLifeCycleHelper {
                 "-ddatabase.user=user",
                 "-ddatabase.pass=password",
                 "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
-                "-ddatabase.jdbc.directory="+pc.JDBCDir);
-
+                "-ddatabase.jdbc.directory=" + pc.JDBCDir);
 
         procBuild.redirectErrorStream(true);
         Process proc = procBuild.start();
         pidStore.print(proc.pid());
-        pc.out.println("Corda Process-id="+proc.pid());
+        pc.out.println("Corda Process-id=" + proc.pid());
 
         // todo: should poll for readiness before returning
-         // Chris comment - We probably do not want to poll for readiness here.
-         // The combined-worker takes serveral minutes to come up.
-         // It might be better to warn the user of that and have the readiness detection and polling logic used in other tasks involved in creating v-nodes and deploying the CPI.
+        // Chris comment - We probably do not want to poll for readiness here.
+        // The combined-worker takes serveral minutes to come up.
+        // It might be better to warn the user of that and have the readiness detection and polling logic used in other tasks involved in creating v-nodes and deploying the CPI.
         // Matt comment - I'm not sure I agree, we need to investigate
 
     }
 
-
     public void stopCorda() throws IOException, CsdeException {
         File cordaPIDFile = new File(pc.cordaPidCache);
-        if(cordaPIDFile.exists()) {
+        if (cordaPIDFile.exists()) {
             Scanner sc = new Scanner(cordaPIDFile);
             long pid = sc.nextLong();
             pc.out.println("pid to kill=" + pid);
@@ -86,8 +82,7 @@ public class CordaLifeCycleHelper {
             Process proc = new ProcessBuilder("docker", "stop", pc.dbContainerName).start();
 
             cordaPIDFile.delete();
-        }
-        else {
+        } else {
             throw new CsdeException("Cannot stop the Combined worker\nCached process ID file " + pc.cordaPidCache + " missing.\nWas the combined worker not started?");
         }
     }

@@ -1,4 +1,3 @@
-
 plugins {
     // Include the cordapp-cpb plugin. This automatically includes the cordapp-cpk plugin as well.
     // These extend existing build environment so that CPB and CPK files can be built.

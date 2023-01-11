@@ -6,7 +6,8 @@ import java.util.LinkedList;
 public class BuildCPIsHelper {
 
     public ProjectContext pc;
-    public ProjectUtils utils ;
+    public ProjectUtils utils;
+
     public BuildCPIsHelper(ProjectContext _pc) {
         pc = _pc;
         utils = new ProjectUtils(pc);
@@ -45,31 +46,27 @@ public class BuildCPIsHelper {
             // todo add exception catching
             FileWriter fileWriter = new FileWriter(groupPolicyFile);
             String line;
-            while (( line = reader.readLine()) != null){
+            while ((line = reader.readLine()) != null) {
                 fileWriter.write(line + "\n");
             }
             fileWriter.close();
-
         } else {
             pc.out.println("createPolicyTask: everything up to date; nothing to do.");
         }
-
     }
 
     public void createKeyStore() throws IOException, InterruptedException {
 
         File keystoreFile = new File(pc.keystoreFName);
-        if(!keystoreFile.exists()) {
+        if (!keystoreFile.exists()) {
             pc.out.println("createKeystore: Create a keystore");
 
             generateKeyPair();
             addDefaultSigningKey();
             exportCert();
-
         } else {
             pc.out.println("createKeystore:  keystore already created; nothing to do.");
         }
-
     }
 
     private void generateKeyPair() throws IOException, InterruptedException {
@@ -97,7 +94,6 @@ public class BuildCPIsHelper {
         pb.redirectErrorStream(true);
         Process proc = pb.start();
         proc.waitFor();
-
     }
 
     private void addDefaultSigningKey() throws IOException, InterruptedException {
@@ -142,7 +138,6 @@ public class BuildCPIsHelper {
         pb.redirectErrorStream(true);
         Process proc = pb.start();
         proc.waitFor();
-
     }
 
     public void buildCPIs() throws IOException, InterruptedException, CsdeException {
@@ -160,7 +155,7 @@ public class BuildCPIsHelper {
         appCPIFile.delete();
 
         File srcDir = new File(pc.workflowBuildDir + "/libs");
-        File[] appCPBs = srcDir.listFiles(( x , name ) -> name.endsWith(".cpb"));
+        File[] appCPBs = srcDir.listFiles((x, name) -> name.endsWith(".cpb"));
         if (appCPBs == null) throw new CsdeException("Expecting exactly one CPB but no CPB found.");
         if (appCPBs.length != 1) throw new CsdeException("Expecting exactly one CPB but more than one found.");
 
@@ -221,9 +216,10 @@ public class BuildCPIsHelper {
         notaryCPIFile.delete();
 
         File srcDir = new File(pc.cordaNotaryServiceDir);
-        File[] notaryCPBs = srcDir.listFiles(( x , name ) -> name.endsWith(".cpb") && name.contains(pc.cordaNotaryPluginsVersion));
+        File[] notaryCPBs = srcDir.listFiles((x, name) -> name.endsWith(".cpb") && name.contains(pc.cordaNotaryPluginsVersion));
         if (notaryCPBs == null) throw new CsdeException("Expecting exactly one notary CPB but no CPB found.");
-        if (notaryCPBs.length != 1) throw new CsdeException("Expecting exactly one notary CPB but more than one found.");
+        if (notaryCPBs.length != 1)
+            throw new CsdeException("Expecting exactly one notary CPB but more than one found.");
 
         pc.out.println("notaryCpbs:");
         pc.out.println(notaryCPBs[0]);
@@ -257,14 +253,12 @@ public class BuildCPIsHelper {
         pb.redirectErrorStream(true);
         Process proc = pb.start();
         proc.waitFor();
-
     }
 
     // todo: this might be needed for improved logging
     private void printCmdArray(LinkedList<String> cmdArray) {
-        for (int i = 0; i < cmdArray.size(); i++) {
-            pc.out.print(cmdArray.get(i) + " ");
+        for (String s : cmdArray) {
+            pc.out.print(s + " ");
         }
     }
-
 }
