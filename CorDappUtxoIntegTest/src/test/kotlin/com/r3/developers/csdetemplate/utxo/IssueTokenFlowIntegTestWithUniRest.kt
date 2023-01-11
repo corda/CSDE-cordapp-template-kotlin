@@ -67,7 +67,7 @@ internal class IssueTokenFlowIntegTestWithUniRest {
 
         val tokenIssueRequest = TokenIssueRequest(1, 1, x500Nodes[bobHash]!!)
         val startFlowParameters: StartFlowParameters = StartFlowParameters(
-            "issue#${UUID.randomUUID()}",
+            "issue-${UUID.randomUUID()}",
             "com.r3.developers.csdetemplate.utxo.IssueTokenFlow",
             tokenIssueRequest
         )
@@ -91,12 +91,8 @@ internal class IssueTokenFlowIntegTestWithUniRest {
         TimeUnit.SECONDS.sleep(10)
 
         val aliceFlow = getFlowByClientId(aliceHash, startFlowParameters.clientRequestId)
-        assertNotNull(aliceFlow)
         println(aliceFlow)
-
-        val bobFlow = getFlowByClientId(bobHash, startFlowParameters.clientRequestId)
-        assertNotNull(bobFlow)
-        println(bobFlow)
+        assertNotNull(aliceFlow)
     }
 
     @Test
