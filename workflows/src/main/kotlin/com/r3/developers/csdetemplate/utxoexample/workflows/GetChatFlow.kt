@@ -13,6 +13,8 @@ import java.util.*
 
 data class GetChatFlowArgs(val id: UUID, val numberOfRecords: Int)
 
+data class GetChatResponse(val messageFrom: String, val message: String)
+
 class GetChatFlow: RPCStartableFlow {
 
     private companion object {
@@ -37,41 +39,37 @@ class GetChatFlow: RPCStartableFlow {
         return jsonMarshallingService.format(resolveMessagesFromBackchain(state, flowArgs.numberOfRecords ))
     }
 
-
-    // todo: include who sent the message
     @Suspendable
-    private fun resolveMessagesFromBackchain(stateAndRef: StateAndRef<ChatState>, numberOfRecords: Int): List<Pair<String,String>>{
+    private fun resolveMessagesFromBackchain(stateAndRef: StateAndRef<ChatState>, numberOfRecords: Int): List<GetChatResponse>{
 
-        val messages = mutableListOf<Pair<String,String>>()
+        val messages = mutableListOf<GetChatResponse>()
 
         var currentStateAndRef = stateAndRef
         var recordsToFetch = numberOfRecords
         var moreBackchain = true
 
         while (moreBackchain) {
-            // Get transaction containing the state
+
             val transactionId = currentStateAndRef.ref.transactionHash
 
-                val transaction = ledgerService.findLedgerTransaction(transactionId)
-                    ?: throw Exception("Transaction $transactionId not found")
+            val transaction = ledgerService.findLedgerTransaction(transactionId)
+                ?: throw Exception("Transaction $transactionId not found")
 
-                // record message
-                val output = transaction.getOutputStates(ChatState::class.java).singleOrNull()
-                    ?: throw Exception("Expecting one and only one ChatState output for transaction $transactionId")
-                messages.add(Pair(output.messageFrom.toString(), output.message))
-                recordsToFetch--
+            val output = transaction.getOutputStates(ChatState::class.java).singleOrNull()
+                ?: throw Exception("Expecting one and only one ChatState output for transaction $transactionId")
+            messages.add(GetChatResponse(output.messageFrom.toString(), output.message))
+            recordsToFetch--
 
-                // check that there is a single input, if not break
-                val inputStateAndRefs = transaction.inputStateAndRefs
+            val inputStateAndRefs = transaction.inputStateAndRefs
 
-                if (inputStateAndRefs.isEmpty() || recordsToFetch == 0) {
-                    moreBackchain = false
-                } else if (inputStateAndRefs.size > 1) {
-                    throw Exception("More than one input state found for transaction $transactionId.")
-                } else {
-                    @Suppress("UNCHECKED_CAST")
-                    currentStateAndRef = inputStateAndRefs.single() as StateAndRef<ChatState>
-                }
+            if (inputStateAndRefs.isEmpty() || recordsToFetch == 0) {
+                moreBackchain = false
+            } else if (inputStateAndRefs.size > 1) {
+                throw Exception("More than one input state found for transaction $transactionId.")
+            } else {
+                @Suppress("UNCHECKED_CAST")
+                currentStateAndRef = inputStateAndRefs.single() as StateAndRef<ChatState>
+            }
         }
      return messages.toList()
     }

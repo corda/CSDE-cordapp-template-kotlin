@@ -57,7 +57,8 @@ class UpdateChatFlow: RPCStartableFlow {
             val members = state.participants.map {
                 memberLookup.lookup(it) ?: throw Exception("Member not found from Key")}
 
-            val otherMember = (members - myInfo).single()
+            val otherMember = (members - myInfo).singleOrNull()
+                ?: throw Exception("Should be only one participant other than the initiator")
 
             val newChatState = state.updateMessage(myInfo.name, flowArgs.message)
 
