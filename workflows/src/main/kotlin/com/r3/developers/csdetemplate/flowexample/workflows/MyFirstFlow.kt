@@ -1,6 +1,5 @@
 package com.r3.developers.csdetemplate.flowexample.workflows
 
-import com.r3.developers.csdetemplate.contracts.TestConsensualState
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
@@ -10,8 +9,6 @@ import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
-import java.security.PublicKey
-import java.util.*
 
 // A class to hold the arguments required to start the flow
 class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
