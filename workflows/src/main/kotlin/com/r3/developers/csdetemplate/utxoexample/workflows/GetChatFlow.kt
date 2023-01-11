@@ -37,10 +37,12 @@ class GetChatFlow: RPCStartableFlow {
         return jsonMarshallingService.format(resolveMessagesFromBackchain(state, flowArgs.numberOfRecords ))
     }
 
-    @Suspendable
-    private fun resolveMessagesFromBackchain(stateAndRef: StateAndRef<ChatState>, numberOfRecords: Int): List<String>{
 
-        val messages = mutableListOf<String>()
+    // todo: include who sent the message
+    @Suspendable
+    private fun resolveMessagesFromBackchain(stateAndRef: StateAndRef<ChatState>, numberOfRecords: Int): List<Pair<String,String>>{
+
+        val messages = mutableListOf<Pair<String,String>>()
 
         var currentStateAndRef = stateAndRef
         var recordsToFetch = numberOfRecords
@@ -56,7 +58,7 @@ class GetChatFlow: RPCStartableFlow {
                 // record message
                 val output = transaction.getOutputStates(ChatState::class.java).singleOrNull()
                     ?: throw Exception("Expecting one and only one ChatState output for transaction $transactionId")
-                messages.add(output.message)
+                messages.add(Pair(output.messageFrom.toString(), output.message))
                 recordsToFetch--
 
                 // check that there is a single input, if not break
