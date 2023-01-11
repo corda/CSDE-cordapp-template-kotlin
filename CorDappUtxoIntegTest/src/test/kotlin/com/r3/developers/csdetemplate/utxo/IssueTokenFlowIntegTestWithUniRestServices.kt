@@ -1,6 +1,7 @@
 package com.r3.developers.csdetemplate.utxo
 
 import com.r3.developers.csdetemplate.utxo.service.FlowService
+import com.r3.developers.csdetemplate.utxo.service.TokenFlowService
 import com.r3.developers.csdetemplate.utxo.service.VNodeService
 import net.corda.libs.virtualnode.types.HoldingIdentity
 import org.junit.jupiter.api.Assertions.*
@@ -52,5 +53,24 @@ internal class IssueTokenFlowIntegTestWithUniRestServices {
         val allAliceFlows = FlowService.listFlows(alice.shortHash)
         assertTrue(allAliceFlows.flowStatusResponses.isNotEmpty())
         allAliceFlows.flowStatusResponses.forEach { println(it) }
+    }
+
+    @Test
+    fun integTest() {
+        val alice = vNodes["Alice"]!!
+        val bob = vNodes["Bob"]!!
+
+        val issueTokenFlow = TokenFlowService.issueToken(alice.shortHash, bob.x500Name, 1)
+        println(issueTokenFlow)
+        assertEquals(alice.shortHash, issueTokenFlow.holdingIdentityShortHash)
+        assertNotNull(issueTokenFlow.clientRequestId)
+
+        TimeUnit.SECONDS.sleep(10)//TODO: emko: re-tries
+
+        val aliceFlow = FlowService.getFlow(alice.shortHash, issueTokenFlow.clientRequestId!!)
+        assertNotNull(aliceFlow)
+        println(aliceFlow)
+
+        //...
     }
 }

@@ -13,5 +13,5 @@ data class StartFlowParameters(
     val clientRequestId: String,
     val flowClassName: String,
 //    val requestData: JsonObject
-    val requestData: Any
+    val requestData: Any?
 )

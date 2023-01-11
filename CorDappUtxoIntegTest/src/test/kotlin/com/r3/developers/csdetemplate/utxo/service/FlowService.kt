@@ -75,7 +75,7 @@ class FlowService {
             throw IOException("${request.url} => ${response.statusText}")
         }
 
-        fun startFlow(holdingIdentityShortHash: String, flowClassName: String, requestData: Any): FlowStatusResponse {
+        fun startFlow(holdingIdentityShortHash: String, flowClassName: String, requestData: Any?): FlowStatusResponse {
             val startFlowParameters: StartFlowParameters = StartFlowParameters(
                 "${flowClassName.split(".").last()}-${UUID.randomUUID()}",
                 flowClassName,
