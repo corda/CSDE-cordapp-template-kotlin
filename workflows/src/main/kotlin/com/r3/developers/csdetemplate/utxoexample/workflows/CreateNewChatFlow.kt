@@ -6,7 +6,6 @@ import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.application.messaging.FlowMessaging
-import net.corda.v5.application.messaging.FlowSession
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
@@ -26,17 +25,14 @@ class CreateNewChatFlow: RPCStartableFlow {
         val log = contextLogger()
     }
 
-    // JsonMarshallingService provides a Service for manipulating json
     @CordaInject
     lateinit var jsonMarshallingService: JsonMarshallingService
 
-    // MemberLookup provides a service for looking up information about members of the Virtual Network which
-    // this CorDapp is operating in.
     @CordaInject
     lateinit var memberLookup: MemberLookup
 
     @CordaInject
-    lateinit var utxoLedgerService: UtxoLedgerService
+    lateinit var ledgerService: UtxoLedgerService
 
     @CordaInject
     lateinit var notaryLookup: NotaryLookup
@@ -44,18 +40,19 @@ class CreateNewChatFlow: RPCStartableFlow {
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
 
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
 
         log.info("CreateNewChatFlow.call() called")
 
         try {
-
             val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, CreateNewChatFlowArgs::class.java)
 
             val myInfo = memberLookup.myInfo()
             val otherMember = memberLookup.lookup(MemberX500Name.parse(flowArgs.otherMember)) ?: throw IllegalArgumentException("can't find other member")
-
 
             val chatState = ChatState(
                 chatName = flowArgs.chatName,
@@ -69,8 +66,7 @@ class CreateNewChatFlow: RPCStartableFlow {
                 it.memberProvidedContext["corda.notary.service.name"] == notary.name.toString()
             }.ledgerKeys.first()
 
-
-            val txBuilder= utxoLedgerService.getTransactionBuilder()
+            val txBuilder= ledgerService.getTransactionBuilder()
                 .setNotary(Party(notary.name, notaryKey))
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
                 .addOutputState(chatState)
@@ -80,20 +76,7 @@ class CreateNewChatFlow: RPCStartableFlow {
             @Suppress("DEPRECATION")
             val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
 
-            val session = flowMessaging.initiateFlow(otherMember.name)
-
-            return try {
-                val finalizedSignedTransaction = utxoLedgerService.finalize(
-                    signedTransaction,
-                    listOf(session)
-                )
-                finalizedSignedTransaction.id.toString().also {
-                    log.info("Success! Response: $it")
-                }
-            } catch (e: Exception) {
-                log.warn("Finality failed", e)
-                "Finality failed, ${e.message}"
-            }
+            return flowEngine.subFlow(AppendChatSubFlow(signedTransaction, otherMember.name))
 
         } catch (e: Exception) {
             log.warn("Failed to process utxo flow for request body '$requestBody' because:'${e.message}'")
@@ -102,30 +85,6 @@ class CreateNewChatFlow: RPCStartableFlow {
     }
 }
 
-@InitiatedBy("create-chat-protocol")
-class CreateNewChatResponderFlow: ResponderFlow {
-
-    private companion object {
-        val log = contextLogger()
-    }
-
-    @CordaInject
-    lateinit var utxoLedgerService: UtxoLedgerService
-
-    @Suspendable
-    override fun call(session: FlowSession) {
-        try {
-            val finalizedSignedTransaction = utxoLedgerService.receiveFinality(session) { ledgerTransaction ->
-                val state = ledgerTransaction.outputContractStates.first() as ChatState
-                if (checkForBannedWords(state.message) && checkMessageFromMatchesCounterparty(state, session.counterparty)) throw IllegalStateException("Failed verification")
-                log.info("Verified the transaction- ${ledgerTransaction.id}")
-            }
-            log.info("Finished responder flow - ${finalizedSignedTransaction.id}")
-        } catch (e: Exception) {
-            log.warn("Exceptionally finished responder flow", e)
-        }
-    }
-}
 
 /*
 RequestBody for triggering the flow via http-rpc:

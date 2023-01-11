@@ -23,14 +23,14 @@ class ListChatsFlow : RPCStartableFlow {
     lateinit var jsonMarshallingService: JsonMarshallingService
 
     @CordaInject
-    lateinit var ledgerService: UtxoLedgerService
+    lateinit var utxoLedgerService: UtxoLedgerService
 
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
 
         log.info("ListChatsFlow.call() called")
 
-        val states = ledgerService.findUnconsumedStatesByType(ChatState::class.java)
+        val states = utxoLedgerService.findUnconsumedStatesByType(ChatState::class.java)
         val results = states.map {
             ChatStateResults(
                 it.state.contractState.id,

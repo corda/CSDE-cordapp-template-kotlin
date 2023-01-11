@@ -11,7 +11,6 @@ import net.corda.v5.ledger.utxo.StateAndRef
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import java.util.*
 
-
 data class GetChatFlowArgs(val id: UUID, val numberOfRecords: Int)
 
 class GetChatFlow: RPCStartableFlow {
@@ -71,7 +70,6 @@ class GetChatFlow: RPCStartableFlow {
                     @Suppress("UNCHECKED_CAST")
                     currentStateAndRef = inputStateAndRefs.single() as StateAndRef<ChatState>
                 }
-
         }
      return messages.toList()
     }
