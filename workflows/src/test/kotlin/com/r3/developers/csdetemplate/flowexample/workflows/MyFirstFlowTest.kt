@@ -1,5 +1,8 @@
-package com.r3.developers.csdetemplate.workflows
+package com.r3.developers.csdetemplate.flowexample.workflows
 
+import com.r3.developers.csdetemplate.flowexample.workflows.MyFirstFlow
+import com.r3.developers.csdetemplate.flowexample.workflows.MyFirstFlowResponder
+import com.r3.developers.csdetemplate.flowexample.workflows.MyFirstFlowStartArgs
 import net.corda.simulator.RequestData
 import net.corda.simulator.Simulator
 import net.corda.v5.base.types.MemberX500Name

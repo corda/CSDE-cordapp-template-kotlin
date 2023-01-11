@@ -1,4 +1,4 @@
-package com.r3.developers.csdetemplate.workflows
+package com.r3.developers.csdetemplate.flowexample.workflows
 
 import net.corda.v5.application.flows.CordaInject
 import net.corda.v5.application.flows.InitiatedBy
@@ -149,7 +149,7 @@ class MyFirstFlowResponder : ResponderFlow {
 RequestBody for triggering the flow via http-rpc:
 {
     "clientRequestId": "r1",
-    "flowClassName": "com.r3.developers.csdetemplate.workflows.MyFirstFlow",
+    "flowClassName": "com.r3.developers.csdetemplate.flowexample.workflows.MyFirstFlow",
     "requestData": {
         "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB"
         }
