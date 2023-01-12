@@ -20,8 +20,13 @@ public class CordaLifeCycleHelper {
         utils = new ProjectUtils(pc);
     }
 
-    public void startCorda() throws IOException {
-        PrintStream pidStore = new PrintStream(new FileOutputStream(pc.cordaPidCache));
+    public void startCorda() throws Exception {
+        File cordaPIDFile = new File(pc.cordaPidCache);
+        if (cordaPIDFile.exists()) {
+            throw new Exception("Cannot start the Combined worker\nCached process ID file " + cordaPIDFile + " existing.\nWas the combined worker already started?");
+        }
+
+        PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPIDFile));
         File combinedWorkerJar = pc.project.getConfigurations().getByName("combinedWorker").getSingleFile();
 
         // todo: make consistent with other ProcessBuilder set ups (use cmdArray)
