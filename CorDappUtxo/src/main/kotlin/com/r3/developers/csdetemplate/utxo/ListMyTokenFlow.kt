@@ -1,8 +1,7 @@
 package com.r3.developers.csdetemplate.utxo
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import net.corda.v5.application.flows.*
+import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger
@@ -24,9 +23,6 @@ class ListMyTokenFlow : RPCStartableFlow {
 
     private companion object {
         val log = contextLogger()
-
-        var mapper = ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     }
 
     @CordaInject
@@ -34,6 +30,9 @@ class ListMyTokenFlow : RPCStartableFlow {
 
     @CordaInject
     lateinit var memberLookup: MemberLookup
+
+    @CordaInject
+    lateinit var jsonMarshallingService: JsonMarshallingService
 
     @Suspendable
     override fun call(requestBody: RPCRequestData): String {
@@ -75,7 +74,7 @@ class ListMyTokenFlow : RPCStartableFlow {
             .map { MyToken(it) }
             .collect(Collectors.toList())
         log.info("\n--- [emko] 2")
-        val writeValueAsString = mapper.writeValueAsString(MyTokens(tokens))
+        val writeValueAsString = jsonMarshallingService.format(MyTokens(tokens))
         log.info("\n--- [emko] $writeValueAsString")
         log.info("\n--- [emko] 3")
         return writeValueAsString

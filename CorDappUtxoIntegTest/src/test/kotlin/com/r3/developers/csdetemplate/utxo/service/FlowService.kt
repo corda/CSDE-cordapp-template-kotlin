@@ -1,12 +1,17 @@
 package com.r3.developers.csdetemplate.utxo.service
 
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kong.unirest.Unirest
 import net.corda.flow.rpcops.v1.types.request.StartFlowParameters
 import net.corda.flow.rpcops.v1.types.response.FlowStatusResponse
 import net.corda.flow.rpcops.v1.types.response.FlowStatusResponses
+import net.corda.v5.base.types.MemberX500Name
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -20,8 +25,16 @@ class FlowService {
     companion object {
         var path = "flow"
 
+        //JsonMarshallingService uses some custom serializers, so we need custom deserializers for that !!!
+        val memberX500NameModule = SimpleModule()
+            .addDeserializer(MemberX500Name::class.java, object : JsonDeserializer<MemberX500Name>() {
+                override fun deserialize(p: JsonParser?, ctxt: DeserializationContext?): MemberX500Name {
+                    return MemberX500Name.parse(p!!.valueAsString)
+                }
+            })
         var mapper: ObjectMapper = jacksonObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .registerModule(memberX500NameModule)
 
         init {
             //TODO: emko: parametrize:
