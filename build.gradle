@@ -49,6 +49,7 @@ allprojects {
     repositories {
         // All dependencies are held in Maven Central
         mavenCentral()
+        mavenLocal()
     }
 
     tasks.withType(Test).configureEach {
