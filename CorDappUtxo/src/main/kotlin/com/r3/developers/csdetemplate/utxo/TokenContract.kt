@@ -1,7 +1,10 @@
 package com.r3.developers.csdetemplate.utxo
 
 import com.r3.developers.csdetemplate.utxo.TokenContract.Commands.Issue
+import net.corda.v5.application.flows.CordaInject
+import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.base.util.contextLogger
+import net.corda.v5.ledger.common.Party
 import net.corda.v5.ledger.utxo.Command
 import net.corda.v5.ledger.utxo.Contract
 import net.corda.v5.ledger.utxo.ContractState
@@ -19,8 +22,15 @@ class TokenContract : Contract {
         val log = contextLogger()
     }
 
+//    //TODO: check is it possible & how it's done to get Corda services in the contract code
+//    @CordaInject
+//    lateinit var memberLookup: MemberLookup
+
     @Throws(IllegalArgumentException::class)
     override fun verify(transaction: UtxoLedgerTransaction) {
+        val commands = transaction.commands
+        require(commands.size == 1) { "Commands must be one, but are ${commands.size}!" }
+
         log.info("\n--- [TokenContract] commands are ${transaction.commands}")
         log.info("\n--- [TokenContract] inputStateRefs count is ${transaction.inputStateRefs.size}")
         log.info("\n--- [TokenContract] inputStateAndRefs count is ${transaction.inputStateAndRefs.size}")
@@ -29,8 +39,6 @@ class TokenContract : Contract {
         log.info("\n--- [TokenContract] outputStateAndRefs count is ${transaction.outputStateAndRefs.size}")
         log.info("\n--- [TokenContract] outputContractStates count is ${transaction.outputContractStates.size}")
 
-        val commands = transaction.commands
-        require(commands.size == 1) { "Commands must be one, but are ${commands.size}!" }
         when (commands[0]) {
             is Issue -> {
                 verifyIssueCmd(transaction)
@@ -48,7 +56,7 @@ class TokenContract : Contract {
         }
     }
 
-    private fun verifyIssueCmd(transaction: UtxoLedgerTransaction) {
+    internal fun verifyIssueCmd(transaction: UtxoLedgerTransaction) {
         //shape == params
         val inputStates = transaction.getInputStates(ContractState::class.java)
         require(inputStates.isEmpty()) { "[Issue] Inputs must be empty!" }
@@ -70,7 +78,12 @@ class TokenContract : Contract {
         }
     }
 
-    private fun verifyMoveAllCmd(transaction: UtxoLedgerTransaction) {
+    internal fun verifyMoveAllCmd(transaction: UtxoLedgerTransaction) {
+        // some duplication, but it's just to have an easy UnitTest example
+        val commands = transaction.commands
+        require(commands.size == 1) { "Commands must be one, but are ${commands.size}!" }
+        val command = commands[0]
+        require(command is Commands.MoveAll) { "The Command must be MoveAll, but is $command!" }
         return
         /* Today I'm not getting any input states :(
         //shape == params
