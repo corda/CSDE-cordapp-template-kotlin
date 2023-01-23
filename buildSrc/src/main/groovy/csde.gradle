@@ -10,6 +10,7 @@
 // todo: add test corda running/live task
 // todo: add a test to check docker is running and display error if not + halt start corda
 // todo: add a clean corda task.
+// todo: fix logging level and make it configurable.
 
 
 import com.r3.csde.CordaLifeCycleHelper
