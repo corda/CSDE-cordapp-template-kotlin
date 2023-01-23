@@ -11,7 +11,7 @@ plugins {
 
 allprojects {
     // todo: this needs changing - need to check what impact it has.
-    group 'com.r3.hellocorda'
+    group 'com.r3.developers.csdetemplate'
     version '1.0-SNAPSHOT'
 
     def javaVersion = VERSION_11
