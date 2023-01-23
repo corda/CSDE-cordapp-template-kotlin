@@ -1,6 +1,7 @@
 package com.r3.developers.csdetemplate.utxoexample.contracts
 
 import com.r3.developers.csdetemplate.utxoexample.states.ChatState
+import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.ledger.utxo.Command
 import net.corda.v5.ledger.utxo.Contract
 import net.corda.v5.ledger.utxo.transaction.UtxoLedgerTransaction
@@ -16,7 +17,7 @@ class ChatContract: Contract {
     override fun verify(transaction: UtxoLedgerTransaction) {
 
         // Ensures that there is only one command in the transaction
-        val command = transaction.commands.singleOrNull() ?: throw Exception("Require a single command ")
+        val command = transaction.commands.singleOrNull() ?: throw CordaRuntimeException("Require a single command ")
 
         // Applies a universal constraint (applies to all transactions irrespective of command)
         "The output state should have two and only two participants" using {
