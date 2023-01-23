@@ -1,7 +1,9 @@
 package com.r3.developers.csdetemplate.utxoexample.workflows
 
 import com.r3.developers.csdetemplate.utxoexample.states.ChatState
+import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.base.types.MemberX500Name
 
 // Note, these exceptions will only be visible in the logs if Corda logging is set to debug.
@@ -11,7 +13,7 @@ import net.corda.v5.base.types.MemberX500Name
 fun checkForBannedWords(str: String) {
     val bannedWords = listOf("banana", "apple", "pear")
     if (bannedWords.any { str.contains(it) })
-        throw IllegalStateException("Failed verification - message contains banned words")
+        throw CordaRuntimeException("Failed verification - message contains banned words")
 }
 
 // Checks that the messageFrom field in the ChatState matches the initiators (otherMember)
@@ -19,5 +21,5 @@ fun checkForBannedWords(str: String) {
 @Suspendable
 fun checkMessageFromMatchesCounterparty(state: ChatState, otherMember: MemberX500Name) {
    if( state.messageFrom != otherMember)
-       throw IllegalStateException("Failed verification - messageFrom does not equal flow initiator")
+       throw CordaRuntimeException("Failed verification - messageFrom does not equal flow initiator memberX500Name")
 }

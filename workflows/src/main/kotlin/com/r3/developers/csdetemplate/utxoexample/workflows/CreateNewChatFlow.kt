@@ -6,6 +6,7 @@ import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.base.util.days
@@ -52,8 +53,12 @@ class CreateNewChatFlow: RPCStartableFlow {
             val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, CreateNewChatFlowArgs::class.java)
 
             // Get MemberInfos for the Vnode running the flow and the otherMember.
+            // Good practice in Kotlin CorDapps is to only throw RuntimeException.
+            // Note, in Java CorDapps only unchecked RuntimeExceptions can be thrown not
+            // declared checked exceptions as this changes the method signature and breaks override.
             val myInfo = memberLookup.myInfo()
-            val otherMember = memberLookup.lookup(MemberX500Name.parse(flowArgs.otherMember)) ?: throw IllegalArgumentException("can't find other member")
+            val otherMember = memberLookup.lookup(MemberX500Name.parse(flowArgs.otherMember)) ?:
+                throw CordaRuntimeException("MemberLookup can't find otherMember specified in flow arguments ")
 
             // Create the ChatState from the input arguments and member information.
             val chatState = ChatState(

@@ -6,6 +6,7 @@ import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.base.util.days
 import net.corda.v5.ledger.utxo.UtxoLedgerService
@@ -53,16 +54,16 @@ class UpdateChatFlow: RPCStartableFlow {
             // Note, you will get this error if you input an id which has no corresponding ChatState (common error).
             val stateAndRef = ledgerService.findUnconsumedStatesByType(ChatState::class.java).singleOrNull {
                 it.state.contractState.id == flowArgs.id
-            } ?: throw Exception("Multiple or zero Chat states with id ${flowArgs.id} found")
+            } ?: throw CordaRuntimeException("Multiple or zero Chat states with id ${flowArgs.id} found")
 
             // Get MemberInfos for the Vnode running the flow and the otherMember.
             val myInfo = memberLookup.myInfo()
             val state = stateAndRef.state.contractState
 
             val members = state.participants.map {
-                memberLookup.lookup(it) ?: throw Exception("Member not found from Key")}
+                memberLookup.lookup(it) ?: throw CordaRuntimeException("Member not found from public key $it")}
             val otherMember = (members - myInfo).singleOrNull()
-                ?: throw Exception("Should be only one participant other than the initiator")
+                ?: throw CordaRuntimeException("Should be only one participant other than the initiator")
 
             // Create a new ChatState using the updateMessage helper function.
             val newChatState = state.updateMessage(myInfo.name, flowArgs.message)
@@ -100,7 +101,7 @@ RequestBody for triggering the flow via http-rpc:
     "clientRequestId": "update-2",
     "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.UpdateChatFlow",
     "requestData": {
-        "id":"e1e0e45d-1b8f-41df-821f-fe3052784f45",
+        "id":"** fill in id **",
         "message": "How are you today?"
         }
 }

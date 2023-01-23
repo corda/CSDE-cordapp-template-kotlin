@@ -5,6 +5,7 @@ import net.corda.v5.application.flows.*
 import net.corda.v5.application.messaging.FlowMessaging
 import net.corda.v5.application.messaging.FlowSession
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.utxo.UtxoLedgerService
@@ -79,7 +80,7 @@ class FinalizeChatResponderFlow: ResponderFlow {
 
                 // Note, this exception will only be shown in the logs if Corda Logging is set to debug.
                 val state = ledgerTransaction.getOutputStates<ChatState>().singleOrNull() ?:
-                    throw IllegalStateException("Failed verification - transaction did not have exactly one output ChatState")
+                    throw CordaRuntimeException("Failed verification - transaction did not have exactly one output ChatState")
 
                 // Uses checkForBannedWords() and checkMessageFromMatchesCounterparty() functions
                 // to check whether to sign the transaction.

@@ -6,6 +6,7 @@ import net.corda.v5.application.flows.RPCRequestData
 import net.corda.v5.application.flows.RPCStartableFlow
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.utxo.StateAndRef
 import net.corda.v5.ledger.utxo.UtxoLedgerService
@@ -45,7 +46,7 @@ class GetChatFlow: RPCStartableFlow {
         // Note, you will get this error if you input an id which has no corresponding ChatState (common error).
         val states = ledgerService.findUnconsumedStatesByType(ChatState::class.java)
         val state = states.singleOrNull {it.state.contractState.id == flowArgs.id}
-            ?: throw Exception("did not find an unique ChatState")
+            ?: throw CordaRuntimeException("Did not find an unique unconsumed ChatState with id ${flowArgs.id}")
 
         // Calls resolveMessagesFromBackchain() which retrieves the chat history from the backchain.
         return jsonMarshallingService.format(resolveMessagesFromBackchain(state, flowArgs.numberOfRecords ))
@@ -72,12 +73,12 @@ class GetChatFlow: RPCStartableFlow {
             // Obtain the transaction id from the current StateAndRef and fetch the transaction from the vault.
             val transactionId = currentStateAndRef.ref.transactionHash
             val transaction = ledgerService.findLedgerTransaction(transactionId)
-                ?: throw Exception("Transaction $transactionId not found")
+                ?: throw CordaRuntimeException("Transaction $transactionId not found")
 
             // Get the output state from the transaction and use it to create a MessageAndSender Object which
             // is appended to the mutable list.
             val output = transaction.getOutputStates(ChatState::class.java).singleOrNull()
-                ?: throw Exception("Expecting one and only one ChatState output for transaction $transactionId")
+                ?: throw CordaRuntimeException("Expecting one and only one ChatState output for transaction $transactionId")
             messages.add(MessageAndSender(output.messageFrom.toString(), output.message))
             // Decrement the number of records to fetch.
             recordsToFetch--
@@ -87,11 +88,11 @@ class GetChatFlow: RPCStartableFlow {
 
             // Check if there are no more input states (start of chain) or we have retrieved enough records.
             // Check the transaction is not malformed by having too many input states.
-            // Set the currentStateAndRef to the input Stateand Ref, then repeat the loop.
+            // Set the currentStateAndRef to the input StateAndRef, then repeat the loop.
             if (inputStateAndRefs.isEmpty() || recordsToFetch == 0) {
                 moreBackchain = false
             } else if (inputStateAndRefs.size > 1) {
-                throw Exception("More than one input state found for transaction $transactionId.")
+                throw CordaRuntimeException("More than one input state found for transaction $transactionId.")
             } else {
                 @Suppress("UNCHECKED_CAST")
                 currentStateAndRef = inputStateAndRefs.single() as StateAndRef<ChatState>
