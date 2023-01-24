@@ -48,7 +48,7 @@ configurations {
 // Dependencies for supporting tools
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
-    myPostgresJDBC 'org.postgresql:postgresql:42.4.1'
+    myPostgresJDBC "org.postgresql:postgresql:$postgresqlVersion"
     notaryServerCPB("com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-server:$cordaNotaryPluginsVersion") {
         artifact {
             classifier = 'package'
