@@ -9,6 +9,7 @@
 // todo: add test corda running/live task
 // todo: add a test to check docker is running and display error if not + halt start corda
 // todo: add a clean corda task.
+// todo: fix logging level and make it configurable.
 
 import com.r3.csde.CordaLifeCycleHelper
 import com.r3.csde.ProjectContext
@@ -43,7 +44,7 @@ configurations {
 // Dependencies for supporting tools
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
-    myPostgresJDBC 'org.postgresql:postgresql:42.4.3'
+    myPostgresJDBC "org.postgresql:postgresql:$postgresqlVersion"
     notaryServerCPB("com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-server:$cordaNotaryPluginsVersion") {
         artifact {
             classifier = 'package'

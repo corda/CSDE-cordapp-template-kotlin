@@ -2,19 +2,15 @@ import static org.gradle.api.JavaVersion.VERSION_11
 
 plugins {
     id 'org.jetbrains.kotlin.jvm'
-
     id 'net.corda.cordapp.cordapp-configuration'
-
     id 'org.jetbrains.kotlin.plugin.jpa'
-
     id 'java'
     id 'maven-publish'
-
     id 'csde'
 }
 
 allprojects {
-    group 'com.r3.hellocorda'
+    group 'com.r3.developers.csdetemplate'
     version '1.0-SNAPSHOT'
 
     def javaVersion = VERSION_11
@@ -49,6 +45,7 @@ allprojects {
     repositories {
         // All dependencies are held in Maven Central
         mavenCentral()
+        mavenLocal()
     }
 
     tasks.withType(Test).configureEach {

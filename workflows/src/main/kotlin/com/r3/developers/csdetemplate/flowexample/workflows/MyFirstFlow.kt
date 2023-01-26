@@ -15,7 +15,7 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.base.util.contextLogger
 
-// A class to hold the arguments required to start the flow
+// A class to hold the deserialized arguments required to start the flow
 class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
 
 // A class which will contain a message, It must be marked with @CordaSerializable for Corda
