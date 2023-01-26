@@ -1,8 +1,8 @@
-package com.r3.developers.csdetemplate.utxo.service
+package com.r3.developers.csdetemplate.utxo.service.unirest
 
-import com.r3.developers.csdetemplate.utxo.MyToken
-import com.r3.developers.csdetemplate.utxo.MyTokens
-import com.r3.developers.csdetemplate.utxo.TokenIssueRequest
+import com.r3.developers.csdetemplate.utxo.dto.MyToken
+import com.r3.developers.csdetemplate.utxo.dto.MyTokens
+import com.r3.developers.csdetemplate.utxo.dto.TokenIssueRequest
 import net.corda.flow.rpcops.v1.types.response.FlowStatusResponse
 
 class TokenFlowService {

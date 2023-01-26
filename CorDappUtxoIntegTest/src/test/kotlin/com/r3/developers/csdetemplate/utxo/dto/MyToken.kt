@@ -1,4 +1,4 @@
-package com.r3.developers.csdetemplate.utxo
+package com.r3.developers.csdetemplate.utxo.dto
 
 import net.corda.v5.base.types.MemberX500Name
 import java.util.*

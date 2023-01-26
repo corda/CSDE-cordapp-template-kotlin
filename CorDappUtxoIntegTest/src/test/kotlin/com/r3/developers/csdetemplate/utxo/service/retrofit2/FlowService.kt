@@ -1,4 +1,4 @@
-package com.r3.developers.csdetemplate.utxo
+package com.r3.developers.csdetemplate.utxo.service.retrofit2
 
 import net.corda.flow.rpcops.v1.types.request.StartFlowParameters
 import net.corda.flow.rpcops.v1.types.response.FlowStatusResponse

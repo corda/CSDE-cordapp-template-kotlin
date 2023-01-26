@@ -1,4 +1,4 @@
-package com.r3.developers.csdetemplate.utxo
+package com.r3.developers.csdetemplate.utxo.dto
 
 data class TokenIssueRequest(
     val amount: Int,

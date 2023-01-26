@@ -6,6 +6,7 @@ import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.application.messaging.FlowMessaging
 import net.corda.v5.application.messaging.FlowSession
+import net.corda.v5.application.messaging.receive
 import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
@@ -104,6 +105,7 @@ class IssueTokenFlow : RPCStartableFlow {
         val signedTx = utxoTxBuilder.toSignedTransaction(meAsAnIssuer.owningKey)
 
         val sessions = listOf(flowMessaging.initiateFlow(ownerParty.name))
+        sessions.forEach { log.info("\n--- [IssueTokenFlow] --- ${it.receive<String>()}") }
         val finalizedTx = utxoLedgerService.finalize(signedTx, sessions)
         log.info("\n--- [IssueTokenFlow] Finalized Tx is $finalizedTx")
         finalizedTx.outputStateAndRefs.map { it.state.contractState }.forEachIndexed { i, it ->
@@ -130,6 +132,7 @@ class IssueTokenRespFlow : ResponderFlow, UtxoTransactionValidator {
     @Suspendable
     override fun call(session: FlowSession) {
         log.info("\n--- [IssueTokenRespFlow] >>>")
+        session.send("emko")
         val finalizedTx = utxoLedgerService.receiveFinality(session, this)
         val resultMessage = finalizedTx.id.toString()
         log.info("\n--- [IssueTokenRespFlow] Finalized Tx Id is $resultMessage")
