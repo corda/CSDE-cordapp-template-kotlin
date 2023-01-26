@@ -17,6 +17,7 @@ import java.net.URI
 internal class IssueTokenFlowIntegTestWithCraft5Http {
 
     @Test
+    //TODO: ask: what else can we get (be provided with) here?
     fun getVNodesTest(http: Http) {
         //TODO: ask: how can this be done in a more general/static/@BeforeAll manner
         http.baseUri = URI("https://localhost:8888/api/v1/")

@@ -1,8 +1,9 @@
-package com.r3.developers.csdetemplate.utxo.service.unirest
+package com.r3.developers.csdetemplate.utxo.service.craft5
 
 import com.r3.developers.csdetemplate.utxo.dto.MyToken
 import com.r3.developers.csdetemplate.utxo.dto.MyTokens
 import com.r3.developers.csdetemplate.utxo.dto.TokenIssueRequest
+import net.corda.craft5.http.Http
 import net.corda.flow.rpcops.v1.types.response.FlowStatusResponse
 
 class TokenFlowService {
@@ -12,6 +13,7 @@ class TokenFlowService {
         private const val ListMyTokenFlow = "com.r3.developers.csdetemplate.utxo.ListMyTokenFlow"
 
         fun issueToken(
+            http: Http,
             holdingIdentityShortHash: String,
             ownerX500Name: String,
             amount: Int,
@@ -20,7 +22,7 @@ class TokenFlowService {
         ): FlowStatusResponse {
             val tokenIssueRequest = TokenIssueRequest(amount, times, ownerX500Name, withEncumbrance)
             val issueTokenFlow: FlowStatusResponse =
-                FlowService.startFlow(holdingIdentityShortHash, IssueTokenFlowName, tokenIssueRequest)
+                FlowService.startFlow(http, holdingIdentityShortHash, IssueTokenFlowName, tokenIssueRequest)
 
             //TODO: can have any "default" actions/checks here
             println("issueToken > $issueTokenFlow")
@@ -30,11 +32,12 @@ class TokenFlowService {
         }
 
         fun listMyTokens(
+            http: Http,
             holdingIdentityShortHash: String
         ): List<MyToken> {
             var listMyTokensFlow: FlowStatusResponse =
-                FlowService.startFlow(holdingIdentityShortHash, ListMyTokenFlow, "")
-            listMyTokensFlow = FlowService.waitForFlowCompletion(listMyTokensFlow)
+                FlowService.startFlow(http, holdingIdentityShortHash, ListMyTokenFlow, "")
+            listMyTokensFlow = FlowService.waitForFlowCompletion(http, listMyTokensFlow)
 
             //TODO: can have any "default" actions/checks here
             println("listMyTokens > $listMyTokensFlow")
