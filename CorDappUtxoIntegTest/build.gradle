@@ -52,12 +52,21 @@ repositories {
             password = System.getenv('CORDA_ARTIFACTORY_PASSWORD')
         }
     }
+    maven {
+        url "https://software.r3.com/artifactory/corda-qa-dev/"
+        credentials {
+            username = System.getenv('CORDA_ARTIFACTORY_USERNAME')
+            password = System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+        }
+    }
 }
 
 dependencies {
     testImplementation "net.corda:corda-base:$cordaApiVersion"
 
     // Required
+    testImplementation "net.craft5:craft5-common:1.0-SNAPSHOT"
+    testImplementation "net.craft5:craft5-http:1.0-SNAPSHOT"
     testImplementation "com.squareup.okhttp3:okhttp:$okhttp3Version"
     testImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
     testImplementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"

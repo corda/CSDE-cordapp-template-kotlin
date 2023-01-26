@@ -78,4 +78,5 @@ bin/
 
 
 **/workspace/
+**/junit_report/*
 /emko/
