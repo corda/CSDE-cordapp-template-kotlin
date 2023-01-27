@@ -1,22 +1,20 @@
 package com.r3.developers.csdetemplate.utxo.service.craft5
 
-import net.corda.craft5.http.Headers
+import com.r3.developers.csdetemplate.utxo.service.craft5.C5RestService.Companion.getResponse
+import com.r3.developers.csdetemplate.utxo.service.craft5.C5RestService.Companion.setupConnection
 import net.corda.craft5.http.Http
-import net.corda.craft5.http.util.json
 import net.corda.libs.virtualnode.types.HoldingIdentity
 import net.corda.libs.virtualnode.types.VirtualNodeInfo
 import net.corda.libs.virtualnode.types.VirtualNodes
 import net.corda.v5.base.types.MemberX500Name
-import java.io.IOException
 import java.net.HttpURLConnection
-import java.net.URI
 
-//TODO: emko: retry
+//TODO: emko: retry -> net.corda.craft5.util.retry ?
 //TODO: emko: error handling
+//TODO: emko: logging -> net.corda.craft5.logging.CraftLogger ?
 class VNodeService {
 
     companion object {
-        var url = "https://localhost:8888/api/v1/"
         var path = "virtualnode"
 
         /*
@@ -24,17 +22,9 @@ class VNodeService {
         This method lists all virtual nodes in the cluster.
          */
         fun listVNodes(http: Http): List<VirtualNodeInfo> {
-            http.baseUri = URI(url)
-            http.baseHeaders = mapOf(
-                Headers.basicAuthorization("admin", "admin")
-            )
-
+            setupConnection(http)
             http.get("virtualnode")
-            val response = http.response()
-            if (response.status() == HttpURLConnection.HTTP_OK) {
-                return response.json<VirtualNodes>().virtualNodes
-            }
-            throw IOException("${response.uri()} => ${response.body()}")
+            return getResponse<VirtualNodes>(http, HttpURLConnection.HTTP_OK).virtualNodes
         }
 
         fun listVNodesMap(http: Http): Map<String, HoldingIdentity> {

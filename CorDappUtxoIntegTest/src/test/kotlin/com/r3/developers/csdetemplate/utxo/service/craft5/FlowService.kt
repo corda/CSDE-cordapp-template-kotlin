@@ -7,23 +7,21 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import net.corda.craft5.http.Headers
+import com.r3.developers.csdetemplate.utxo.service.craft5.C5RestService.Companion.getResponse
+import com.r3.developers.csdetemplate.utxo.service.craft5.C5RestService.Companion.setupConnection
+import net.corda.craft5.common.seconds
 import net.corda.craft5.http.Http
-import net.corda.craft5.http.util.json
+import net.corda.craft5.util.retry
 import net.corda.flow.rpcops.v1.types.request.StartFlowParameters
 import net.corda.flow.rpcops.v1.types.response.FlowStatusResponse
 import net.corda.flow.rpcops.v1.types.response.FlowStatusResponses
 import net.corda.v5.base.types.MemberX500Name
-import java.io.IOException
 import java.net.HttpURLConnection
-import java.net.URI
 import java.util.*
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 
-//TODO: emko: retry
+//TODO: emko: retry -> net.corda.craft5.util.retry ?
 //TODO: emko: error handling
-//TODO: emko: logging
+//TODO: emko: logging -> net.corda.craft5.logging.CraftLogger ?
 class FlowService {
 
     companion object {
@@ -41,16 +39,11 @@ class FlowService {
             .registerModule(memberX500NameModule)
 
         fun waitForFlowCompletion(http: Http, initialFlow: FlowStatusResponse): FlowStatusResponse {
-            TimeUnit.SECONDS.sleep(5)
-            for (i in 0..10) {
+            return retry(attempts = 12, cooldown = 5.seconds) {
                 val flow = getFlow(http, initialFlow.holdingIdentityShortHash, initialFlow.clientRequestId!!)
-                if (flow.flowStatus != "COMPLETED") {
-                    TimeUnit.SECONDS.sleep(5)
-                } else {
-                    return flow
-                }
+                failFalse(flow.flowStatus == "COMPLETED", "Flow is '${flow.flowStatus}', but must be 'COMPLETED'")
+                flow
             }
-            throw TimeoutException()
         }
 
         /*
@@ -59,17 +52,9 @@ class FlowService {
         An empty array is returned if there are no flows running.
          */
         fun listFlows(http: Http, holdingIdentityShortHash: String): FlowStatusResponses {
-            http.baseUri = URI(VNodeService.url)
-            http.baseHeaders = mapOf(
-                Headers.basicAuthorization("admin", "admin")
-            )
-
+            setupConnection(http)
             http.get("$path/$holdingIdentityShortHash")
-            val response = http.response()
-            if (response.status() == HttpURLConnection.HTTP_OK) {
-                return response.json()
-            }
-            throw IOException("${response.uri()} => ${response.body()}")
+            return getResponse(http, HttpURLConnection.HTTP_OK)
         }
 
         /*
@@ -77,17 +62,9 @@ class FlowService {
         This method gets the current status of the specified flow instance.
          */
         fun getFlow(http: Http, holdingIdentityShortHash: String, clientRequestId: String): FlowStatusResponse {
-            http.baseUri = URI(VNodeService.url)
-            http.baseHeaders = mapOf(
-                Headers.basicAuthorization("admin", "admin")
-            )
-
+            setupConnection(http)
             http.get("$path/$holdingIdentityShortHash/$clientRequestId")
-            val response = http.response()
-            if (response.status() == HttpURLConnection.HTTP_OK) {
-                return response.json()
-            }
-            throw IOException("${response.uri()} => ${response.body()}")
+            return getResponse(http, HttpURLConnection.HTTP_OK)
         }
 
         /*
@@ -99,17 +76,9 @@ class FlowService {
             holdingIdentityShortHash: String,
             startFlowParameters: StartFlowParameters
         ): FlowStatusResponse {
-            http.baseUri = URI(VNodeService.url)
-            http.baseHeaders = mapOf(
-                Headers.basicAuthorization("admin", "admin")
-            )
-
+            setupConnection(http)
             http.post("$path/$holdingIdentityShortHash", mapper.writeValueAsString(startFlowParameters))
-            val response = http.response()
-            if (response.status() == HttpURLConnection.HTTP_ACCEPTED) {
-                return response.json()
-            }
-            throw IOException("${response.uri()} => ${response.body()}")
+            return getResponse(http, HttpURLConnection.HTTP_OK)
         }
 
         fun startFlow(

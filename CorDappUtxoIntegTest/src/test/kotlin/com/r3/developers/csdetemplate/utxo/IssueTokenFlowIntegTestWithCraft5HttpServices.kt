@@ -45,15 +45,18 @@ internal class IssueTokenFlowIntegTestWithCraft5HttpServices {
         ...
      */
 
+    companion object {
+        lateinit var http: Http
+    }
+
     @Test
-    //TODO: ask: what else can we get (be provided with) here?
-    fun getVNodesTest(http: Http) {
+    fun getVNodesTest() {
         val vNodes = VNodeService.listVNodes(http)
         assertEquals(5, vNodes.size)
     }
 
     @Test
-    fun postFlowTest(http: Http) {
+    fun postFlowTest() {
         val vNodes: Map<String, HoldingIdentity> = VNodeService.listVNodesMap(HttpImpl())
         val alice = vNodes["Alice"]!!
         val bob = vNodes["Bob"]!!
@@ -74,7 +77,7 @@ internal class IssueTokenFlowIntegTestWithCraft5HttpServices {
     }
 
     @Test
-    fun getFlowsTest(http: Http) {
+    fun getFlowsTest() {
         val vNodes: Map<String, HoldingIdentity> = VNodeService.listVNodesMap(HttpImpl())
         val alice = vNodes["Alice"]!!
 
@@ -84,7 +87,7 @@ internal class IssueTokenFlowIntegTestWithCraft5HttpServices {
     }
 
     @Test
-    fun integTest(http: Http) {
+    fun integTest() {
         val vNodes: Map<String, HoldingIdentity> = VNodeService.listVNodesMap(HttpImpl())
         val alice = vNodes["Alice"]!!
         val bob = vNodes["Bob"]!!

@@ -21,7 +21,7 @@ class TokenFlowService {
             withEncumbrance: Boolean = false
         ): FlowStatusResponse {
             val tokenIssueRequest = TokenIssueRequest(amount, times, ownerX500Name, withEncumbrance)
-            val issueTokenFlow: FlowStatusResponse =
+            val issueTokenFlow =
                 FlowService.startFlow(http, holdingIdentityShortHash, IssueTokenFlowName, tokenIssueRequest)
 
             //TODO: can have any "default" actions/checks here
@@ -35,8 +35,7 @@ class TokenFlowService {
             http: Http,
             holdingIdentityShortHash: String
         ): List<MyToken> {
-            var listMyTokensFlow: FlowStatusResponse =
-                FlowService.startFlow(http, holdingIdentityShortHash, ListMyTokenFlow, "")
+            var listMyTokensFlow = FlowService.startFlow(http, holdingIdentityShortHash, ListMyTokenFlow, "")
             listMyTokensFlow = FlowService.waitForFlowCompletion(http, listMyTokensFlow)
 
             //TODO: can have any "default" actions/checks here
@@ -44,7 +43,6 @@ class TokenFlowService {
             //TODO: depending on the flow response design, we can build an object out of it
 
             val myTokens = FlowService.mapper.readValue(listMyTokensFlow.flowResult, MyTokens::class.java)
-
             return myTokens.myTokens
         }
     }
