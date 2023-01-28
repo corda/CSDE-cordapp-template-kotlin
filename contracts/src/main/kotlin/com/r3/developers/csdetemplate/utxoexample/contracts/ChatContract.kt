@@ -35,7 +35,13 @@ class ChatContract: Contract {
             is Update -> {
                 "When command is Update there should be one and only one input states." using (transaction.inputContractStates.size == 1)
                 "When command is Update there should be one and only one output state." using (transaction.outputContractStates.size == 1)
-                // todo: fields that don't change test
+
+                val input = transaction.inputContractStates.single() as ChatState
+                val output = transaction.outputContractStates.single() as ChatState
+                "When command is Update id must not change" using (input.id == output.id)
+                "When command is Update chatName must not change" using (input.chatName == output.chatName)
+                "When command is Update participants must not change" using (
+                        input.participants.toSet().intersect(output.participants.toSet()).size == 2)
             }
             else -> {
                 throw CordaRuntimeException("Command not allowed.")

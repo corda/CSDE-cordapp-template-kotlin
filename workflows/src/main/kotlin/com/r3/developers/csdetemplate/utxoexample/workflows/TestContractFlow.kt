@@ -16,6 +16,7 @@ import net.corda.v5.ledger.utxo.Command
 import net.corda.v5.ledger.utxo.StateRef
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import java.time.Instant
+import java.util.*
 
 
 data class TestContractFlowArgs(val otherMember: String)
@@ -70,6 +71,8 @@ class TestContractFlow: RPCStartableFlow  {
             // Create a well formed transaction with an output State which can be referenced
             // as an input StateRef in the tests
             lateinit var inputStateRef: StateRef
+            lateinit var chatId: UUID
+
             try {
                 val chatState = ChatState(
                     chatName = "DummyChat",
@@ -77,6 +80,8 @@ class TestContractFlow: RPCStartableFlow  {
                     message = "Dummy Message",
                     participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
                 )
+
+                chatId = chatState.id
 
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
@@ -236,6 +241,7 @@ class TestContractFlow: RPCStartableFlow  {
             results["Zero input State on Update not permitted"] = try {
 
                 val chatState = ChatState(
+                    id = chatId,
                     chatName = "DummyChat",
                     messageFrom = myInfo.name,
                     message = "Dummy Message",
@@ -269,6 +275,7 @@ class TestContractFlow: RPCStartableFlow  {
 
                 log.info("MB: test change")
                 val chatState = ChatState(
+                    id = chatId,
                     chatName = "DummyChat",
                     messageFrom = myInfo.name,
                     message = "Dummy Message",
@@ -308,6 +315,7 @@ class TestContractFlow: RPCStartableFlow  {
             // Two output States on Update not permitted
             results["Two output States on Update not permitted"] = try {
                 val chatState = ChatState(
+                    id = chatId,
                     chatName = "DummyChat",
                     messageFrom = myInfo.name,
                     message = "Dummy Message",
@@ -337,10 +345,100 @@ class TestContractFlow: RPCStartableFlow  {
             }
 
 
+            // On Update id must not change
+            results["On Update id must not change"] = try {
+                val chatState = ChatState(
+                    id = UUID.randomUUID(),
+                    chatName = "DummyChat",
+                    messageFrom = myInfo.name,
+                    message = "Dummy Message",
+                    participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
+                )
+
+                val txBuilder = ledgerService.getTransactionBuilder()
+                    .setNotary(Party(notary.name, notaryKey))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .addInputState(inputStateRef)
+                    .addOutputState(chatState)
+                    .addCommand(ChatContract.Update())
+                    .addSignatories(chatState.participants)
+
+                @Suppress("DEPRECATION", "UNUSED_VARIABLE")
+                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+
+                "Fail"
+            } catch (e:Exception) {
+                val exceptionMessage =  e.message ?: "No exception message"
+                if (exceptionMessage.contains("When command is Update id must not change")) {
+                    "Pass" }
+                else {
+                    "Contract failed but with a different Exception: ${e.message}"
+                }
+            }
 
 
+            // On Update chatName must not change
+            results["On Update chatName must not change"] = try {
+                val chatState = ChatState(
+                    id = chatId,
+                    chatName = "DummyChat Name has changed",
+                    messageFrom = myInfo.name,
+                    message = "Dummy Message",
+                    participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
+                )
+
+                val txBuilder = ledgerService.getTransactionBuilder()
+                    .setNotary(Party(notary.name, notaryKey))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .addInputState(inputStateRef)
+                    .addOutputState(chatState)
+                    .addCommand(ChatContract.Update())
+                    .addSignatories(chatState.participants)
+
+                @Suppress("DEPRECATION", "UNUSED_VARIABLE")
+                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+
+                "Fail"
+            } catch (e:Exception) {
+                val exceptionMessage =  e.message ?: "No exception message"
+                if (exceptionMessage.contains("When command is Update chatName must not change")) {
+                    "Pass" }
+                else {
+                    "Contract failed but with a different Exception: ${e.message}"
+                }
+            }
 
 
+            // On Update participants must not change
+            results["On Update participants must not change"] = try {
+                val chatState = ChatState(
+                    id = chatId,
+                    chatName = "DummyChat",
+                    messageFrom = myInfo.name,
+                    message = "Dummy Message",
+                    participants = listOf(myInfo.ledgerKeys.first(), myInfo.ledgerKeys.first())
+                )
+
+                val txBuilder = ledgerService.getTransactionBuilder()
+                    .setNotary(Party(notary.name, notaryKey))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .addInputState(inputStateRef)
+                    .addOutputState(chatState)
+                    .addCommand(ChatContract.Update())
+                    .addSignatories(chatState.participants)
+
+                @Suppress("DEPRECATION", "UNUSED_VARIABLE")
+                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+
+                "Fail"
+            } catch (e:Exception) {
+                val exceptionMessage =  e.message ?: "No exception message"
+                if (exceptionMessage.contains("When command is Update participants must not change")) {
+                    "Pass" }
+                else {
+                    "Contract failed but with a different Exception: ${e.message}"
+                }
+            }
 
 
             // FakeCommand not permitted
