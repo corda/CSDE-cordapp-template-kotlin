@@ -73,12 +73,12 @@ class GetChatFlow: RPCStartableFlow {
             // Obtain the transaction id from the current StateAndRef and fetch the transaction from the vault.
             val transactionId = currentStateAndRef.ref.transactionHash
             val transaction = ledgerService.findLedgerTransaction(transactionId)
-                ?: throw CordaRuntimeException("Transaction $transactionId not found")
+                ?: throw CordaRuntimeException("Transaction $transactionId not found.")
 
             // Get the output state from the transaction and use it to create a MessageAndSender Object which
             // is appended to the mutable list.
             val output = transaction.getOutputStates(ChatState::class.java).singleOrNull()
-                ?: throw CordaRuntimeException("Expecting one and only one ChatState output for transaction $transactionId")
+                ?: throw CordaRuntimeException("Expecting one and only one ChatState output for transaction $transactionId.")
             messages.add(MessageAndSender(output.messageFrom.toString(), output.message))
             // Decrement the number of records to fetch.
             recordsToFetch--

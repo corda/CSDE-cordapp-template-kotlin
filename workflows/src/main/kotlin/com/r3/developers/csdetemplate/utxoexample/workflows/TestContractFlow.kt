@@ -59,7 +59,7 @@ class TestContractFlow: RPCStartableFlow  {
             val myInfo = memberLookup.myInfo()
 
             val otherMember = memberLookup.lookup(MemberX500Name.parse(flowArgs.otherMember)) ?:
-            throw CordaRuntimeException("MemberLookup can't find otherMember specified in flow arguments ")
+            throw CordaRuntimeException("MemberLookup can't find otherMember specified in flow arguments.")
 
             // Obtain the Notary name and public key.
             val notary = notaryLookup.notaryServices.first()
@@ -97,7 +97,7 @@ class TestContractFlow: RPCStartableFlow  {
                 flowEngine.subFlow(FinalizeChatSubFlow(signedTransaction, otherMember.name))
 
             } catch (e:Exception) {
-                throw CordaRuntimeException("Mock transaction could not be created because of exception: ${e.message}")
+                throw CordaRuntimeException("Set up transaction could not be created because of exception: ${e.message}")
             }
 
 
@@ -262,7 +262,7 @@ class TestContractFlow: RPCStartableFlow  {
 
             } catch (e:Exception) {
                 val exceptionMessage =  e.message ?: "No exception message"
-                if (exceptionMessage.contains("When command is Update there should be one and only one input states.")) {
+                if (exceptionMessage.contains("When command is Update there should be one and only one input state.")) {
                     "Pass" }
                 else {
                     "Contract failed but with a different Exception: ${e.message}"
@@ -298,7 +298,7 @@ class TestContractFlow: RPCStartableFlow  {
 
             } catch (e:Exception) {
                 val exceptionMessage =  e.message ?: "No exception message"
-                if (exceptionMessage.contains("When command is Update there should be one and only one input states.")) {
+                if (exceptionMessage.contains("When command is Update there should be one and only one input state.")) {
                     "Pass" }
                 else {
                     "Contract failed but with a different Exception: ${e.message}"
@@ -401,7 +401,7 @@ class TestContractFlow: RPCStartableFlow  {
                 "Fail"
             } catch (e:Exception) {
                 val exceptionMessage =  e.message ?: "No exception message"
-                if (exceptionMessage.contains("When command is Update chatName must not change")) {
+                if (exceptionMessage.contains("When command is Update chatName must not change.")) {
                     "Pass" }
                 else {
                     "Contract failed but with a different Exception: ${e.message}"
@@ -433,7 +433,7 @@ class TestContractFlow: RPCStartableFlow  {
                 "Fail"
             } catch (e:Exception) {
                 val exceptionMessage =  e.message ?: "No exception message"
-                if (exceptionMessage.contains("When command is Update participants must not change")) {
+                if (exceptionMessage.contains("When command is Update participants must not change.")) {
                     "Pass" }
                 else {
                     "Contract failed but with a different Exception: ${e.message}"

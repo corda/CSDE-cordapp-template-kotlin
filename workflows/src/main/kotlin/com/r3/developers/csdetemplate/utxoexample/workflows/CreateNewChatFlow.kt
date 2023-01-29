@@ -19,7 +19,7 @@ import java.time.Instant
 data class CreateNewChatFlowArgs(val chatName: String, val message: String, val otherMember: String)
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
-@InitiatingFlow("create-chat-protocol")
+//@InitiatingFlow("create-chat-protocol")  //todo: remove this as unnecessary
 class CreateNewChatFlow: RPCStartableFlow {
 
     private companion object {
@@ -58,7 +58,7 @@ class CreateNewChatFlow: RPCStartableFlow {
             // declared checked exceptions as this changes the method signature and breaks override.
             val myInfo = memberLookup.myInfo()
             val otherMember = memberLookup.lookup(MemberX500Name.parse(flowArgs.otherMember)) ?:
-                throw CordaRuntimeException("MemberLookup can't find otherMember specified in flow arguments ")
+                throw CordaRuntimeException("MemberLookup can't find otherMember specified in flow arguments.")
 
             // Create the ChatState from the input arguments and member information.
             val chatState = ChatState(

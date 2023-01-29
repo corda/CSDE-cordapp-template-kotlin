@@ -80,7 +80,7 @@ class FinalizeChatResponderFlow: ResponderFlow {
 
                 // Note, this exception will only be shown in the logs if Corda Logging is set to debug.
                 val state = ledgerTransaction.getOutputStates<ChatState>().singleOrNull() ?:
-                    throw CordaRuntimeException("Failed verification - transaction did not have exactly one output ChatState")
+                    throw CordaRuntimeException("Failed verification - transaction did not have exactly one output ChatState.")
 
                 // Uses checkForBannedWords() and checkMessageFromMatchesCounterparty() functions
                 // to check whether to sign the transaction.

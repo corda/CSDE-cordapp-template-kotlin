@@ -18,7 +18,7 @@ data class UpdateChatFlowArgs(val id: UUID, val message: String)
 
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
-@InitiatingFlow("update-chat-protocol")
+//@InitiatingFlow("update-chat-protocol")
 class UpdateChatFlow: RPCStartableFlow {
 
     private companion object {
@@ -54,16 +54,16 @@ class UpdateChatFlow: RPCStartableFlow {
             // Note, you will get this error if you input an id which has no corresponding ChatState (common error).
             val stateAndRef = ledgerService.findUnconsumedStatesByType(ChatState::class.java).singleOrNull {
                 it.state.contractState.id == flowArgs.id
-            } ?: throw CordaRuntimeException("Multiple or zero Chat states with id ${flowArgs.id} found")
+            } ?: throw CordaRuntimeException("Multiple or zero Chat states with id ${flowArgs.id} found.")
 
             // Get MemberInfos for the Vnode running the flow and the otherMember.
             val myInfo = memberLookup.myInfo()
             val state = stateAndRef.state.contractState
 
             val members = state.participants.map {
-                memberLookup.lookup(it) ?: throw CordaRuntimeException("Member not found from public key $it")}
+                memberLookup.lookup(it) ?: throw CordaRuntimeException("Member not found from public key $it.")}
             val otherMember = (members - myInfo).singleOrNull()
-                ?: throw CordaRuntimeException("Should be only one participant other than the initiator")
+                ?: throw CordaRuntimeException("Should be only one participant other than the initiator.")
 
             // Create a new ChatState using the updateMessage helper function.
             val newChatState = state.updateMessage(myInfo.name, flowArgs.message)
