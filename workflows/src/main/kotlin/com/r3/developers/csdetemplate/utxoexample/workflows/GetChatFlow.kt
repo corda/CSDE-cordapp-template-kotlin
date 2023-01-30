@@ -83,7 +83,7 @@ class GetChatFlow: RPCStartableFlow {
             // Decrement the number of records to fetch.
             recordsToFetch--
 
-            // Get the reference to the input states
+            // Get the reference to the input states.
             val inputStateAndRefs = transaction.inputStateAndRefs
 
             // Check if there are no more input states (start of chain) or we have retrieved enough records.

@@ -13,6 +13,8 @@ import net.corda.v5.ledger.utxo.transaction.UtxoSignedTransaction
 import net.corda.v5.ledger.utxo.transaction.getOutputStates
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
+
+// @InitiatingFlow declares the protocol which will be used to link the initiator to the responder.
 @InitiatingFlow(protocol = "finalize-chat-protocol")
 class FinalizeChatSubFlow(private val signedTransaction: UtxoSignedTransaction, private val otherMember: MemberX500Name): SubFlow<String> {
 
@@ -36,7 +38,7 @@ class FinalizeChatSubFlow(private val signedTransaction: UtxoSignedTransaction, 
             val session = flowMessaging.initiateFlow(otherMember)
 
             return try {
-                // calls the Corda provided finalise() function which gather signatures from the counterparty,
+                // Calls the Corda provided finalise() function which gather signatures from the counterparty,
                 // notarises the transaction and persists the transaction to each party's vault.
                 // On success returns the id of the transaction created. (This is different to the ChatState id)
                 val finalizedSignedTransaction = ledgerService.finalize(
@@ -47,8 +49,9 @@ class FinalizeChatSubFlow(private val signedTransaction: UtxoSignedTransaction, 
                 finalizedSignedTransaction.id.toString().also {
                     log.info("Success! Response: $it")
                 }
+            }
             // Soft fails the flow and returns the error message without throwing a flow exception.
-            } catch (e: Exception) {
+            catch (e: Exception) {
                 log.warn("Finality failed", e)
                 "Finality failed, ${e.message}"
             }
@@ -56,6 +59,8 @@ class FinalizeChatSubFlow(private val signedTransaction: UtxoSignedTransaction, 
 }
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
+
+//@InitiatingBy declares the protocol which will be used to link the initiator to the responder.
 @InitiatedBy("finalize-chat-protocol")
 class FinalizeChatResponderFlow: ResponderFlow {
 
@@ -90,9 +95,9 @@ class FinalizeChatResponderFlow: ResponderFlow {
                 log.info("Verified the transaction- ${ledgerTransaction.id}")
             }
             log.info("Finished responder flow - ${finalizedSignedTransaction.id}")
-
+        }
         // Soft fails the flow and log the exception.
-        } catch (e: Exception) {
+        catch (e: Exception) {
             log.warn("Exceptionally finished responder flow", e)
         }
     }

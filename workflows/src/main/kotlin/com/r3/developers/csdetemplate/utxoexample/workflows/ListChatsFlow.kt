@@ -37,7 +37,7 @@ class ListChatsFlow : RPCStartableFlow {
 
         log.info("ListChatsFlow.call() called")
 
-        // Queries the VNode's vault for unconsumed states and converts the result to a serializable DTO DTO.
+        // Queries the VNode's vault for unconsumed states and converts the result to a serializable DTO.
         val states = ledgerService.findUnconsumedStatesByType(ChatState::class.java)
         val results = states.map {
             ChatStateResults(
