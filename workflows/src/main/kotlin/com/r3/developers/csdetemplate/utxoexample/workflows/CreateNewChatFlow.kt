@@ -19,7 +19,6 @@ import java.time.Instant
 data class CreateNewChatFlowArgs(val chatName: String, val message: String, val otherMember: String)
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
-@InitiatingFlow("create-chat-protocol")
 class CreateNewChatFlow: RPCStartableFlow {
 
     private companion object {
@@ -32,7 +31,7 @@ class CreateNewChatFlow: RPCStartableFlow {
     @CordaInject
     lateinit var memberLookup: MemberLookup
 
-    // Injects the UtxoLedgerService to enable the flow to make use of the Ledger API
+    // Injects the UtxoLedgerService to enable the flow to make use of the Ledger API.
     @CordaInject
     lateinit var ledgerService: UtxoLedgerService
 
@@ -58,7 +57,7 @@ class CreateNewChatFlow: RPCStartableFlow {
             // declared checked exceptions as this changes the method signature and breaks override.
             val myInfo = memberLookup.myInfo()
             val otherMember = memberLookup.lookup(MemberX500Name.parse(flowArgs.otherMember)) ?:
-                throw CordaRuntimeException("MemberLookup can't find otherMember specified in flow arguments ")
+                throw CordaRuntimeException("MemberLookup can't find otherMember specified in flow arguments.")
 
             // Create the ChatState from the input arguments and member information.
             val chatState = ChatState(
@@ -87,13 +86,15 @@ class CreateNewChatFlow: RPCStartableFlow {
             @Suppress("DEPRECATION")
             val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
 
-            // Call AppendChatSubFlow which will finalise the transaction.
+            // Call FinalizeChatSubFlow which will finalise the transaction.
             // If successful the flow will return a String of the created transaction id,
             // if not successful it will return an error message.
             return flowEngine.subFlow(FinalizeChatSubFlow(signedTransaction, otherMember.name))
 
+
+        }
         // Catch any exceptions, log them and rethrow the exception.
-        } catch (e: Exception) {
+        catch (e: Exception) {
             log.warn("Failed to process utxo flow for request body '$requestBody' because:'${e.message}'")
             throw e
         }

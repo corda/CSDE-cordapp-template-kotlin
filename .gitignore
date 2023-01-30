@@ -77,11 +77,12 @@ bin/
 
 
 
-GroupPolicy.json
 *.cpi
 *.cpb
 *.cpk
-CordaPID.dat
-*.pem
-*.pfx
-CPIFileStatus*.json
+workspace/**
+#CordaPID.dat
+#*.pem
+#*.pfx
+#CPIFileStatus*.json
+#GroupPolicy.json
