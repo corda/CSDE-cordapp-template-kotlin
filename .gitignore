@@ -81,8 +81,3 @@ bin/
 *.cpb
 *.cpk
 workspace/**
-#CordaPID.dat
-#*.pem
-#*.pfx
-#CPIFileStatus*.json
-#GroupPolicy.json

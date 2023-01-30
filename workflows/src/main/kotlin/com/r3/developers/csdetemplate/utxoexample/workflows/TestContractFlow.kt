@@ -136,18 +136,6 @@ class TestContractFlow: RPCStartableFlow  {
                 }
             }
 
-            "{Multiple Commands not permitted=Pass, " +
-                    "ChatState with 3 Participants not permitted=Pass," +
-                    " Input State on Create not permitted=Pass, " +
-                    "Two output States on Create not permitted=Pass, " +
-                    "Zero input State on Update not permitted=Pass, " +
-                    "Two Input State on Update not permitted=Pass, " +
-                    "Two output States on Update not permitted=Pass, " +
-                    "On Update id must not change=Pass, " +
-                    "On Update chatName must not change=Pass, " +
-                    "On Update participants must not change=Pass, " +
-                    "FakeCommand not permitted=Pass}"
-
 
             // ChatState with 3 Participants not permitted
             results["ChatState with 3 Participants not permitted"]  = try {
