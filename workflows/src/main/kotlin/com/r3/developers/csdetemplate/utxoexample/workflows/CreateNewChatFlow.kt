@@ -19,7 +19,6 @@ import java.time.Instant
 data class CreateNewChatFlowArgs(val chatName: String, val message: String, val otherMember: String)
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
-//@InitiatingFlow("create-chat-protocol")  //todo: remove this as unnecessary
 class CreateNewChatFlow: RPCStartableFlow {
 
     private companion object {
