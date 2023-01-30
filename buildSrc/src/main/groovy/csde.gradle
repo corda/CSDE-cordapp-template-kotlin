@@ -134,7 +134,11 @@ tasks.register("startCorda") {
     dependsOn('getDevCordaLite', 'getPostgresJDBC')
     doLast {
         mkdir devEnvWorkspace
-        cordaLifeCycle.startCorda()
+        // Default port number to be used by Corda 5 workers
+        // However, note that using port 7000 on macOS may not be able to start the process
+        // because this port is used by AirPlay by default
+        def port = Integer.parseInt(project.findProperty("port") ?: "7000")
+        cordaLifeCycle.startCorda(port)
     }
 }
 
