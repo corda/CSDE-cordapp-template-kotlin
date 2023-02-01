@@ -181,7 +181,7 @@ public class DeployCPIsHelper {
         }
         else {
             pc.out.println("CPI already uploaded doing a 'force' upload.");
-            forceuploadCPI(cpiFName);
+            forceuploadCPI(cpiFName, uploadStatusQualifier);
         }
     }
 
