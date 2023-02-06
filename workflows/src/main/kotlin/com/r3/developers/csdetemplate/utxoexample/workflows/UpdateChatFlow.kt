@@ -18,7 +18,6 @@ data class UpdateChatFlowArgs(val id: UUID, val message: String)
 
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
-@InitiatingFlow("update-chat-protocol")
 class UpdateChatFlow: RPCStartableFlow {
 
     private companion object {
@@ -54,16 +53,16 @@ class UpdateChatFlow: RPCStartableFlow {
             // Note, you will get this error if you input an id which has no corresponding ChatState (common error).
             val stateAndRef = ledgerService.findUnconsumedStatesByType(ChatState::class.java).singleOrNull {
                 it.state.contractState.id == flowArgs.id
-            } ?: throw CordaRuntimeException("Multiple or zero Chat states with id ${flowArgs.id} found")
+            } ?: throw CordaRuntimeException("Multiple or zero Chat states with id ${flowArgs.id} found.")
 
             // Get MemberInfos for the Vnode running the flow and the otherMember.
             val myInfo = memberLookup.myInfo()
             val state = stateAndRef.state.contractState
 
             val members = state.participants.map {
-                memberLookup.lookup(it) ?: throw CordaRuntimeException("Member not found from public key $it")}
+                memberLookup.lookup(it) ?: throw CordaRuntimeException("Member not found from public key $it.")}
             val otherMember = (members - myInfo).singleOrNull()
-                ?: throw CordaRuntimeException("Should be only one participant other than the initiator")
+                ?: throw CordaRuntimeException("Should be only one participant other than the initiator.")
 
             // Create a new ChatState using the updateMessage helper function.
             val newChatState = state.updateMessage(myInfo.name, flowArgs.message)
@@ -82,13 +81,15 @@ class UpdateChatFlow: RPCStartableFlow {
             @Suppress("DEPRECATION")
             val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
 
-            // Call AppendChatSubFlow which will finalise the transaction.
+            // Call FinalizeChatSubFlow which will finalise the transaction.
             // If successful the flow will return a String of the created transaction id,
             // if not successful it will return an error message.
             return flowEngine.subFlow(FinalizeChatSubFlow(signedTransaction, otherMember.name))
 
+
+        }
         // Catch any exceptions, log them and rethrow the exception.
-        } catch (e: Exception) {
+        catch (e: Exception) {
             log.warn("Failed to process utxo flow for request body '$requestBody' because:'${e.message}'")
             throw e
         }
