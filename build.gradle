@@ -60,6 +60,30 @@ allprojects {
 
 }
 
+
+// Dependencies for supporting tools
+configurations {
+    notaryServerCPBLocal {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+}
+
+dependencies {
+    notaryServerCPBLocal("com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-server:$cordaNotaryPluginsVersion") {
+        artifact {
+            classifier = 'package'
+            extension = 'cpb'
+        }
+    }
+}
+
+tasks.register("getNotaryServerCPBLocal", Copy) {
+    def  cordaBinDir = System.getenv("CSDE_CORDA_BIN") ?: System.getProperty('user.home') + "/.corda/corda5"
+    from configurations.notaryServerCPBLocal
+    into  "$cordaBinDir/notaryserver"
+}
+
 publishing {
     publications {
             maven(MavenPublication) {
