@@ -7,6 +7,8 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'csde'
+    // TODO: replace buildSrc csde
+    id 'net.corda.plugins.csde-automation'
 }
 
 allprojects {
@@ -14,6 +16,10 @@ allprojects {
     version '1.0-SNAPSHOT'
 
     def javaVersion = VERSION_11
+
+    csde {
+        baseURL = "https://192.168.0.1:8888"
+    }
 
     // Declare the set of Kotlin compiler options we need to build a CorDapp.
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {

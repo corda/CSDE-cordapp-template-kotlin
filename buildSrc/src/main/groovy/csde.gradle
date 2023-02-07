@@ -49,12 +49,16 @@ configurations {
 dependencies {
     combinedWorker "net.corda:corda-combined-worker:$combinedWorkerVersion"
     myPostgresJDBC "org.postgresql:postgresql:$postgresqlVersion"
+
     notaryServerCPB("com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-server:$cordaNotaryPluginsVersion") {
         artifact {
             classifier = 'package'
             extension = 'cpb'
         }
     }
+
+
+    //notaryServerCPB("com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-server:$cordaNotaryPluginsVersion")
 
     implementation "org.codehaus.groovy:groovy-json:3.0.9"
 }

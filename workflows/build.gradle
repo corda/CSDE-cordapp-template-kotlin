@@ -4,6 +4,7 @@ plugins {
     // This includes a CorDapp DSL that allows the developer to supply metadata for the CorDapp
     // required by Corda.
     id 'net.corda.plugins.cordapp-cpb2'
+
     id 'org.jetbrains.kotlin.jvm'
     id 'maven-publish'
 }
