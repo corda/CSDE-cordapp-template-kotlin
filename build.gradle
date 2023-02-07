@@ -6,8 +6,6 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.jpa'
     id 'java'
     id 'maven-publish'
-    id 'csde'
-    // TODO: replace buildSrc csde
     id 'net.corda.plugins.csde-automation'
 }
 
@@ -18,7 +16,9 @@ allprojects {
     def javaVersion = VERSION_11
 
     csde {
-        baseURL = "https://192.168.0.1:8888"
+        baseURL = "https://localhost:8888"
+        combinedWorkerVersion = "5.0.0.0-Fox1.1"
+        cordaNotaryVersion = "$cordaNotaryPluginsVersion"
     }
 
     // Declare the set of Kotlin compiler options we need to build a CorDapp.
@@ -78,7 +78,7 @@ dependencies {
     }
 }
 
-tasks.register("getNotaryServerCPBLocal", Copy) {
+tasks.register("getNotaryServerCPB", Copy) {
     def  cordaBinDir = System.getenv("CSDE_CORDA_BIN") ?: System.getProperty('user.home') + "/.corda/corda5"
     from configurations.notaryServerCPBLocal
     into  "$cordaBinDir/notaryserver"
