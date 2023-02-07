@@ -9,8 +9,12 @@ import java.util.*
 
 @CordaSerializable
 @BelongsToContract(TokenContract::class)
-data class TokenState(val issuer: Party, val owner: Party, val amount: Int, val id: UUID = UUID.randomUUID()) :
-    ContractState {
+data class TokenState(
+    val issuer: Party,
+    val owner: Party, //!
+    val amount: Int, //!
+    val id: UUID = UUID.randomUUID()
+) : ContractState {
 
     override val participants: List<PublicKey>
         get() = listOf(issuer.owningKey, owner.owningKey)
