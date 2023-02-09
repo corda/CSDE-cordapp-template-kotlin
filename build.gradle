@@ -6,7 +6,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.jpa'
     id 'java'
     id 'maven-publish'
-    id 'net.corda.plugins.csde-automation'
+    id 'net.corda.plugins.csde'
 }
 
 allprojects {
