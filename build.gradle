@@ -16,9 +16,14 @@ allprojects {
     def javaVersion = VERSION_11
 
     csde {
-        baseURL = "https://localhost:8888"
+        cordaClusterURL = "https://localhost:8888"
         combinedWorkerVersion = "5.0.0.0-Fox1.1"
-        cordaNotaryVersion = "$cordaNotaryPluginsVersion"
+        cordaNotaryVersion = cordaNotaryPluginsVersion
+        postgresJdbcVersion = "42.4.3"
+        //cordaRpcUser = "admin"
+        //cordaRpcPassword = "admin"
+        //csdeWorkspaceDir = "workspace"
+        //cordaDbContainerName = "CSDEpostgresql"
     }
 
     // Declare the set of Kotlin compiler options we need to build a CorDapp.
@@ -58,30 +63,6 @@ allprojects {
         useJUnitPlatform()
     }
 
-}
-
-
-// Dependencies for supporting tools
-configurations {
-    notaryServerCPBLocal {
-        canBeConsumed = false
-        canBeResolved = true
-    }
-}
-
-dependencies {
-    notaryServerCPBLocal("com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-server:$cordaNotaryPluginsVersion") {
-        artifact {
-            classifier = 'package'
-            extension = 'cpb'
-        }
-    }
-}
-
-tasks.register("getNotaryServerCPB", Copy) {
-    def  cordaBinDir = System.getenv("CSDE_CORDA_BIN") ?: System.getProperty('user.home') + "/.corda/corda5"
-    from configurations.notaryServerCPBLocal
-    into  "$cordaBinDir/notaryserver"
 }
 
 publishing {
