@@ -21,7 +21,7 @@ public class CordaLifeCycleHelper {
     }
 
 
-    public void startCorda() throws IOException {
+    public void startCorda(Integer port) throws IOException {
         PrintStream pidStore = new PrintStream(new FileOutputStream(pc.cordaPidCache));
         File combinedWorkerJar = pc.project.getConfigurations().getByName("combinedWorker").getSingleFile();
 
@@ -45,6 +45,7 @@ public class CordaLifeCycleHelper {
                 "-jar",
                 combinedWorkerJar.toString(),
                 "--instanceId=0",
+                "-p="+port,
                 "-mbus.busType=DATABASE",
                 "-spassphrase=password",
                 "-ssalt=salt",
