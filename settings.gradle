@@ -4,6 +4,9 @@ pluginManagement {
         gradlePluginPortal()
         mavenCentral()
         mavenLocal()
+        maven {
+            url = "$artifactoryContextUrl/"
+        }
     }
 
     //  The plugin dependencies with versions of the plugins congruent with the specified CorDapp plugin version,
