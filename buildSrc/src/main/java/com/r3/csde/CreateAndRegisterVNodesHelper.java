@@ -7,7 +7,7 @@ import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 import net.corda.v5.base.types.MemberX500Name;
-import org.jetbrains.annotations.NotNull;
+//import org.jetbrains.annotations.NotNull;
 
 import javax.naming.ConfigurationException;
 import java.io.FileInputStream;
@@ -133,11 +133,11 @@ public class CreateAndRegisterVNodesHelper {
         pollForCompleteMembershipRegistration(OKHoldingX500AndShortIds);
     }
 
-    public String getLastCPIUploadChkSum(@NotNull String CPIUploadStatusFName) throws IOException, NullPointerException {
+    public String getLastCPIUploadChkSum(String CPIUploadStatusFName) throws IOException, NullPointerException {
         return getLastCPIUploadChkSum(CPIUploadStatusFName, "");
     }
 
-    public String getLastCPIUploadChkSum(@NotNull String CPIUploadStatusFName,
+    public String getLastCPIUploadChkSum(String CPIUploadStatusFName,
                                                 String uploadStatusQualifier) throws IOException, NullPointerException {
 
         String qualifiedCPIUploadStatusFName =
