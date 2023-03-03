@@ -1,15 +1,15 @@
 package com.r3.developers.csdetemplate.utxoexample.workflows
 
 import com.r3.developers.csdetemplate.utxoexample.states.ChatState
+import net.corda.v5.application.flows.ClientRequestBody
+import net.corda.v5.application.flows.ClientStartableFlow
 import net.corda.v5.application.flows.CordaInject
-import net.corda.v5.application.flows.RPCRequestData
-import net.corda.v5.application.flows.RPCStartableFlow
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.exceptions.CordaRuntimeException
-import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.utxo.StateAndRef
 import net.corda.v5.ledger.utxo.UtxoLedgerService
+import org.slf4j.LoggerFactory
 import java.util.*
 
 // A class to hold the deserialized arguments required to start the flow.
@@ -19,10 +19,10 @@ data class GetChatFlowArgs(val id: UUID, val numberOfRecords: Int)
 data class MessageAndSender(val messageFrom: String, val message: String)
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
-class GetChatFlow: RPCStartableFlow {
+class GetChatFlow: ClientStartableFlow {
 
     private companion object {
-        val log = contextLogger()
+        val log = LoggerFactory.getLogger(this::class.java.enclosingClass)
     }
 
     @CordaInject
@@ -33,7 +33,7 @@ class GetChatFlow: RPCStartableFlow {
     lateinit var ledgerService: UtxoLedgerService
 
     @Suspendable
-    override fun call(requestBody: RPCRequestData): String {
+    override fun call(requestBody: ClientRequestBody): String {
 
         log.info("GetChatFlow.call() called")
 
@@ -71,7 +71,7 @@ class GetChatFlow: RPCStartableFlow {
         while (moreBackchain) {
 
             // Obtain the transaction id from the current StateAndRef and fetch the transaction from the vault.
-            val transactionId = currentStateAndRef.ref.transactionHash
+            val transactionId = currentStateAndRef.ref.transactionId
             val transaction = ledgerService.findLedgerTransaction(transactionId)
                 ?: throw CordaRuntimeException("Transaction $transactionId not found.")
 

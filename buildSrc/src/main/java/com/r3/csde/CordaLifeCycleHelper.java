@@ -26,6 +26,8 @@ public class CordaLifeCycleHelper {
         File combinedWorkerJar = pc.project.getConfigurations().getByName("combinedWorker").getSingleFile();
 
 
+        //docker run -d --rm -p5432:5432 --name CSDEpostgresql -e POSTGRES_DB=cordacluster -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password postgres:latest
+
         // todo: make consistent with other ProcessBuilder set ups (use cmdArray)
         new ProcessBuilder(
                 "docker",
@@ -39,16 +41,38 @@ public class CordaLifeCycleHelper {
         // todo: is there a better way of doing this - ie poll for readiness
         utils.rpcWait(10000);
 
+        //from code
+
+//         java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 \
+//         -Dco.paralleluniverse.fibers.verifyInstrumentation=true \
+//         -jar net.corda:corda-combined-worker:5.0.0.0-Gecko2.0-HC04 \
+//         --instanceId=0 -mbus.busType=DATABASE \
+//         -spassphrase=password -ssalt=salt \
+//         -ddatabase.user=user -ddatabase.pass=password \
+//         -ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster \
+//         -ddatabase.jdbc.directory=~/.corda/corda5/jdbcDrivers
+
+        // from docs (modified)
+
+//         java -jar -Dco.paralleluniverse.fibers.verifyInstrumentation=true \
+//          /Users/matthew.bradbury/.corda/corda5/corda-combined-worker-5.0.0.0-Gecko2.0-HC04.jar \
+//          --instance-id=0 -mbus.busType=DATABASE  \
+//          -spassphrase=password -ssalt=salt \
+//          -ddatabase.user=user -ddatabase.pass=password \
+//          -ddatabase.jdbc.directory=~/.corda/corda5/jdbcDrivers \
+//          -ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster
+
+
         ProcessBuilder procBuild = new ProcessBuilder(pc.javaBinDir + "/java",
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
                 "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
                 "-jar",
                 combinedWorkerJar.toString(),
-                "--instanceId=0",
+                "--instance-id=0",
                 "-mbus.busType=DATABASE",
                 "-spassphrase=password",
-                "-ssalt=salt",
-                "-spassphrase=password",
+//                "-ssalt=salt",
+//                "-spassphrase=password",
                 "-ssalt=salt",
                 "-ddatabase.user=user",
                 "-ddatabase.pass=password",

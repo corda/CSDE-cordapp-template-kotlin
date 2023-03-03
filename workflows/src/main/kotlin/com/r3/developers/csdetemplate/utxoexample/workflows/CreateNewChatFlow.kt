@@ -8,21 +8,21 @@ import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.base.types.MemberX500Name
-import net.corda.v5.base.util.contextLogger
-import net.corda.v5.base.util.days
 import net.corda.v5.ledger.common.NotaryLookup
 import net.corda.v5.ledger.common.Party
 import net.corda.v5.ledger.utxo.UtxoLedgerService
+import org.slf4j.LoggerFactory
+import java.time.Duration
 import java.time.Instant
 
 // A class to hold the deserialized arguments required to start the flow.
 data class CreateNewChatFlowArgs(val chatName: String, val message: String, val otherMember: String)
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
-class CreateNewChatFlow: RPCStartableFlow {
+class CreateNewChatFlow: ClientStartableFlow {
 
     private companion object {
-        val log = contextLogger()
+        val log = LoggerFactory.getLogger(this::class.java.enclosingClass)
     }
 
     @CordaInject
@@ -43,7 +43,7 @@ class CreateNewChatFlow: RPCStartableFlow {
     lateinit var flowEngine: FlowEngine
 
     @Suspendable
-    override fun call(requestBody: RPCRequestData): String {
+    override fun call(requestBody: ClientRequestBody): String {
 
         log.info("CreateNewChatFlow.call() called")
 
@@ -76,15 +76,15 @@ class CreateNewChatFlow: RPCStartableFlow {
             // Use UTXOTransactionBuilder to build up the draft transaction.
             val txBuilder= ledgerService.getTransactionBuilder()
                 .setNotary(Party(notary.name, notaryKey))
-                .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                 .addOutputState(chatState)
                 .addCommand(ChatContract.Create())
                 .addSignatories(chatState.participants)
 
-            // Convert the transaction builder to a UTXOSignedTransaction and sign with this Vnode's first Ledger key.
-            // Note, toSignedTransaction() is currently a placeholder method, hence being marked as deprecated.
-            @Suppress("DEPRECATION")
-            val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+            // Convert the transaction builder to a UTXOSignedTransaction. Verifies the content of the
+            // UtxoTransactionBuilder and signs the transaction with any required signatories that belong to
+            // the current node.
+            val signedTransaction = txBuilder.toSignedTransaction()
 
             // Call FinalizeChatSubFlow which will finalise the transaction.
             // If successful the flow will return a String of the created transaction id,
