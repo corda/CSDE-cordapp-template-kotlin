@@ -18,7 +18,8 @@ dependencies {
     // NB:
     //   Kotlin's kotlin-osgi-bundle does not provide all of the Kotlin API that is required,
     //   There is no kotlin-stdlib-jdk11, but one is not needed even though we are targetting Java 11.
-    cordaProvided 'net.corda.kotlin:kotlin-stdlib-jdk8-osgi'
+//    cordaProvided 'net.corda.kotlin:kotlin-stdlib-jdk8-osgi'
+    cordaProvided 'org.jetbrains.kotlin:kotlin-osgi-bundle'  //todo: tidy comments
 
     // Declare a "platform" so that we use the correct set of dependency versions for the version of the
     // Corda API specified.

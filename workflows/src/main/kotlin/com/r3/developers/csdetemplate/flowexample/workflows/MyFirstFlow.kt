@@ -149,7 +149,7 @@ RequestBody for triggering the flow via http-rpc:
 {
     "clientRequestId": "r1",
     "flowClassName": "com.r3.developers.csdetemplate.flowexample.workflows.MyFirstFlow",
-    "requestData": {
+    "requestBody": {
         "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB"
         }
 }

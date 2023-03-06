@@ -213,6 +213,27 @@ public class CreateAndRegisterVNodesHelper {
                         : ""
         );
 
+        // todo: START HERE - fix createAndRegisterVNodes, first work out why the createChatFLow times out (see logs line 4283)
+
+        /*
+Example requestBodies
+{
+  "action": "requestJoin",
+  "context": {
+    "corda.key.scheme": "CORDA.ECDSA.SECP256R1",
+    "corda.roles.0" : "notary",
+    "corda.notary.service.name" : "CN=NotaryService, OU=Test Dept, O=R3, L=London, C=GB",
+    "corda.notary.service.plugin" : "net.corda.notary.NonValidatingNotary" }
+}
+
+{
+  "action": "requestJoin",
+  "context": {
+    "corda.key.scheme": "CORDA.ECDSA.SECP256R1"
+   }
+}
+         */
+
         return "{ \"memberRegistrationRequest\": { \"action\": \"requestJoin\",  \"context\": { " + context + " } } }";
     }
 

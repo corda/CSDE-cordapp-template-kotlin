@@ -68,14 +68,17 @@ class CreateNewChatFlow: ClientStartableFlow {
             )
 
             // Obtain the Notary name and public key.
-            val notary = notaryLookup.notaryServices.first()
-            val notaryKey = memberLookup.lookup().first {
-                it.memberProvidedContext["corda.notary.service.name"] == notary.name.toString()
-            }.ledgerKeys.first()
+
+            val notary = notaryLookup.notaryServices.single()
+
+//            val notary = notaryLookup.notaryServices.first()
+//            val notaryKey = memberLookup.lookup().first {
+//                it.memberProvidedContext["corda.notary.service.name"] == notary.name.toString()
+//            }.ledgerKeys.first()
 
             // Use UTXOTransactionBuilder to build up the draft transaction.
             val txBuilder= ledgerService.getTransactionBuilder()
-                .setNotary(Party(notary.name, notaryKey))
+                .setNotary(Party(notary.name, notary.publicKey))
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                 .addOutputState(chatState)
                 .addCommand(ChatContract.Create())
@@ -107,7 +110,7 @@ RequestBody for triggering the flow via http-rpc:
 {
     "clientRequestId": "create-1",
     "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.CreateNewChatFlow",
-    "requestData": {
+    "requestBody": {
         "chatName":"Chat with Bob",
         "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB",
         "message": "Hello Bob"

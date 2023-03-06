@@ -108,7 +108,7 @@ RequestBody for triggering the flow via http-rpc:
 {
     "clientRequestId": "get-1",
     "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.GetChatFlow",
-    "requestData": {
+    "requestBody": {
         "id":"** fill in id **",
         "numberOfRecords":"4"
     }

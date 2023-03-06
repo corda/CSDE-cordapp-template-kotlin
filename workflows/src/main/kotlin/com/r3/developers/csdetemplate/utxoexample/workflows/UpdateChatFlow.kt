@@ -101,7 +101,7 @@ RequestBody for triggering the flow via http-rpc:
 {
     "clientRequestId": "update-2",
     "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.UpdateChatFlow",
-    "requestData": {
+    "requestBody": {
         "id":"** fill in id **",
         "message": "How are you today?"
         }

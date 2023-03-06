@@ -56,6 +56,6 @@ RequestBody for triggering the flow via http-rpc:
 {
     "clientRequestId": "list-1",
     "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.ListChatsFlow",
-    "requestData": {}
+    "requestBody": {}
 }
 */

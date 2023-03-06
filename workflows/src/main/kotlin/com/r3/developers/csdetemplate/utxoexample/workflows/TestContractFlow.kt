@@ -482,11 +482,6 @@ class TestContractFlow: ClientStartableFlow  {
             log.warn("Failed to process utxo flow for request body '$requestBody' because:'${e.message}'")
             throw e
         }
-
-
-
-
-
     }
 
 }
@@ -494,8 +489,8 @@ class TestContractFlow: ClientStartableFlow  {
 {
     "clientRequestId": "dummy-1",
     "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.TestContractFlow",
-    "requestData": {
-    "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB"
+    "requestBody": {
+        "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB"
     }
 }
 
