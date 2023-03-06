@@ -20,6 +20,7 @@ import com.r3.csde.BuildCPIsHelper
 import com.r3.csde.ProjectUtils
 import com.r3.csde.CordaStatusQueries
 import com.r3.csde.CreateAndRegisterVNodesHelper
+import com.r3.csde.VNodesHelper
 
 plugins {
     id 'java-library'
@@ -250,5 +251,11 @@ tasks.register('quickDeployCordapp') {
     dependsOn("5-createAndRegVNodes")
 }
 
+def vNodesHelper = new VNodesHelper(projectContext)
 
-
+tasks.register('vnodeHelper') {
+    group = cordappGroup
+    doLast {
+        vNodesHelper.vNodesSetup()
+    }
+}
