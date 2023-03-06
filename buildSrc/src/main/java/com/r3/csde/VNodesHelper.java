@@ -13,23 +13,29 @@ public class VNodesHelper {
         utils = new ProjectUtils(pc);
     }
 
-    void test()
-    {
-        pc.out.println("MB: test");
-    }
-
     public void vNodesSetup() throws IOException {
 
-        // get x500 Names for Network
+        pc.out.println(pc.X500ConfigFile);
+        NetworkConfig config = new NetworkConfig("config/static-network-config.json");
 
 
-        x500Names = utils.getConfigX500Ids(pc.X500ConfigFile);
+        List<VNode> nodes = config.getVNodes();
 
-        for (String x: x500Names) pc.out.println(x);
+        for (VNode v : nodes) {
+            pc.out.println(v.getX500Name());
+            pc.out.println(v.getCpis());
+            pc.out.println(v.getServiceX500Name());
+        }
 
-        String x500 = x500Names.get(0);
 
-        createVNode(x500);
+        // get network config
+//        x500Names = utils.getConfigX500Ids(pc.X500ConfigFile);
+
+//        for (String x: x500Names) pc.out.println(x);
+//
+//        String x500 = x500Names.get(0);
+//
+//        createVNode(x500);
 
     }
 
