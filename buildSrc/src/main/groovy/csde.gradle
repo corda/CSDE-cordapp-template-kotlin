@@ -21,6 +21,7 @@ import com.r3.csde.ProjectUtils
 import com.r3.csde.CordaStatusQueries
 import com.r3.csde.CreateAndRegisterVNodesHelper
 import com.r3.csde.VNodesHelper
+import com.r3.csde.NetworkConfig
 
 plugins {
     id 'java-library'
@@ -113,6 +114,9 @@ def projectContext = new ProjectContext(project,
         workflowBuildDir,
         cordaNotaryPluginsVersion
 )
+
+// todo: redirect the config file
+def networkConfig = new NetworkConfig("config/static-network-config.json")
 
 def utils = new ProjectUtils()
 
@@ -251,7 +255,7 @@ tasks.register('quickDeployCordapp') {
     dependsOn("5-createAndRegVNodes")
 }
 
-def vNodesHelper = new VNodesHelper(projectContext)
+def vNodesHelper = new VNodesHelper(projectContext, networkConfig )
 
 tasks.register('vnodeHelper') {
     group = cordappGroup
