@@ -10,6 +10,10 @@ import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,7 +33,7 @@ public class VNodesHelper {
 
     }
 
-    public void vNodesSetup() throws JsonProcessingException {
+    public void vNodesSetup() throws IOException {
 
         pc.out.println(pc.X500ConfigFile);
 
@@ -38,12 +42,12 @@ public class VNodesHelper {
 
     }
 
-    private void createVNodes(List<VNode> nodes) throws JsonProcessingException {
+    private void createVNodes(List<VNode> nodes) throws IOException {
 
         // get existing Nodes
         List<VirtualNodeInfoDTO> existingVNodes = getExistingNodes();
 
-        // Check if required Vnodes already exist, if not create them.
+        // Check if each required Vnodes already exist, if not create it.
         for (VNode vn : nodes) {
             List<VirtualNodeInfoDTO> matches = existingVNodes.stream().filter(existing ->
                     existing.getHoldingIdentity().getX500Name().equals( vn.getX500Name()) &&
@@ -64,31 +68,9 @@ public class VNodesHelper {
                 .asJson();
 
         if(response.getStatus() == HTTP_OK){
-
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             return mapper.readValue(response.getBody().toString(), VirtualNodesDTO.class).getVirtualNodes();
-
-
-//                pc.out.println("MB: vnsDTO: " + vnsDTO.getVirtualNodes().get(1).getHoldingIdentity().getX500Name());
-//                pc.out.println("MB: vnsDTO: " + vnsDTO.getVirtualNodes().get(0).getCpiIdentifier().getSignerSummaryHash());
-
-// for reference
-//            com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(response.getBody().toString());
-//            VirtualNodesDTO vnsDTO = mapper.treeToValue(jsonNode, VirtualNodesDTO.class);
-//            com.fasterxml.jackson.databind.JsonNode vns = jsonNode.get("virtualNodes");
-
-//            for (com.fasterxml.jackson.databind.JsonNode vn : vns){
-//                String sh = vn.get("holdingIdentity").get("shortHash").toString();
-//                pc.out.println("MB: shorthash: " + sh);
-//
-//                com.fasterxml.jackson.databind.JsonNode hi = vn.get("holdingIdentity");
-//                HoldingIdentityDTO hiDTO = mapper.treeToValue(hi, HoldingIdentityDTO.class);
-//                pc.out.println("MB: hiDTO: " + hiDTO.getX500Name());
-//
-//                VirtualNodeInfoDTO vnDTO = mapper.treeToValue(vn, VirtualNodeInfoDTO.class);
-//                pc.out.println("MB: vnDTO: " + vnDTO.getHoldingIdentity().getX500Name());
-//            }
 
             } else {
             // todo: add exception
@@ -97,18 +79,42 @@ public class VNodesHelper {
         }
     }
 
-    private void createVNode(VNode vNode) {
+    // Creates a Vnode on the corda cluster from the VNode info
+    private void createVNode(VNode vNode) throws IOException {
 
         pc.out.println("MB: creating VNode "+ vNode.getX500Name());
 
+        // read the current CPIFileChecksum value
+        String cpiCheckSum = getCpiCheckSum(vNode);
+        pc.out.println("MB: checksum: " + cpiCheckSum);
+
+        // creates the vnode on Cluster
+
+        HttpResponse<JsonNode> response = Unirest.post(pc.baseURL + "/api/v1/virtualnode")
+                .body("{ \"request\" : { \"cpiFileChecksum\": " + cpiCheckSum + ", \"x500Name\": \"" + vNode.getX500Name() + "\" } }")
+                .basicAuth(pc.rpcUser, pc.rpcPasswd)
+                .asJson();
+
+        pc.out.println("MB: response: " + response.getStatus());
+
+        // todo: add exceptions
     }
 
 
+    // Reads the latest CPI checksums from file.
+    private String getCpiCheckSum(VNode vNode) throws IOException {
 
+        String file;
+        if (vNode.getServiceX500Name() != null){
+            file = pc.CPIUploadStatusFName;
+        } else {
+            file = pc.NotaryCPIUploadStatusFName;
+        }
 
-    private void requestVnodeCreationAndPoll() {
-
-
+        ObjectMapper mapper = new ObjectMapper();
+        FileInputStream in = new FileInputStream(file);
+        com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
+        return jsonNode.get("cpiFileChecksum").toString();
     }
 
 

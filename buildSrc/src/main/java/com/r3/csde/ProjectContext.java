@@ -15,7 +15,11 @@ public class ProjectContext {
     int retryWaitMs = 1000;
     PrintStream out = System.out;
     String CPIUploadStatusBaseName = "CPIFileStatus.json";
+
+    String NotaryCPIUploadBaseName = "CPIFileStatus-NotaryServer.json";
     String CPIUploadStatusFName;
+
+    String NotaryCPIUploadStatusFName;
     String X500ConfigFile = "config/dev-net.json";
     String javaBinDir;
     String cordaPidCache = "CordaPIDCache.dat";
@@ -68,6 +72,7 @@ public class ProjectContext {
         dbContainerName = inDbContainerName;
         JDBCDir = inJDBCDir;
         CPIUploadStatusFName = workspaceDir + "/" + CPIUploadStatusBaseName;
+        NotaryCPIUploadStatusFName = workspaceDir + "/" + NotaryCPIUploadBaseName;
         signingCertAlias = inSigningCertAlias;
         signingCertFName = inSigningCertFName;
         keystoreAlias = inKeystoreAlias;
