@@ -1,16 +1,18 @@
 package com.r3.csde;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.r3.csde.dtos.HoldingIdentityDTO;
 import com.r3.csde.dtos.VirtualNodeInfoDTO;
 import com.r3.csde.dtos.VirtualNodesDTO;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 
@@ -31,46 +33,31 @@ public class VNodesHelper {
 
         pc.out.println(pc.X500ConfigFile);
 
-        List<VNode> nodes = config.getVNodes();
-
-        for (VNode v : nodes) {
-            pc.out.println(v.getX500Name());
-            pc.out.println(v.getCpis());
-            pc.out.println(v.getServiceX500Name());
-        }
-
-        VNode vNode = config.vNodes.get(0);
-        createVNodes(nodes);
+        List<VNode> requiredNodes = config.getVNodes();
+        createVNodes(requiredNodes);
 
     }
 
     private void createVNodes(List<VNode> nodes) throws JsonProcessingException {
 
         // get existing Nodes
-         getExistingNodes();
+        List<VirtualNodeInfoDTO> existingVNodes = getExistingNodes();
 
+        // Check if required Vnodes already exist, if not create them.
+        for (VNode vn : nodes) {
+            List<VirtualNodeInfoDTO> matches = existingVNodes.stream().filter(existing ->
+                    existing.getHoldingIdentity().getX500Name().equals( vn.getX500Name()) &&
+                    existing.getCpiIdentifier().getCpiName().equals(vn.getCpi()))
+                    .collect(Collectors.toList());
 
-//        if (checkVNodeExists(vNode)){
-//            pc.out.println("VNode '" + vNode.getX500Name() + "' already exists, not recreating");
-//        } else {
-//            pc.out.println("Creating VNode '" + vNode.getX500Name() + "'.");
-//        }
-
+            pc.out.println("MB: matches for vn '" + vn.getX500Name() + "': matches: "+ matches);
+            if (matches.size() == 0 ) {
+                createVNode(vn);
+            }
+        }
     }
 
-//    private boolean checkVNodeExists(VNode vNode){
-//
-//        CompletableFuture<HttpResponse<JsonNode>> response =
-//                Unirest.get(pc.baseURL + "/api/v1/virtualnode")
-//                .basicAuth(pc.rpcUser, pc.rpcPasswd)
-//                .asJsonAsync();
-//
-//
-//
-//    }
-
-
-    private void getExistingNodes () throws JsonProcessingException {
+    private List<VirtualNodeInfoDTO> getExistingNodes () throws JsonProcessingException {
 
         HttpResponse<JsonNode> response = Unirest.get(pc.baseURL + "/api/v1/virtualnode")
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
@@ -78,18 +65,18 @@ public class VNodesHelper {
 
         if(response.getStatus() == HTTP_OK){
 
-            String body = response.getBody().toString();
-
-            pc.out.println("MB: body: " + body);
-
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(body);
-            pc.out.println("jsonNode: " + jsonNode);
-
-            com.fasterxml.jackson.databind.JsonNode vns = jsonNode.get("virtualNodes");
+            return mapper.readValue(response.getBody().toString(), VirtualNodesDTO.class).getVirtualNodes();
 
 
+//                pc.out.println("MB: vnsDTO: " + vnsDTO.getVirtualNodes().get(1).getHoldingIdentity().getX500Name());
+//                pc.out.println("MB: vnsDTO: " + vnsDTO.getVirtualNodes().get(0).getCpiIdentifier().getSignerSummaryHash());
+
+// for reference
+//            com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(response.getBody().toString());
+//            VirtualNodesDTO vnsDTO = mapper.treeToValue(jsonNode, VirtualNodesDTO.class);
+//            com.fasterxml.jackson.databind.JsonNode vns = jsonNode.get("virtualNodes");
 
 //            for (com.fasterxml.jackson.databind.JsonNode vn : vns){
 //                String sh = vn.get("holdingIdentity").get("shortHash").toString();
@@ -103,31 +90,18 @@ public class VNodesHelper {
 //                pc.out.println("MB: vnDTO: " + vnDTO.getHoldingIdentity().getX500Name());
 //            }
 
-            VirtualNodesDTO vnsDTO = mapper.treeToValue(jsonNode, VirtualNodesDTO.class);
-            int noVns = vnsDTO.getVirtualNodes().size();
-            if(noVns > 0) {
-
-                pc.out.println("MB: vnsDTO: " + vnsDTO.getVirtualNodes().get(1).getHoldingIdentity().getX500Name());
-                pc.out.println("MB: vnsDTO: " + vnsDTO.getVirtualNodes().get(0).getCpiIdentifier().getSignerSummaryHash());
-
             } else {
-                pc.out.println(":MB: no vns");
-            }
-
-
-
-            } else {
-
-            pc.out.println("Failed to getExisting Nodes");
+            // todo: add exception
+            pc.out.println("Failed to getExisting Nodes, responseStatus: "+ response.getStatus());
+            return Collections.emptyList();
         }
-
-
-
-
-
     }
 
+    private void createVNode(VNode vNode) {
 
+        pc.out.println("MB: creating VNode "+ vNode.getX500Name());
+
+    }
 
 
 
