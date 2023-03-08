@@ -9,7 +9,7 @@ import java.util.Scanner;
 /**
  * Manages Bringing corda up, testing for liveness and taking corda down
  */
-
+// todo: this class needs refactoring
 public class CordaLifeCycleHelper {
 
     ProjectContext pc;

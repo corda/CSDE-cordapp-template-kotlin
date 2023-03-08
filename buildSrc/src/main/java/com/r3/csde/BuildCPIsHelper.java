@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 
+// todo: this class needs refactoring
 public class BuildCPIsHelper {
 
     public ProjectContext pc;
