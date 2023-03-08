@@ -1,6 +1,7 @@
 package com.r3.csde.dtos;
 
 public class VirtualNodeInfoDTO {
+    // Note, these DTOs don't cover all returned values, just the ones required for CSDE.
     private HoldingIdentityDTO holdingIdentity;
     private CpiIdentifierDTO cpiIdentifier;
 

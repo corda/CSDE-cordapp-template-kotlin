@@ -5,6 +5,7 @@ import com.r3.csde.dtos.VirtualNodeInfoDTO;
 import java.util.List;
 
 public class VirtualNodesDTO {
+
     private List<VirtualNodeInfoDTO> virtualNodes;
 
     public VirtualNodesDTO() {}

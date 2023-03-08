@@ -20,7 +20,6 @@ public class ProjectContext {
     String CPIUploadStatusFName;
 
     String NotaryCPIUploadStatusFName;
-    String X500ConfigFile = "config/dev-net.json";
     String javaBinDir;
     String cordaPidCache = "CordaPIDCache.dat";
     String dbContainerName;

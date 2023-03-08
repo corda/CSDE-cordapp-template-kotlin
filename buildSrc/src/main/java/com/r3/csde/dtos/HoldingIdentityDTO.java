@@ -1,8 +1,9 @@
 package com.r3.csde.dtos;
 
 public class HoldingIdentityDTO {
+    // Note, these DTOs don't cover all returned values, just the ones required for CSDE.
     private String fullHash;
-//    private String groupId;
+    private String groupId;
     private String shortHash;
     private String x500Name;
 
@@ -18,13 +19,13 @@ public class HoldingIdentityDTO {
         this.fullHash = fullHash;
     }
 
-//    public String getGroupId() {
-//        return groupId;
-//    }
-//
-//    public void setGroupID(String groupID) {
-//        this.groupId = groupId;
-//    }
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupID(String groupID) {
+        this.groupId = groupId;
+    }
 
     public String getShortHash() {
         return shortHash;

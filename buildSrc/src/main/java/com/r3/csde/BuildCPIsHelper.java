@@ -2,26 +2,32 @@ package com.r3.csde;
 
 import java.io.*;
 import java.util.LinkedList;
+import java.util.List;
 
 public class BuildCPIsHelper {
 
     public ProjectContext pc;
     public ProjectUtils utils ;
-    public BuildCPIsHelper(ProjectContext _pc) {
+
+    public NetworkConfig config;
+    public BuildCPIsHelper(ProjectContext _pc, NetworkConfig _config) {
         pc = _pc;
         utils = new ProjectUtils(pc);
+        config = _config;
     }
 
     public void createGroupPolicy() throws IOException {
 
         File groupPolicyFile = new File(String.format("%s/GroupPolicy.json", pc.devEnvWorkspace));
-        File devnetFile = new File(String.format("%s/config/dev-net.json", pc.project.getRootDir()));
+        File devnetFile = new File( pc.project.getRootDir() + "/" + config.getConfigFilePath());
+
 
         if (!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
 
             pc.out.println("createGroupPolicy: Creating a GroupPolicy");
 
-            LinkedList<String> configX500Ids = utils.getConfigX500Ids(pc.X500ConfigFile);
+//            LinkedList<String> configX500Ids = utils.getConfigX500Ids(pc.X500ConfigFile);
+            List<String> configX500Ids = config.getX500Names();
             LinkedList<String> commandList = new LinkedList<>();
 
             commandList.add(String.format("%s/java", pc.javaBinDir));

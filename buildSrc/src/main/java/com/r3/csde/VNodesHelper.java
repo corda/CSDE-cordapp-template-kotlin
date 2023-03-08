@@ -4,16 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.r3.csde.dtos.RegistrationRequestProgressDTO;
-import com.r3.csde.dtos.VirtualNodeInfoDTO;
-import com.r3.csde.dtos.VirtualNodesDTO;
+import com.r3.csde.dtos.*;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -38,34 +35,32 @@ public class VNodesHelper {
     }
 
     // Entry point, called from csde.gradle task
-    public void vNodesSetup() throws IOException {
-
+    public void vNodesSetup() throws IOException, CsdeException {
         List<VNode> requiredNodes = config.getVNodes();
         createVNodes(requiredNodes);
         registerVNodes(requiredNodes);
-
     }
 
-    private void createVNodes(List<VNode> nodes) throws IOException {
+    // Creates vnodes specified in config if they don't already exist.
+    private void createVNodes(List<VNode> nodes) throws IOException, CsdeException {
 
-        // get existing Nodes
+        // Get existing Nodes
         List<VirtualNodeInfoDTO> existingVNodes = getExistingNodes();
 
-        // Check if each required Vnodes already exist, if not create it.
+        // Check if each required vnode already exist, if not create it.
         for (VNode vn : nodes) {
             List<VirtualNodeInfoDTO> matches = existingVNodes.stream().filter(existing ->
                     existing.getHoldingIdentity().getX500Name().equals( vn.getX500Name()) &&
                     existing.getCpiIdentifier().getCpiName().equals(vn.getCpi()))
                     .collect(Collectors.toList());
 
-            pc.out.println("MB: matches for vn '" + vn.getX500Name() + "': matches: "+ matches);
             if (matches.size() == 0 ) {
                 createVNode(vn);
             }
         }
     }
 
-    private List<VirtualNodeInfoDTO> getExistingNodes () throws JsonProcessingException {
+    private List<VirtualNodeInfoDTO> getExistingNodes () throws JsonProcessingException, CsdeException {
 
         HttpResponse<JsonNode> response = Unirest.get(pc.baseURL + "/api/v1/virtualnode")
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
@@ -74,49 +69,74 @@ public class VNodesHelper {
         if(response.getStatus() == HTTP_OK){
             return mapper.readValue(response.getBody().toString(), VirtualNodesDTO.class).getVirtualNodes();
             } else {
-            // todo: add exception
-            pc.out.println("Failed to getExisting Nodes, responseStatus: "+ response.getStatus());
-            return Collections.emptyList();
+            throw new CsdeException("Failed to get Existing Nodes, response status: "+ response.getStatus());
         }
     }
 
-    // Creates a Vnode on the corda cluster from the VNode info
-    private void createVNode(VNode vNode) throws IOException {
+    // Creates a Vnode on the corda cluster from the VNode info.
+    private void createVNode(VNode vNode) throws CsdeException {
 
-        pc.out.println("MB: creating VNode "+ vNode.getX500Name());
+        pc.out.println("Creating virtual node for "+ vNode.getX500Name());
 
-        // read the current CPIFileChecksum value
+        // Reads the current CPIFileChecksum value and checks it has been uploaded.
         String cpiCheckSum = getCpiCheckSum(vNode);
-        pc.out.println("MB: checksum: " + cpiCheckSum);
+        if (!checkCpiUploaded(cpiCheckSum)) throw new CsdeException("Cpi " + cpiCheckSum + " not uploaded.");
 
-        // creates the vnode on Cluster
+        // Creates the vnode on Cluster
         HttpResponse<JsonNode> response = Unirest.post(pc.baseURL + "/api/v1/virtualnode")
-                .body("{ \"request\" : { \"cpiFileChecksum\": " + cpiCheckSum + ", \"x500Name\": \"" + vNode.getX500Name() + "\" } }")
+                .body("{ \"request\" : { \"cpiFileChecksum\": \"" + cpiCheckSum + "\", \"x500Name\": \"" + vNode.getX500Name() + "\" } }")
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
 
-        pc.out.println("MB: response: " + response.getStatus());
-
-        // todo: add exceptions if fails
+        if (response.getStatus() != HTTP_OK)
+            throw new CsdeException("Creation of virtual node failed with response status: " + response.getStatus());
     }
-
 
     // Reads the latest CPI checksums from file.
-    private String getCpiCheckSum(VNode vNode) throws IOException {
-
-        String file;
-        if (vNode.getServiceX500Name() == null){
-            file = pc.CPIUploadStatusFName;
-        } else {
-            file = pc.NotaryCPIUploadStatusFName;
+    private String getCpiCheckSum(VNode vNode) throws CsdeException {
+        try {
+            String file;
+            if (vNode.getServiceX500Name() == null) {
+                file = pc.CPIUploadStatusFName;
+            } else {
+                file = pc.NotaryCPIUploadStatusFName;
+            }
+            FileInputStream in = new FileInputStream(file);
+            CPIFileStatusDTO statusDTO = mapper.readValue(in, CPIFileStatusDTO.class);
+            return statusDTO.getCpiFileChecksum().toString();
+        } catch (Exception e){
+            throw new CsdeException("Failed to read CPI checksum from file, with error: " + e);
         }
-        FileInputStream in = new FileInputStream(file);
-        com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(in);
-        return jsonNode.get("cpiFileChecksum").toString();
     }
 
+    private boolean checkCpiUploaded(String cpiCheckSum) throws CsdeException {
+
+        HttpResponse<JsonNode> response = Unirest.get(pc.baseURL + "/api/v1/cpi")
+                .basicAuth(pc.rpcUser, pc.rpcPasswd)
+                .asJson();
+
+        if(response.getStatus() != HTTP_OK)
+            throw new CsdeException("Failed to check cpis, response status: " + response.getStatus());
+
+        try {
+            GetCPIsResponseDTO cpisResponse = mapper.readValue(
+                    response.getBody().toString(), GetCPIsResponseDTO.class);
+
+            for (CpiMetadataDTO cpi: cpisResponse.getCpis()){
+                if (Objects.equals(cpi.getCpiFileChecksum(), cpiCheckSum)){
+                    return true;
+                }
+            }
+            // Returns false if no cpis were returned or the cpiCheckSum didnt' match ay results.
+            return false;
+        } catch (Exception e) {
+            throw new CsdeException("Failed to check cpis with exception: " + e);
+        }
+    }
+
+
     // checks if required nodes have been registered and if not registers them
-    private void registerVNodes(List<VNode> requiredNodes) throws JsonProcessingException {
+    private void registerVNodes(List<VNode> requiredNodes) throws JsonProcessingException, CsdeException {
 
         // There appears to be a delay between the successful post /virtualnodes synchronous call and the
         // vnodes being returned in the GET /virtualnodes call. Putting a thread wait here as a quick fix
@@ -130,9 +150,10 @@ public class VNodesHelper {
                                     existing.getCpiIdentifier().getCpiName().equals(vn.getCpi()))
                     .collect(Collectors.toList());
 
-            if (matches.size() != 1) {
-                // todo: add exception
-                pc.out.println("unique look up failed for " + vn.getX500Name());
+            if (matches.size() == 0) {
+                throw new CsdeException("Registration failed because virtual node for '" + vn.getX500Name() + "' not found.");
+            } else if (matches.size() >1 ) {
+                throw new CsdeException(("Registration failed because more than virtual node for '" + vn.getX500Name() + "'"));
             }
 
             String shortHash = matches.get(0).getHoldingIdentity().getShortHash();
@@ -142,7 +163,8 @@ public class VNodesHelper {
             }
         }
     }
-    private void registerVnode( VNode vn, String shortHash) throws JsonProcessingException {
+    private void registerVnode( VNode vn, String shortHash) throws CsdeException {
+
         pc.out.println("Registering vNode: " + vn.getX500Name() + " with shortHash: " + shortHash);
 
         // Configure the registration body (notary vs non notary)
@@ -162,8 +184,6 @@ public class VNodesHelper {
                             " \"corda.notary.service.plugin\" : \"net.corda.notary.NonValidatingNotary\" } }";
         }
 
-        pc.out.println("MB: registrationBody: " + registrationBody);
-
         HttpResponse<JsonNode> response = Unirest.post(pc.baseURL + "/api/v1/membership/" + shortHash)
                 .body(registrationBody)
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
@@ -172,28 +192,28 @@ public class VNodesHelper {
         if (response.getStatus() == HTTP_OK) {
             pc.out.println("Membership requested for node " + shortHash);
         } else {
-            // todo:add exception
-            pc.out.println("Membership request failed for node " + shortHash + " with response code " + response.getStatus() + " and error " + response.getBody());
-        }
+            throw new CsdeException("Failed to register virtual node "+ shortHash +
+                    ", response status: " + response.getStatus() );
+            }
 
         // wait until Vnode registered
-        pollForRegistration(shortHash, 10000, 1000);
+        pollForRegistration(shortHash, 30000, 1000);
 
     }
 
+    // Checks if a virtual node with given shortHash has been registered
+    private boolean checkVNodeIsRegistered(String shortHash) throws CsdeException {
 
-    private boolean checkVNodeIsRegistered(String shortHash) throws JsonProcessingException {
-
-        // queries registration status for vnode
+        // Queries registration status for vnode
         HttpResponse<JsonNode> response = Unirest.get(pc.baseURL + "/api/v1/membership/" + shortHash)
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
 
-        if(response.getStatus() != HTTP_OK) {
-            // todo : add exception
-            pc.out.print("Failed to check registration status for " + shortHash);
-        }
+        if(response.getStatus() != HTTP_OK)
+            throw new CsdeException("Failed to check registration status for virtual node '" + shortHash +
+                    "' response status: " + response.getStatus());
 
+        try {
         // If the response body is not empty check all previous requests for an "APPROVED"
         if (!response.getBody().getArray().isEmpty()) {
             List<RegistrationRequestProgressDTO> requests = mapper.readValue(
@@ -207,10 +227,14 @@ public class VNodesHelper {
         }
         // Returns false if array was empty or "APPROVED" wasn't found
         return false;
+        } catch (Exception e){
+            throw new CsdeException("Failed to check registration status for " + shortHash +
+                    " with exception " + e);
+        }
     }
 
     // polls for registration of a vnode
-    private void pollForRegistration(String shortHash, int duration, int cooldown) throws JsonProcessingException {
+    private void pollForRegistration(String shortHash, int duration, int cooldown) throws CsdeException {
 
         int timer = 0;
         while (timer < duration ) {
@@ -221,6 +245,6 @@ public class VNodesHelper {
             utils.rpcWait(cooldown);
             timer += cooldown;
         }
-        pc.out.println("Vnode " + shortHash + " failed to register in " + duration + " milliseconds");
+        throw new CsdeException("Vnode " + shortHash + " failed to register in " + duration + " milliseconds");
     }
 }

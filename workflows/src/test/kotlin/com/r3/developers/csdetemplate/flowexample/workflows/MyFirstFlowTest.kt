@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 class MyFirstFlowTest {
 
-    // Names picked to match the corda network in config/dev-net.json
+    // Names picked to match the corda network in config/static-network-config.json
     private val aliceX500 = MemberX500Name.parse("CN=Alice, OU=Test Dept, O=R3, L=London, C=GB")
     private val bobX500 = MemberX500Name.parse("CN=Bob, OU=Test Dept, O=R3, L=London, C=GB")
 

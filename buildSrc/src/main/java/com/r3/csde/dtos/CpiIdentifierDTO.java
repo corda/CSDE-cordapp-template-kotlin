@@ -2,6 +2,7 @@ package com.r3.csde.dtos;
 
 public class CpiIdentifierDTO {
 
+    // Note, these DTOs don't cover all returned values, just the ones required for CSDE
     private String cpiName;
     private String cpiVVersion;
     private String signerSummaryHash;
