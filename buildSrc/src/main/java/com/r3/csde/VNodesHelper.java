@@ -18,13 +18,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static java.lang.Thread.sleep;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 public class VNodesHelper {
     private ProjectContext pc;
     private ProjectUtils utils;
     private NetworkConfig config;
-
     private ObjectMapper mapper;
 
     public VNodesHelper(ProjectContext _pc, NetworkConfig _config) {
@@ -90,7 +90,6 @@ public class VNodesHelper {
         pc.out.println("MB: checksum: " + cpiCheckSum);
 
         // creates the vnode on Cluster
-
         HttpResponse<JsonNode> response = Unirest.post(pc.baseURL + "/api/v1/virtualnode")
                 .body("{ \"request\" : { \"cpiFileChecksum\": " + cpiCheckSum + ", \"x500Name\": \"" + vNode.getX500Name() + "\" } }")
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
@@ -119,6 +118,10 @@ public class VNodesHelper {
     // checks if required nodes have been registered and if not registers them
     private void registerVNodes(List<VNode> requiredNodes) throws JsonProcessingException {
 
+        // There appears to be a delay between the successful post /virtualnodes synchronous call and the
+        // vnodes being returned in the GET /virtualnodes call. Putting a thread wait here as a quick fix
+        // as this will move to async mechanism post beta2.
+        utils.rpcWait(2000);
         List<VirtualNodeInfoDTO> existingVNodes = getExistingNodes();
 
         for (VNode vn: requiredNodes) {
@@ -131,41 +134,71 @@ public class VNodesHelper {
                 // todo: add exception
                 pc.out.println("unique look up failed for " + vn.getX500Name());
             }
+
             String shortHash = matches.get(0).getHoldingIdentity().getShortHash();
 
-            if (!checkRegistration(shortHash)){
+            if (!checkVNodeIsRegistered(shortHash)){
                 registerVnode(vn, shortHash);
-            };
-
+            }
         }
-
     }
-    private void registerVnode( VNode vn, String shortHash){
-
+    private void registerVnode( VNode vn, String shortHash) throws JsonProcessingException {
         pc.out.println("Registering vNode: " + vn.getX500Name() + " with shortHash: " + shortHash);
 
+        // Configure the registration body (notary vs non notary)
+        String registrationBody;
+        if (vn.getServiceX500Name() == null) {
+            registrationBody =
+                    "{ \"action\" : \"requestJoin\"," +
+                            " \"context\" : {" +
+                            " \"corda.key.scheme\" : \"CORDA.ECDSA.SECP256R1\" } }";
+        } else {
+            registrationBody =
+                    "{ \"action\" : \"requestJoin\"," +
+                            " \"context\" : {" +
+                            " \"corda.key.scheme\" : \"CORDA.ECDSA.SECP256R1\", " +
+                            " \"corda.roles.0\" : \"notary\", " +
+                            " \"corda.notary.service.name\" : \"" + vn.getServiceX500Name() + "\", " +
+                            " \"corda.notary.service.plugin\" : \"net.corda.notary.NonValidatingNotary\" } }";
+        }
+
+        pc.out.println("MB: registrationBody: " + registrationBody);
+
+        HttpResponse<JsonNode> response = Unirest.post(pc.baseURL + "/api/v1/membership/" + shortHash)
+                .body(registrationBody)
+                .basicAuth(pc.rpcUser, pc.rpcPasswd)
+                .asJson();
+
+        if (response.getStatus() == HTTP_OK) {
+            pc.out.println("Membership requested for node " + shortHash);
+        } else {
+            // todo:add exception
+            pc.out.println("Membership request failed for node " + shortHash + " with response code " + response.getStatus() + " and error " + response.getBody());
+        }
+
+        // wait until Vnode registered
+        pollForRegistration(shortHash, 10000, 1000);
+
     }
 
 
-    private boolean checkRegistration(String shortHash) throws JsonProcessingException {
+    private boolean checkVNodeIsRegistered(String shortHash) throws JsonProcessingException {
 
         // queries registration status for vnode
         HttpResponse<JsonNode> response = Unirest.get(pc.baseURL + "/api/v1/membership/" + shortHash)
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
 
-        //
         if(response.getStatus() != HTTP_OK) {
             // todo : add exception
             pc.out.print("Failed to check registration status for " + shortHash);
         }
 
-        // if the response is not empty check all previous requests for an "APPROVED"
+        // If the response body is not empty check all previous requests for an "APPROVED"
         if (!response.getBody().getArray().isEmpty()) {
             List<RegistrationRequestProgressDTO> requests = mapper.readValue(
                     response.getBody().toString(), new TypeReference<>() {
                     });
-
             for (RegistrationRequestProgressDTO request : requests) {
                 if (Objects.equals(request.getRegistrationStatus(), "APPROVED")) {
                     return true;
@@ -174,5 +207,20 @@ public class VNodesHelper {
         }
         // Returns false if array was empty or "APPROVED" wasn't found
         return false;
+    }
+
+    // polls for registration of a vnode
+    private void pollForRegistration(String shortHash, int duration, int cooldown) throws JsonProcessingException {
+
+        int timer = 0;
+        while (timer < duration ) {
+            if (checkVNodeIsRegistered(shortHash)){
+                pc.out.println("Vnode " + shortHash +" registered.");
+                return;
+            }
+            utils.rpcWait(cooldown);
+            timer += cooldown;
+        }
+        pc.out.println("Vnode " + shortHash + " failed to register in " + duration + " milliseconds");
     }
 }

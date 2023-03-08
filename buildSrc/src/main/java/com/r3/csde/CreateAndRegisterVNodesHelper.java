@@ -213,7 +213,6 @@ public class CreateAndRegisterVNodesHelper {
                         : ""
         );
 
-        // todo: START HERE - fix createAndRegisterVNodes, first work out why the createChatFLow times out (see logs line 4283)
 
         /*
 Example requestBodies
