@@ -1,5 +1,7 @@
 package com.r3.csde;
 
+import kong.unirest.Unirest;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,6 +20,7 @@ public class CordaLifeCycleHelper {
     public CordaLifeCycleHelper(ProjectContext _pc) {
         pc = _pc;
         utils = new ProjectUtils(pc);
+        Unirest.config().verifySsl(false);
     }
 
 
@@ -40,6 +43,10 @@ public class CordaLifeCycleHelper {
                 "postgres:latest").start();
         // todo: is there a better way of doing this - ie poll for readiness
         utils.rpcWait(10000);
+
+
+
+
 
         //from code
 
