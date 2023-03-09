@@ -8,14 +8,11 @@ import com.r3.csde.dtos.*;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static java.lang.Thread.sleep;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 // The VNodesHelper class is used to create and register the Vnodes specified in the static-network-config.json file.
