@@ -1,7 +1,10 @@
 package com.r3.csde;
 
 
-// This class is a representation of a Vnode used to express the vNodes required on the network.
+/**
+ * This class is a representation of a Vnode used to express the vNodes required on the network.
+ */
+
 public class VNode{
     private String x500Name;
     private String cpi;

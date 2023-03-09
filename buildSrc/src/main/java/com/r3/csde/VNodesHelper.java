@@ -15,7 +15,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import static java.net.HttpURLConnection.HTTP_OK;
 
-// The VNodesHelper class is used to create and register the Vnodes specified in the static-network-config.json file.
+/**
+ * The VNodesHelper class is used to create and register the Vnodes specified in the static-network-config.json file.
+ */
 
 public class VNodesHelper {
     private ProjectContext pc;
