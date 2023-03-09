@@ -2,6 +2,7 @@ package com.r3.csde;
 
 import java.util.List;
 
+// This class is a representation of a Vnode used to express the vNodes required on the network.
 public class VNode{
     private String x500Name;
     private String cpi;

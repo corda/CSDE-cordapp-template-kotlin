@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+// This class reads the network config from the json file and makes it available as a list of VNodes
 public class NetworkConfig {
 
     private List<VNode> vNodes;
