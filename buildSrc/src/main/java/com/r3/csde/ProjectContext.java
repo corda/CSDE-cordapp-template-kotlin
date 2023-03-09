@@ -15,10 +15,8 @@ public class ProjectContext {
     int retryWaitMs = 1000;
     PrintStream out = System.out;
     String CPIUploadStatusBaseName = "CPIFileStatus.json";
-
     String NotaryCPIUploadBaseName = "CPIFileStatus-NotaryServer.json";
     String CPIUploadStatusFName;
-
     String NotaryCPIUploadStatusFName;
     String javaBinDir;
     String cordaPidCache = "CordaPIDCache.dat";

@@ -44,32 +44,6 @@ public class CordaLifeCycleHelper {
         // todo: is there a better way of doing this - ie poll for readiness
         utils.rpcWait(10000);
 
-
-
-
-
-        //from code
-
-//         java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 \
-//         -Dco.paralleluniverse.fibers.verifyInstrumentation=true \
-//         -jar net.corda:corda-combined-worker:5.0.0.0-Gecko2.0-HC04 \
-//         --instanceId=0 -mbus.busType=DATABASE \
-//         -spassphrase=password -ssalt=salt \
-//         -ddatabase.user=user -ddatabase.pass=password \
-//         -ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster \
-//         -ddatabase.jdbc.directory=~/.corda/corda5/jdbcDrivers
-
-        // from docs (modified)
-
-//         java -jar -Dco.paralleluniverse.fibers.verifyInstrumentation=true \
-//          /Users/matthew.bradbury/.corda/corda5/corda-combined-worker-5.0.0.0-Gecko2.0-HC04.jar \
-//          --instance-id=0 -mbus.busType=DATABASE  \
-//          -spassphrase=password -ssalt=salt \
-//          -ddatabase.user=user -ddatabase.pass=password \
-//          -ddatabase.jdbc.directory=~/.corda/corda5/jdbcDrivers \
-//          -ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster
-
-
         ProcessBuilder procBuild = new ProcessBuilder(pc.javaBinDir + "/java",
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
                 "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
@@ -78,8 +52,6 @@ public class CordaLifeCycleHelper {
                 "--instance-id=0",
                 "-mbus.busType=DATABASE",
                 "-spassphrase=password",
-//                "-ssalt=salt",
-//                "-spassphrase=password",
                 "-ssalt=salt",
                 "-ddatabase.user=user",
                 "-ddatabase.pass=password",
@@ -93,11 +65,6 @@ public class CordaLifeCycleHelper {
         pc.out.println("Corda Process-id="+proc.pid());
 
         // todo: should poll for readiness before returning
-         // Chris comment - We probably do not want to poll for readiness here.
-         // The combined-worker takes serveral minutes to come up.
-         // It might be better to warn the user of that and have the readiness detection and polling logic used in other tasks involved in creating v-nodes and deploying the CPI.
-        // Matt comment - I'm not sure I agree, we need to investigate
-
     }
 
 

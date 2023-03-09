@@ -22,7 +22,6 @@ public class ProjectUtils {
         pc = _pc;
     }
 
-
     void rpcWait(int millis) {
         try {
             sleep(millis);
@@ -31,7 +30,6 @@ public class ProjectUtils {
             throw new UnsupportedOperationException("Interrupts not supported.", e);
         }
     }
-
 
     public void reportError(HttpResponse<JsonNode> response) throws CsdeException {
 
