@@ -246,19 +246,19 @@ public class VNodesHelper {
                     "' response status: " + response.getStatus());
 
         try {
-        // If the response body is not empty check all previous requests for an "APPROVED"
-        if (!response.getBody().getArray().isEmpty()) {
-            List<RegistrationRequestProgressDTO> requests = mapper.readValue(
-                    response.getBody().toString(), new TypeReference<>() {
-                    });
-            for (RegistrationRequestProgressDTO request : requests) {
-                if (Objects.equals(request.getRegistrationStatus(), "APPROVED")) {
-                    return true;
+            // If the response body is not empty check all previous requests for an "APPROVED"
+            if (!response.getBody().getArray().isEmpty()) {
+                List<RegistrationRequestProgressDTO> requests = mapper.readValue(
+                        response.getBody().toString(), new TypeReference<>() {
+                        });
+                for (RegistrationRequestProgressDTO request : requests) {
+                    if (Objects.equals(request.getRegistrationStatus(), "APPROVED")) {
+                        return true;
+                    }
                 }
             }
-        }
-        // Returns false if array was empty or "APPROVED" wasn't found
-        return false;
+            // Returns false if array was empty or "APPROVED" wasn't found
+            return false;
 
         } catch (Exception e){
             throw new CsdeException("Failed to check registration status for " + shortHash +
