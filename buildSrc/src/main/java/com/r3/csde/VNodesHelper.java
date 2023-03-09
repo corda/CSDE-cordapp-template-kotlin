@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 import static java.lang.Thread.sleep;
 import static java.net.HttpURLConnection.HTTP_OK;
 
+// The VNodesHelper class is used to create and register the Vnodes specified in the static-network-config.json file.
+
 public class VNodesHelper {
     private ProjectContext pc;
     private ProjectUtils utils;
@@ -31,24 +33,24 @@ public class VNodesHelper {
         Unirest.config().verifySsl(false);
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
     }
 
-    // Entry point, called from csde.gradle task
+    // Entry point for setting up vnodes, called from the 5-vNodeSetup task in csde.gradle
     public void vNodesSetup() throws IOException, CsdeException {
         List<VNode> requiredNodes = config.getVNodes();
         createVNodes(requiredNodes);
         registerVNodes(requiredNodes);
     }
 
-    // Creates vnodes specified in config if they don't already exist.
+    // Creates vnodes specified in the config if they don't already exist.
     private void createVNodes(List<VNode> nodes) throws IOException, CsdeException {
 
-        // Get existing Nodes
+        // Get existing Nodes.
         List<VirtualNodeInfoDTO> existingVNodes = getExistingNodes();
 
         // Check if each required vnode already exist, if not create it.
         for (VNode vn : nodes) {
+            // Match on x500 and cpi name
             List<VirtualNodeInfoDTO> matches = existingVNodes.stream().filter(existing ->
                     existing.getHoldingIdentity().getX500Name().equals( vn.getX500Name()) &&
                     existing.getCpiIdentifier().getCpiName().equals(vn.getCpi()))
@@ -60,20 +62,24 @@ public class VNodesHelper {
         }
     }
 
-    private List<VirtualNodeInfoDTO> getExistingNodes () throws JsonProcessingException, CsdeException {
+    private List<VirtualNodeInfoDTO> getExistingNodes () throws CsdeException {
 
         HttpResponse<JsonNode> response = Unirest.get(pc.baseURL + "/api/v1/virtualnode")
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
 
-        if(response.getStatus() == HTTP_OK){
+        if(response.getStatus() != HTTP_OK){
+            throw new CsdeException("Failed to get Existing vNodes, response status: "+ response.getStatus());
+        }
+
+        try {
             return mapper.readValue(response.getBody().toString(), VirtualNodesDTO.class).getVirtualNodes();
-            } else {
-            throw new CsdeException("Failed to get Existing Nodes, response status: "+ response.getStatus());
+        } catch (Exception e){
+            throw new CsdeException("Failed to get Existing vNodes with exception: " + e);
         }
     }
 
-    // Creates a Vnode on the corda cluster from the VNode info.
+    // Creates a vnode on the corda cluster from the VNode info.
     private void createVNode(VNode vNode) throws CsdeException {
 
         pc.out.println("Creating virtual node for "+ vNode.getX500Name());
@@ -94,6 +100,7 @@ public class VNodesHelper {
 
     // Reads the latest CPI checksums from file.
     private String getCpiCheckSum(VNode vNode) throws CsdeException {
+
         try {
             String file;
             if (vNode.getServiceX500Name() == null) {
@@ -135,7 +142,7 @@ public class VNodesHelper {
     }
 
 
-    // checks if required nodes have been registered and if not registers them
+    // Checks if required vnodes have been registered and if not registers them.
     private void registerVNodes(List<VNode> requiredNodes) throws JsonProcessingException, CsdeException {
 
         // There appears to be a delay between the successful post /virtualnodes synchronous call and the
@@ -145,6 +152,7 @@ public class VNodesHelper {
         List<VirtualNodeInfoDTO> existingVNodes = getExistingNodes();
 
         for (VNode vn: requiredNodes) {
+            // Match on x500 and cpi name
             List<VirtualNodeInfoDTO> matches = existingVNodes.stream().filter(existing ->
                             existing.getHoldingIdentity().getX500Name().equals( vn.getX500Name()) &&
                                     existing.getCpiIdentifier().getCpiName().equals(vn.getCpi()))
@@ -204,7 +212,7 @@ public class VNodesHelper {
     // Checks if a virtual node with given shortHash has been registered
     private boolean checkVNodeIsRegistered(String shortHash) throws CsdeException {
 
-        // Queries registration status for vnode
+        // Queries registration status for vnode.
         HttpResponse<JsonNode> response = Unirest.get(pc.baseURL + "/api/v1/membership/" + shortHash)
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
@@ -227,6 +235,7 @@ public class VNodesHelper {
         }
         // Returns false if array was empty or "APPROVED" wasn't found
         return false;
+
         } catch (Exception e){
             throw new CsdeException("Failed to check registration status for " + shortHash +
                     " with exception " + e);
