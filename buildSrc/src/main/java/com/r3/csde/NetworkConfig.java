@@ -11,21 +11,25 @@ import java.util.stream.Collectors;
 /**
  * This class reads the network config from the json file and makes it available as a list of VNodes.
  */
-
 public class NetworkConfig {
 
     private List<VNode> vNodes;
     private String configFilePath;
 
-    public NetworkConfig(String _configFilePath) throws IOException {
+    public NetworkConfig(String _configFilePath) throws CsdeException {
         configFilePath = _configFilePath;
 
         ObjectMapper mapper = new ObjectMapper();
-        FileInputStream in = new FileInputStream(configFilePath);
-        vNodes = mapper.readValue(in, new TypeReference<List<VNode>>(){});
+        try {
+            FileInputStream in = new FileInputStream(configFilePath);
+            vNodes = mapper.readValue(in, new TypeReference<List<VNode>>() {
+            });
+        } catch (Exception e) {
+            throw new CsdeException("Failed to read static network configuration file, with exception: " + e);
+        }
     }
 
-    String getConfigFilePath() {return configFilePath;}
+    String getConfigFilePath() { return configFilePath; }
 
     List<VNode> getVNodes() { return vNodes; }
 

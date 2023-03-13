@@ -10,11 +10,7 @@ public class VirtualNodesDTO {
 
     public VirtualNodesDTO() {}
 
-    public List<VirtualNodeInfoDTO> getVirtualNodes() {
-        return virtualNodes;
-    }
+    public List<VirtualNodeInfoDTO> getVirtualNodes() { return virtualNodes; }
 
-    public void setVirtualNodes(List<VirtualNodeInfoDTO> virtualNodes) {
-        this.virtualNodes = virtualNodes;
-    }
+    public void setVirtualNodes(List<VirtualNodeInfoDTO> virtualNodes) { this.virtualNodes = virtualNodes; }
 }

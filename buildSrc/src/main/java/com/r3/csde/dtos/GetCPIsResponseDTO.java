@@ -8,12 +8,7 @@ public class GetCPIsResponseDTO {
 
     public GetCPIsResponseDTO() {}
 
+    public List<CpiMetadataDTO> getCpis() { return cpis; }
 
-    public List<CpiMetadataDTO> getCpis() {
-        return cpis;
-    }
-
-    public void setCpis(List<CpiMetadataDTO> cpis) {
-        this.cpis = cpis;
-    }
+    public void setCpis(List<CpiMetadataDTO> cpis) { this.cpis = cpis; }
 }

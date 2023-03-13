@@ -114,7 +114,6 @@ def projectContext = new ProjectContext(project,
         cordaNotaryPluginsVersion
 )
 
-// todo: redirect the config file
 def networkConfig = new NetworkConfig("config/static-network-config.json")
 
 def utils = new ProjectUtils()

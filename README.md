@@ -23,5 +23,5 @@ Note, the CSDE is experimental, we may or may not release it as part of Corda 5.
 
 To find out how to use the CSDE please refer to the getting started section in the Corda 5 Beta 1.1 documentation at https://docs.r3.com/
 
-(Note, to use the CSDE you must have installed the Corda Cli, make sure the version matches the version of Corda)
+(Note, to use the CSDE you must have installed the Corda CLI, make sure the version matches the version of Corda)
 

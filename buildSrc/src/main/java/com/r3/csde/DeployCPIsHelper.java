@@ -12,7 +12,7 @@ import java.io.PrintStream;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
 
-// todo: this class needs refactoring
+// todo: This class needs refactoring, see https://r3-cev.atlassian.net/browse/CORE-11624
 public class DeployCPIsHelper {
 
     public DeployCPIsHelper() {

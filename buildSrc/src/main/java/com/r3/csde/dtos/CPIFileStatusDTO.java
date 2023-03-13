@@ -6,20 +6,11 @@ public class CPIFileStatusDTO {
 
     public CPIFileStatusDTO() {}
 
+    public String getStatus() { return status; }
 
-    public String getStatus() {
-        return status;
-    }
+    public void setStatus(String status) { this.status = status; }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    public String getCpiFileChecksum() { return cpiFileChecksum; }
 
-    public String getCpiFileChecksum() {
-        return cpiFileChecksum;
-    }
-
-    public void setCpiFileChecksum(String cpiFileChecksum) {
-        this.cpiFileChecksum = cpiFileChecksum;
-    }
+    public void setCpiFileChecksum(String cpiFileChecksum) { this.cpiFileChecksum = cpiFileChecksum; }
 }

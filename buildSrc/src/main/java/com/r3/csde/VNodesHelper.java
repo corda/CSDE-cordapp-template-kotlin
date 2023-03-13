@@ -53,12 +53,14 @@ public class VNodesHelper {
         // Check if each required vnode already exist, if not create it.
         for (VNode vn : requiredNodes) {
             // Match on x500 and cpi name
-            List<VirtualNodeInfoDTO> matches = existingVNodes.stream().filter(existing ->
-                    existing.getHoldingIdentity().getX500Name().equals( vn.getX500Name()) &&
-                    existing.getCpiIdentifier().getCpiName().equals(vn.getCpi()))
+            List<VirtualNodeInfoDTO> matches = existingVNodes
+                    .stream()
+                    .filter(existing ->
+                            existing.getHoldingIdentity().getX500Name().equals( vn.getX500Name()) &&
+                                    existing.getCpiIdentifier().getCpiName().equals(vn.getCpi()))
                     .collect(Collectors.toList());
 
-            if (matches.size() == 0 ) {
+            if (matches.size() == 0) {
                 createVNode(vn);
             }
         }
@@ -74,7 +76,7 @@ public class VNodesHelper {
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
 
-        if(response.getStatus() != HTTP_OK){
+        if (response.getStatus() != HTTP_OK) {
             throw new CsdeException("Failed to get Existing vNodes, response status: "+ response.getStatus());
         }
 
@@ -103,8 +105,9 @@ public class VNodesHelper {
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
 
-        if (response.getStatus() != HTTP_OK)
+        if (response.getStatus() != HTTP_OK) {
             throw new CsdeException("Creation of virtual node failed with response status: " + response.getStatus());
+        }
     }
 
     /**
@@ -114,16 +117,11 @@ public class VNodesHelper {
     private String getCpiCheckSum(VNode vNode) throws CsdeException {
 
         try {
-            String file;
-            if (vNode.getServiceX500Name() == null) {
-                file = pc.CPIUploadStatusFName;
-            } else {
-                file = pc.NotaryCPIUploadStatusFName;
-            }
+            String file = (vNode.getServiceX500Name() == null) ? pc.CPIUploadStatusFName : pc.NotaryCPIUploadStatusFName;
             FileInputStream in = new FileInputStream(file);
             CPIFileStatusDTO statusDTO = mapper.readValue(in, CPIFileStatusDTO.class);
             return statusDTO.getCpiFileChecksum().toString();
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new CsdeException("Failed to read CPI checksum from file, with error: " + e);
         }
     }
@@ -134,15 +132,16 @@ public class VNodesHelper {
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
 
-        if(response.getStatus() != HTTP_OK)
+        if (response.getStatus() != HTTP_OK) {
             throw new CsdeException("Failed to check cpis, response status: " + response.getStatus());
+        }
 
         try {
             GetCPIsResponseDTO cpisResponse = mapper.readValue(
                     response.getBody().toString(), GetCPIsResponseDTO.class);
 
-            for (CpiMetadataDTO cpi: cpisResponse.getCpis()){
-                if (Objects.equals(cpi.getCpiFileChecksum(), cpiCheckSum)){
+            for (CpiMetadataDTO cpi: cpisResponse.getCpis()) {
+                if (Objects.equals(cpi.getCpiFileChecksum(), cpiCheckSum)) {
                     return true;
                 }
             }
@@ -167,7 +166,9 @@ public class VNodesHelper {
 
         for (VNode vn: requiredNodes) {
             // Match on x500 and cpi name
-            List<VirtualNodeInfoDTO> matches = existingVNodes.stream().filter(existing ->
+            List<VirtualNodeInfoDTO> matches = existingVNodes
+                    .stream()
+                    .filter(existing ->
                             existing.getHoldingIdentity().getX500Name().equals( vn.getX500Name()) &&
                                     existing.getCpiIdentifier().getCpiName().equals(vn.getCpi()))
                     .collect(Collectors.toList());
@@ -180,7 +181,7 @@ public class VNodesHelper {
 
             String shortHash = matches.get(0).getHoldingIdentity().getShortHash();
 
-            if (!checkVNodeIsRegistered(shortHash)){
+            if (!checkVNodeIsRegistered(shortHash)) {
                 registerVnode(vn, shortHash);
             }
         }
@@ -220,9 +221,8 @@ public class VNodesHelper {
         if (response.getStatus() == HTTP_OK) {
             pc.out.println("Membership requested for node " + shortHash);
         } else {
-            throw new CsdeException("Failed to register virtual node "+ shortHash +
-                    ", response status: " + response.getStatus() );
-            }
+            throw new CsdeException("Failed to register virtual node " + shortHash + ", response status: " + response.getStatus() );
+        }
 
         // wait until Vnode registered
         pollForRegistration(shortHash, 30000, 1000);
@@ -241,7 +241,7 @@ public class VNodesHelper {
                 .basicAuth(pc.rpcUser, pc.rpcPasswd)
                 .asJson();
 
-        if(response.getStatus() != HTTP_OK)
+        if (response.getStatus() != HTTP_OK)
             throw new CsdeException("Failed to check registration status for virtual node '" + shortHash +
                     "' response status: " + response.getStatus());
 
@@ -260,7 +260,7 @@ public class VNodesHelper {
             // Returns false if array was empty or "APPROVED" wasn't found
             return false;
 
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new CsdeException("Failed to check registration status for " + shortHash +
                     " with exception " + e);
         }

@@ -11,7 +11,7 @@ import java.util.Scanner;
 /**
  * Manages Bringing corda up, testing for liveness and taking corda down
  */
-// todo: this class needs refactoring
+// todo: This class needs refactoring, see https://r3-cev.atlassian.net/browse/CORE-11624
 public class CordaLifeCycleHelper {
 
     ProjectContext pc;
@@ -23,15 +23,13 @@ public class CordaLifeCycleHelper {
         Unirest.config().verifySsl(false);
     }
 
-
     public void startCorda() throws IOException {
         PrintStream pidStore = new PrintStream(new FileOutputStream(pc.cordaPidCache));
         File combinedWorkerJar = pc.project.getConfigurations().getByName("combinedWorker").getSingleFile();
 
+        // Manual version of the command to start postgres for reference:
+        // docker run -d --rm -p5432:5432 --name CSDEpostgresql -e POSTGRES_DB=cordacluster -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password postgres:latest
 
-        //docker run -d --rm -p5432:5432 --name CSDEpostgresql -e POSTGRES_DB=cordacluster -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password postgres:latest
-
-        // todo: make consistent with other ProcessBuilder set ups (use cmdArray)
         new ProcessBuilder(
                 "docker",
                 "run", "-d", "--rm",
@@ -41,11 +39,15 @@ public class CordaLifeCycleHelper {
                 "-e", "POSTGRES_USER=postgres",
                 "-e", "POSTGRES_PASSWORD=password",
                 "postgres:latest").start();
-        // todo: is there a better way of doing this - ie poll for readiness
+
+        // todo: we should poll for readiness not wait 10 seconds, see https://r3-cev.atlassian.net/browse/CORE-11626
         utils.rpcWait(10000);
+
+        pc.out.println("MB: CombinedWorkerJar" + combinedWorkerJar.toString() );
 
         ProcessBuilder procBuild = new ProcessBuilder(pc.javaBinDir + "/java",
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
+                "-Dlog4j.configurationFile=" + pc.project.getRootDir() + "/config/log4j2.xml",
                 "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
                 "-jar",
                 combinedWorkerJar.toString(),
@@ -58,13 +60,14 @@ public class CordaLifeCycleHelper {
                 "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
                 "-ddatabase.jdbc.directory="+pc.JDBCDir);
 
+        pc.out.println("MB: procBuild.command(): " + procBuild.command());
 
         procBuild.redirectErrorStream(true);
         Process proc = procBuild.start();
         pidStore.print(proc.pid());
         pc.out.println("Corda Process-id="+proc.pid());
 
-        // todo: should poll for readiness before returning
+        // todo: we should poll for readiness before completing the startCorda task, see https://r3-cev.atlassian.net/browse/CORE-11625
     }
 
 

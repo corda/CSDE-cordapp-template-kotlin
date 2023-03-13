@@ -11,7 +11,7 @@ import java.util.LinkedList;
 
 import static java.lang.Thread.sleep;
 
-// todo: this class needs refactoring
+// todo: This class needs refactoring, see https://r3-cev.atlassian.net/browse/CORE-11624
 public class ProjectUtils {
 
     ProjectContext pc;

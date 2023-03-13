@@ -7,19 +7,11 @@ public class VirtualNodeInfoDTO {
 
     public VirtualNodeInfoDTO() {}
 
-    public HoldingIdentityDTO getHoldingIdentity() {
-        return holdingIdentity;
-    }
+    public HoldingIdentityDTO getHoldingIdentity() { return holdingIdentity; }
 
-    public void setHoldingIdentity(HoldingIdentityDTO holdingIdentity) {
-        this.holdingIdentity = holdingIdentity;
-    }
+    public void setHoldingIdentity(HoldingIdentityDTO holdingIdentity) { this.holdingIdentity = holdingIdentity; }
 
-    public CpiIdentifierDTO getCpiIdentifier() {
-        return cpiIdentifier;
-    }
+    public CpiIdentifierDTO getCpiIdentifier() { return cpiIdentifier; }
 
-    public void setCpiIdentifier(CpiIdentifierDTO cpiIdentifier) {
-        this.cpiIdentifier = cpiIdentifier;
-    }
+    public void setCpiIdentifier(CpiIdentifierDTO cpiIdentifier) { this.cpiIdentifier = cpiIdentifier; }
 }

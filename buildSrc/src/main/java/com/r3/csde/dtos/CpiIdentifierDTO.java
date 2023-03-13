@@ -10,28 +10,15 @@ public class CpiIdentifierDTO {
     public CpiIdentifierDTO() {
     }
 
+    public String getCpiName() { return cpiName; }
 
-    public String getCpiName() {
-        return cpiName;
-    }
+    public void setCpiName(String cpiName) { this.cpiName = cpiName; }
 
-    public void setCpiName(String cpiName) {
-        this.cpiName = cpiName;
-    }
+    public String getCpiVVersion() { return cpiVVersion; }
 
-    public String getCpiVVersion() {
-        return cpiVVersion;
-    }
+    public void setCpiVVersion(String cpiVVersion) { this.cpiVVersion = cpiVVersion; }
 
-    public void setCpiVVersion(String cpiVVersion) {
-        this.cpiVVersion = cpiVVersion;
-    }
+    public String getSignerSummaryHash() { return signerSummaryHash; }
 
-    public String getSignerSummaryHash() {
-        return signerSummaryHash;
-    }
-
-    public void setSignerSummaryHash(String signerSummaryHash) {
-        this.signerSummaryHash = signerSummaryHash;
-    }
+    public void setSignerSummaryHash(String signerSummaryHash) { this.signerSummaryHash = signerSummaryHash; }
 }

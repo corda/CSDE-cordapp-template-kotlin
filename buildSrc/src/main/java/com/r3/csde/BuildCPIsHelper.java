@@ -4,11 +4,11 @@ import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 
-// todo: this class needs refactoring
+// todo: This class needs refactoring, see https://r3-cev.atlassian.net/browse/CORE-11624
 public class BuildCPIsHelper {
 
     public ProjectContext pc;
-    public ProjectUtils utils ;
+    public ProjectUtils utils;
 
     public NetworkConfig config;
     public BuildCPIsHelper(ProjectContext _pc, NetworkConfig _config) {
@@ -20,14 +20,13 @@ public class BuildCPIsHelper {
     public void createGroupPolicy() throws IOException {
 
         File groupPolicyFile = new File(String.format("%s/GroupPolicy.json", pc.devEnvWorkspace));
-        File devnetFile = new File( pc.project.getRootDir() + "/" + config.getConfigFilePath());
+        File devnetFile = new File(pc.project.getRootDir() + "/" + config.getConfigFilePath());
 
 
         if (!groupPolicyFile.exists() || groupPolicyFile.lastModified() < devnetFile.lastModified()) {
 
             pc.out.println("createGroupPolicy: Creating a GroupPolicy");
 
-//            LinkedList<String> configX500Ids = utils.getConfigX500Ids(pc.X500ConfigFile);
             List<String> configX500Ids = config.getX500Names();
             LinkedList<String> commandList = new LinkedList<>();
 

@@ -7,20 +7,11 @@ public class CpiMetadataDTO {
 
     public CpiMetadataDTO() {}
 
+    public String getCpiFileChecksum() { return cpiFileChecksum; }
 
-    public String getCpiFileChecksum() {
-        return cpiFileChecksum;
-    }
+    public void setCpiFileChecksum(String cpiFileChecksum) { this.cpiFileChecksum = cpiFileChecksum; }
 
-    public void setCpiFileChecksum(String cpiFileChecksum) {
-        this.cpiFileChecksum = cpiFileChecksum;
-    }
+    public CpiIdentifierDTO getId() { return id; }
 
-    public CpiIdentifierDTO getId() {
-        return id;
-    }
-
-    public void setId(CpiIdentifierDTO id) {
-        this.id = id;
-    }
+    public void setId(CpiIdentifierDTO id) { this.id = id; }
 }

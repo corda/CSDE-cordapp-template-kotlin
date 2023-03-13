@@ -6,7 +6,7 @@ import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 import kong.unirest.HttpResponse;
 
-// todo: this class needs refactoring
+// todo: This class needs refactoring, see https://r3-cev.atlassian.net/browse/CORE-11624
 public class CordaStatusQueries {
 
     ProjectContext pc;
