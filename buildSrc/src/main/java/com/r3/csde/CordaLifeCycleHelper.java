@@ -27,7 +27,7 @@ public class CordaLifeCycleHelper {
         PrintStream pidStore = new PrintStream(new FileOutputStream(pc.cordaPidCache));
         File combinedWorkerJar = pc.project.getConfigurations().getByName("combinedWorker").getSingleFile();
 
-        // Manual version of the command to start postgres for reference:
+        // Manual version of the command to start postgres (for reference):
         // docker run -d --rm -p5432:5432 --name CSDEpostgresql -e POSTGRES_DB=cordacluster -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password postgres:latest
 
         new ProcessBuilder(
@@ -43,8 +43,6 @@ public class CordaLifeCycleHelper {
         // todo: we should poll for readiness not wait 10 seconds, see https://r3-cev.atlassian.net/browse/CORE-11626
         utils.rpcWait(10000);
 
-        pc.out.println("MB: CombinedWorkerJar" + combinedWorkerJar.toString() );
-
         ProcessBuilder procBuild = new ProcessBuilder(pc.javaBinDir + "/java",
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
                 "-Dlog4j.configurationFile=" + pc.project.getRootDir() + "/config/log4j2.xml",
@@ -59,8 +57,6 @@ public class CordaLifeCycleHelper {
                 "-ddatabase.pass=password",
                 "-ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster",
                 "-ddatabase.jdbc.directory="+pc.JDBCDir);
-
-        pc.out.println("MB: procBuild.command(): " + procBuild.command());
 
         procBuild.redirectErrorStream(true);
         Process proc = procBuild.start();

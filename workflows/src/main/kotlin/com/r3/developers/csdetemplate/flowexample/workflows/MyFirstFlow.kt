@@ -112,7 +112,7 @@ class MyFirstFlowResponder: ResponderFlow {
 
 
     // Responder flows are invoked when an initiating flow makes a call via a session set up with the Virtual
-    // node hosting the Responder flow. When a responder flow is invoked its call() method is called.
+    // node hosting the Responder flow. When a responder flow is invoked, its call() method is called.
     // call() methods must be marked as @Suspendable, this allows Corda to pause mid-execution to wait
     // for a response from the other flows and services/
     // The Call method has the flow session passed in as a parameter by Corda so the session is available to

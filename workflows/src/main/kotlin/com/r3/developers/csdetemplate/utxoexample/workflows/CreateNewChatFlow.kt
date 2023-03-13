@@ -67,14 +67,8 @@ class CreateNewChatFlow: ClientStartableFlow {
                 participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
             )
 
-            // Obtain the Notary name and public key.
-
+            // Obtain the notary.
             val notary = notaryLookup.notaryServices.single()
-
-//            val notary = notaryLookup.notaryServices.first()
-//            val notaryKey = memberLookup.lookup().first {
-//                it.memberProvidedContext["corda.notary.service.name"] == notary.name.toString()
-//            }.ledgerKeys.first()
 
             // Use UTXOTransactionBuilder to build up the draft transaction.
             val txBuilder= ledgerService.getTransactionBuilder()
