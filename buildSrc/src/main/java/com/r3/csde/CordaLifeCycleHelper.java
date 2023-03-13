@@ -72,6 +72,7 @@ public class CordaLifeCycleHelper {
 
         ProcessBuilder procBuild = new ProcessBuilder(pc.javaBinDir + "/java",
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
+                "-Dlog4j.configurationFile=" + pc.project.getRootDir() + "/config/log4j2.xml",
                 "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
                 "-jar",
                 combinedWorkerJar.toString(),
