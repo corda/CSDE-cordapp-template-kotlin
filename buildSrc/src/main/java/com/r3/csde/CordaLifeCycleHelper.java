@@ -45,6 +45,7 @@ public class CordaLifeCycleHelper {
 
         ProcessBuilder procBuild = new ProcessBuilder(pc.javaBinDir + "/java",
                 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
+                "-DsecurityMangerEnabled=false",
                 "-Dlog4j.configurationFile=" + pc.project.getRootDir() + "/config/log4j2.xml",
                 "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
                 "-jar",
@@ -62,6 +63,7 @@ public class CordaLifeCycleHelper {
         Process proc = procBuild.start();
         pidStore.print(proc.pid());
         pc.out.println("Corda Process-id="+proc.pid());
+        proc.getInputStream().transferTo(pc.out);
 
         // todo: we should poll for readiness before completing the startCorda task, see https://r3-cev.atlassian.net/browse/CORE-11625
     }
