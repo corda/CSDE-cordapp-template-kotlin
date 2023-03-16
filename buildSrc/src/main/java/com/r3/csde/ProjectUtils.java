@@ -1,13 +1,7 @@
 package com.r3.csde;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.r3.csde.dtos.CPIFileStatusDTO;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
-import kong.unirest.Unirest;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.LinkedList;
 
 import static java.lang.Thread.sleep;
 
