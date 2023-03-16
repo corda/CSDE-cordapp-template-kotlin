@@ -19,7 +19,8 @@ import com.r3.csde.DeployCPIsHelper
 import com.r3.csde.BuildCPIsHelper
 import com.r3.csde.ProjectUtils
 import com.r3.csde.CordaStatusQueries
-import com.r3.csde.CreateAndRegisterVNodesHelper
+import com.r3.csde.VNodesHelper
+import com.r3.csde.NetworkConfig
 
 plugins {
     id 'java-library'
@@ -113,6 +114,8 @@ def projectContext = new ProjectContext(project,
         cordaNotaryPluginsVersion
 )
 
+def networkConfig = new NetworkConfig("config/static-network-config.json")
+
 def utils = new ProjectUtils()
 
 // Initiate workspace folder
@@ -183,7 +186,7 @@ tasks.register('listCPIs') {
 
 // Build CPI tasks
 
-def buildCPIsHelper = new BuildCPIsHelper(projectContext)
+def buildCPIsHelper = new BuildCPIsHelper(projectContext, networkConfig)
 
 tasks.register("1-createGroupPolicy") {
     group = cordappGroup
@@ -224,7 +227,7 @@ tasks.register('3-buildCPIs') {
 
 def deployCPIsHelper = new DeployCPIsHelper(projectContext)
 
-tasks.register("4-deployCPIs") {
+tasks.register('4-deployCPIs') {
     group = cordappGroup
     dependsOn('3-buildCPIs')
     doLast {
@@ -232,23 +235,14 @@ tasks.register("4-deployCPIs") {
     }
 }
 
-// create and register Vnodes Tasks
+// Setup VNodes tasks
 
-def createAndRegisterVNodesHelper = new CreateAndRegisterVNodesHelper(projectContext)
+def vNodesHelper = new VNodesHelper(projectContext, networkConfig )
 
-tasks.register("5-createAndRegVNodes") {
+tasks.register('5-vNodeSetup') {
     group = cordappGroup
     dependsOn('4-deployCPIs')
     doLast {
-        createAndRegisterVNodesHelper.createAndRegVNodes()
+        vNodesHelper.vNodesSetup()
     }
 }
-
-// Empty task, just acts as the Task user entry point task.
-tasks.register('quickDeployCordapp') {
-    group = cordappGroup
-    dependsOn("5-createAndRegVNodes")
-}
-
-
-

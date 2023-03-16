@@ -8,23 +8,23 @@ import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.base.types.MemberX500Name
-import net.corda.v5.base.util.contextLogger
-import net.corda.v5.base.util.days
 import net.corda.v5.ledger.common.NotaryLookup
 import net.corda.v5.ledger.common.Party
 import net.corda.v5.ledger.utxo.Command
 import net.corda.v5.ledger.utxo.StateRef
 import net.corda.v5.ledger.utxo.UtxoLedgerService
+import org.slf4j.LoggerFactory
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 
 
 data class TestContractFlowArgs(val otherMember: String)
 
-class TestContractFlow: RPCStartableFlow  {
+class TestContractFlow: ClientStartableFlow  {
 
     private companion object {
-        val log = contextLogger()
+        val log = LoggerFactory.getLogger(this::class.java.enclosingClass)
     }
 
     @CordaInject
@@ -44,7 +44,7 @@ class TestContractFlow: RPCStartableFlow  {
     lateinit var flowEngine: FlowEngine
 
     @Suspendable
-    override fun call(requestBody: RPCRequestData): String {
+    override fun call(requestBody: ClientRequestBody): String {
 
 
         val results = mutableMapOf<String, String>()
@@ -85,13 +85,13 @@ class TestContractFlow: RPCStartableFlow  {
 
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
-                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Create())
                     .addSignatories(chatState.participants)
 
                 @Suppress("DEPRECATION", "UNUSED_VARIABLE")
-                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+                val signedTransaction = txBuilder.toSignedTransaction()
 
                 inputStateRef = StateRef(signedTransaction.id, 0)
                 flowEngine.subFlow(FinalizeChatSubFlow(signedTransaction, otherMember.name))
@@ -116,14 +116,14 @@ class TestContractFlow: RPCStartableFlow  {
 
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
-                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Create())
                     .addCommand(FakeCommand())
                     .addSignatories(chatState.participants)
 
                 @Suppress("DEPRECATION", "UNUSED_VARIABLE")
-                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+                val signedTransaction = txBuilder.toSignedTransaction()
 
                 "Fail"
 
@@ -149,13 +149,13 @@ class TestContractFlow: RPCStartableFlow  {
 
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
-                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Create())
                     .addSignatories(chatState.participants)
 
                 @Suppress("DEPRECATION", "UNUSED_VARIABLE")
-                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+                val signedTransaction = txBuilder.toSignedTransaction()
 
                 "Fail"
 
@@ -180,14 +180,14 @@ class TestContractFlow: RPCStartableFlow  {
 
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
-                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addInputState(inputStateRef)
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Create())
                     .addSignatories(chatState.participants)
 
                 @Suppress("DEPRECATION", "UNUSED_VARIABLE")
-                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+                val signedTransaction = txBuilder.toSignedTransaction()
 
                 "Fail"
 
@@ -217,14 +217,14 @@ class TestContractFlow: RPCStartableFlow  {
 
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
-                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addOutputState(chatState)
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Create())
                     .addSignatories(chatState.participants)
 
                 @Suppress("DEPRECATION", "UNUSED_VARIABLE")
-                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+                val signedTransaction = txBuilder.toSignedTransaction()
 
                 "Fail"
             } catch (e:Exception) {
@@ -250,13 +250,13 @@ class TestContractFlow: RPCStartableFlow  {
 
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
-                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Update())
                     .addSignatories(chatState.participants)
 
                 @Suppress("DEPRECATION", "UNUSED_VARIABLE")
-                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+                val signedTransaction = txBuilder.toSignedTransaction()
 
                 "Fail"
 
@@ -284,7 +284,7 @@ class TestContractFlow: RPCStartableFlow  {
 
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
-                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addInputState(inputStateRef)
                     .addInputState(inputStateRef)
                     .addOutputState(chatState)
@@ -292,7 +292,7 @@ class TestContractFlow: RPCStartableFlow  {
                     .addSignatories(chatState.participants)
 
                 @Suppress("DEPRECATION", "UNUSED_VARIABLE")
-                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+                val signedTransaction = txBuilder.toSignedTransaction()
 
                 "Fail"
 
@@ -324,7 +324,7 @@ class TestContractFlow: RPCStartableFlow  {
 
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
-                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addInputState(inputStateRef)
                     .addOutputState(chatState)
                     .addOutputState(chatState)
@@ -332,7 +332,7 @@ class TestContractFlow: RPCStartableFlow  {
                     .addSignatories(chatState.participants)
 
                 @Suppress("DEPRECATION", "UNUSED_VARIABLE")
-                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+                val signedTransaction = txBuilder.toSignedTransaction()
 
                 "Fail"
             } catch (e:Exception) {
@@ -357,14 +357,14 @@ class TestContractFlow: RPCStartableFlow  {
 
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
-                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addInputState(inputStateRef)
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Update())
                     .addSignatories(chatState.participants)
 
                 @Suppress("DEPRECATION", "UNUSED_VARIABLE")
-                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+                val signedTransaction = txBuilder.toSignedTransaction()
 
                 "Fail"
             } catch (e:Exception) {
@@ -389,14 +389,14 @@ class TestContractFlow: RPCStartableFlow  {
 
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
-                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addInputState(inputStateRef)
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Update())
                     .addSignatories(chatState.participants)
 
                 @Suppress("DEPRECATION", "UNUSED_VARIABLE")
-                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+                val signedTransaction = txBuilder.toSignedTransaction()
 
                 "Fail"
             } catch (e:Exception) {
@@ -421,14 +421,14 @@ class TestContractFlow: RPCStartableFlow  {
 
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
-                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addInputState(inputStateRef)
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Update())
                     .addSignatories(chatState.participants)
 
                 @Suppress("DEPRECATION", "UNUSED_VARIABLE")
-                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+                val signedTransaction = txBuilder.toSignedTransaction()
 
                 "Fail"
             } catch (e:Exception) {
@@ -454,13 +454,13 @@ class TestContractFlow: RPCStartableFlow  {
                 // Use UTXOTransactionBuilder to build up the draft transaction.
                 val txBuilder = ledgerService.getTransactionBuilder()
                     .setNotary(Party(notary.name, notaryKey))
-                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                    .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addOutputState(chatState)
                     .addCommand(FakeCommand())
                     .addSignatories(chatState.participants)
 
                 @Suppress("DEPRECATION", "UNUSED_VARIABLE")
-                val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+                val signedTransaction = txBuilder.toSignedTransaction()
 
                 "Fail"
 
@@ -482,11 +482,6 @@ class TestContractFlow: RPCStartableFlow  {
             log.warn("Failed to process utxo flow for request body '$requestBody' because:'${e.message}'")
             throw e
         }
-
-
-
-
-
     }
 
 }
@@ -494,8 +489,8 @@ class TestContractFlow: RPCStartableFlow  {
 {
     "clientRequestId": "dummy-1",
     "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.TestContractFlow",
-    "requestData": {
-    "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB"
+    "requestBody": {
+        "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB"
     }
 }
 

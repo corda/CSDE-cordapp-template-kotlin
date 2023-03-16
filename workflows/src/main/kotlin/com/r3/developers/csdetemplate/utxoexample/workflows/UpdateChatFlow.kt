@@ -7,9 +7,9 @@ import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.exceptions.CordaRuntimeException
-import net.corda.v5.base.util.contextLogger
-import net.corda.v5.base.util.days
 import net.corda.v5.ledger.utxo.UtxoLedgerService
+import org.slf4j.LoggerFactory
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 
@@ -18,10 +18,10 @@ data class UpdateChatFlowArgs(val id: UUID, val message: String)
 
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
-class UpdateChatFlow: RPCStartableFlow {
+class UpdateChatFlow: ClientStartableFlow {
 
     private companion object {
-        val log = contextLogger()
+        val log = LoggerFactory.getLogger(this::class.java.enclosingClass)
     }
 
     @CordaInject
@@ -39,7 +39,7 @@ class UpdateChatFlow: RPCStartableFlow {
     lateinit var flowEngine: FlowEngine
 
     @Suspendable
-    override fun call(requestBody: RPCRequestData): String {
+    override fun call(requestBody: ClientRequestBody): String {
 
         log.info("UpdateNewChatFlow.call() called")
 
@@ -70,7 +70,7 @@ class UpdateChatFlow: RPCStartableFlow {
             // Use UTXOTransactionBuilder to build up the draft transaction.
             val txBuilder= ledgerService.getTransactionBuilder()
                 .setNotary(stateAndRef.state.notary)
-                .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(1.days.toMillis()))
+                .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                 .addOutputState(newChatState)
                 .addInputState(stateAndRef.ref)
                 .addCommand(ChatContract.Update())
@@ -79,7 +79,7 @@ class UpdateChatFlow: RPCStartableFlow {
             // Convert the transaction builder to a UtxoSignedTransaction and sign with this Vnode's first Ledger key.
             // Note, toSignedTransaction() is currently a placeholder method, hence being marked as deprecated.
             @Suppress("DEPRECATION")
-            val signedTransaction = txBuilder.toSignedTransaction(myInfo.ledgerKeys.first())
+            val signedTransaction = txBuilder.toSignedTransaction()
 
             // Call FinalizeChatSubFlow which will finalise the transaction.
             // If successful the flow will return a String of the created transaction id,
@@ -101,7 +101,7 @@ RequestBody for triggering the flow via http-rpc:
 {
     "clientRequestId": "update-2",
     "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.UpdateChatFlow",
-    "requestData": {
+    "requestBody": {
         "id":"** fill in id **",
         "message": "How are you today?"
         }

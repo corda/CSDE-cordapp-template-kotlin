@@ -24,7 +24,11 @@ data class ChatState(
     // The message
     val message: String,
     // The participants to the chat, represented by their public key.
-    override val participants: List<PublicKey>) : ContractState {
+    private val participants: List<PublicKey>) : ContractState {
+
+    override fun getParticipants(): List<PublicKey> {
+        return participants
+    }
 
     // Helper function to create a new ChatState from the previous (input) ChatState.
     fun updateMessage(messageFrom: MemberX500Name, message: String) =

@@ -13,12 +13,8 @@ plugins {
 // A cordaProvided declaration is required for anything that we use that the Corda API provides.
 // This is required to allow us to build CorDapp modules as OSGi bundles that CPI and CPB files are built on.
 dependencies {
-    // We need a version of kotlin-stdlib-jdk8 built as an OSGi bundle, this is "kotlin-stdlib-jdk8-osgi".
-    // R3 builds kotlin-stdlib-jdk8-osgi from Kotlin's kotlin-stdlib-jdk8.
-    // NB:
-    //   Kotlin's kotlin-osgi-bundle does not provide all of the Kotlin API that is required,
-    //   There is no kotlin-stdlib-jdk11, but one is not needed even though we are targetting Java 11.
-    cordaProvided 'net.corda.kotlin:kotlin-stdlib-jdk8-osgi'
+
+    cordaProvided 'org.jetbrains.kotlin:kotlin-osgi-bundle'
 
     // Declare a "platform" so that we use the correct set of dependency versions for the version of the
     // Corda API specified.
@@ -45,8 +41,9 @@ dependencies {
 
     // This are shared so should be here.
     // Dependencies Required By Test Tooling
-    testImplementation "net.corda:corda-simulator-api:$simulatorVersion"
-    testRuntimeOnly "net.corda:corda-simulator-runtime:$simulatorVersion"
+    // Todo:  these are commented out as the simulator UTXO work has not been merged into Gecko yet.
+//    testImplementation "net.corda:corda-simulator-api:$simulatorVersion"
+//    testRuntimeOnly "net.corda:corda-simulator-runtime:$simulatorVersion"
 
     // 3rd party libraries
     // Required

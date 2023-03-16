@@ -8,7 +8,7 @@ import net.corda.v5.application.messaging.FlowSession
 import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
-import net.corda.v5.base.util.contextLogger
+import org.slf4j.LoggerFactory
 
 // A class to hold the deserialized arguments required to start the flow
 class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
@@ -23,12 +23,12 @@ class Message(val sender: MemberX500Name, val message: String)
 // MyFirstFlow is an initiating flow, it's corresponding responder flow is called MyFirstFlowResponder (defined below)
 // to link the two sides of the flow together they need to have the same protocol.
 @InitiatingFlow(protocol = "my-first-flow")
-// MyFirstFlow should inherit from RPCStartableFlow, which tells Corda it can be started via an RPC call
-class MyFirstFlow: RPCStartableFlow {
+// MyFirstFlow should inherit from ClientStartableFlow, which tells Corda it can be started via an REST call from a client
+class MyFirstFlow: ClientStartableFlow {
 
     // It is useful to be able to log messages from the flows for debugging.
     private companion object {
-        val log = contextLogger()
+        val log = LoggerFactory.getLogger(this::class.java.enclosingClass)
     }
 
     // Corda has a set of injectable services which are injected into the flow at runtime.
@@ -54,7 +54,7 @@ class MyFirstFlow: RPCStartableFlow {
     // call() methods must be marked as @Suspendable, this allows Corda to pause mid-execution to wait
     // for a response from the other flows and services
     @Suspendable
-    override fun call(requestBody: RPCRequestData): String {
+    override fun call(requestBody: ClientRequestBody): String {
 
         // Useful logging to follow what's happening in the console or logs
         log.info("MFF: MyFirstFlow.call() called")
@@ -102,7 +102,7 @@ class MyFirstFlowResponder: ResponderFlow {
 
     // It is useful to be able to log messages from the flows for debugging.
     private companion object {
-        val log = contextLogger()
+        val log = LoggerFactory.getLogger(this::class.java.enclosingClass)
     }
 
     // MemberLookup provides a service for looking up information about members of the Virtual Network which
@@ -112,7 +112,7 @@ class MyFirstFlowResponder: ResponderFlow {
 
 
     // Responder flows are invoked when an initiating flow makes a call via a session set up with the Virtual
-    // node hosting the Responder flow. When a responder flow is invoked it's call() method is called.
+    // node hosting the Responder flow. When a responder flow is invoked, its call() method is called.
     // call() methods must be marked as @Suspendable, this allows Corda to pause mid-execution to wait
     // for a response from the other flows and services/
     // The Call method has the flow session passed in as a parameter by Corda so the session is available to
@@ -149,7 +149,7 @@ RequestBody for triggering the flow via http-rpc:
 {
     "clientRequestId": "r1",
     "flowClassName": "com.r3.developers.csdetemplate.flowexample.workflows.MyFirstFlow",
-    "requestData": {
+    "requestBody": {
         "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB"
         }
 }

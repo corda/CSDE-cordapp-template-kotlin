@@ -5,15 +5,14 @@ import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 import kong.unirest.HttpResponse;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
 
+// todo: This class needs refactoring, see https://r3-cev.atlassian.net/browse/CORE-11624
 public class DeployCPIsHelper {
 
     public DeployCPIsHelper() {
