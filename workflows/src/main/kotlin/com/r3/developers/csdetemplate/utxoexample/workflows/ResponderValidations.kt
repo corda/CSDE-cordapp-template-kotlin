@@ -1,7 +1,6 @@
 package com.r3.developers.csdetemplate.utxoexample.workflows
 
 import com.r3.developers.csdetemplate.utxoexample.states.ChatState
-import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.base.types.MemberX500Name

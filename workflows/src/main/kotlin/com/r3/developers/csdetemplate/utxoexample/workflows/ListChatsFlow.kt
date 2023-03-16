@@ -1,13 +1,13 @@
 package com.r3.developers.csdetemplate.utxoexample.workflows
 
 import com.r3.developers.csdetemplate.utxoexample.states.ChatState
+import net.corda.v5.application.flows.ClientRequestBody
+import net.corda.v5.application.flows.ClientStartableFlow
 import net.corda.v5.application.flows.CordaInject
-import net.corda.v5.application.flows.RPCRequestData
-import net.corda.v5.application.flows.RPCStartableFlow
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.utxo.UtxoLedgerService
+import org.slf4j.LoggerFactory
 import java.util.*
 
 
@@ -19,10 +19,10 @@ import java.util.*
 data class ChatStateResults(val id: UUID, val chatName: String,val messageFromName: String, val message: String)
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
-class ListChatsFlow : RPCStartableFlow {
+class ListChatsFlow : ClientStartableFlow {
 
     private companion object {
-        val log = contextLogger()
+        val log = LoggerFactory.getLogger(this::class.java.enclosingClass)
     }
 
     @CordaInject
@@ -33,7 +33,7 @@ class ListChatsFlow : RPCStartableFlow {
     lateinit var ledgerService: UtxoLedgerService
 
     @Suspendable
-    override fun call(requestBody: RPCRequestData): String {
+    override fun call(requestBody: ClientRequestBody): String {
 
         log.info("ListChatsFlow.call() called")
 
@@ -56,6 +56,6 @@ RequestBody for triggering the flow via http-rpc:
 {
     "clientRequestId": "list-1",
     "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.ListChatsFlow",
-    "requestData": {}
+    "requestBody": {}
 }
 */

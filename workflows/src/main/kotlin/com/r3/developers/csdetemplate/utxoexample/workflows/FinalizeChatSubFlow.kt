@@ -7,10 +7,9 @@ import net.corda.v5.application.messaging.FlowSession
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.base.types.MemberX500Name
-import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import net.corda.v5.ledger.utxo.transaction.UtxoSignedTransaction
-import net.corda.v5.ledger.utxo.transaction.getOutputStates
+import org.slf4j.LoggerFactory
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
 
@@ -19,7 +18,7 @@ import net.corda.v5.ledger.utxo.transaction.getOutputStates
 class FinalizeChatSubFlow(private val signedTransaction: UtxoSignedTransaction, private val otherMember: MemberX500Name): SubFlow<String> {
 
     private companion object {
-        val log = contextLogger()
+        val log = LoggerFactory.getLogger(this::class.java.enclosingClass)
     }
 
     // Injects the UtxoLedgerService to enable the flow to make use of the Ledger API.
@@ -61,11 +60,11 @@ class FinalizeChatSubFlow(private val signedTransaction: UtxoSignedTransaction, 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
 
 //@InitiatingBy declares the protocol which will be used to link the initiator to the responder.
-@InitiatedBy("finalize-chat-protocol")
+@InitiatedBy(protocol = "finalize-chat-protocol")
 class FinalizeChatResponderFlow: ResponderFlow {
 
     private companion object {
-        val log = contextLogger()
+        val log = LoggerFactory.getLogger(this::class.java.enclosingClass)
     }
 
     // Injects the UtxoLedgerService to enable the flow to make use of the Ledger API.
@@ -84,7 +83,7 @@ class FinalizeChatResponderFlow: ResponderFlow {
             val finalizedSignedTransaction = ledgerService.receiveFinality(session) { ledgerTransaction ->
 
                 // Note, this exception will only be shown in the logs if Corda Logging is set to debug.
-                val state = ledgerTransaction.getOutputStates<ChatState>().singleOrNull() ?:
+                val state = ledgerTransaction.getOutputStates(ChatState::class.java).singleOrNull() ?:
                     throw CordaRuntimeException("Failed verification - transaction did not have exactly one output ChatState.")
 
                 // Uses checkForBannedWords() and checkMessageFromMatchesCounterparty() functions
