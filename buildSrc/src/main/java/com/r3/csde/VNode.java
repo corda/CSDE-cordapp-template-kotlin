@@ -5,14 +5,13 @@ package com.r3.csde;
  * This class is a representation of a Vnode used to express the vNodes required on the network.
  */
 
-public class VNode{
+public class VNode {
     private String x500Name;
     private String cpi;
 
     private String serviceX500Name;
 
-    public VNode() {
-    }
+    public VNode() { }
 
     public String getX500Name(){ return x500Name; }
     public void setX500Name(String _x500Name) { x500Name = _x500Name; }

@@ -7,8 +7,7 @@ public class CpiIdentifierDTO {
     private String cpiVersion;
     private String signerSummaryHash;
 
-    public CpiIdentifierDTO() {
-    }
+    public CpiIdentifierDTO() { }
 
     public String getCpiName() { return cpiName; }
 
