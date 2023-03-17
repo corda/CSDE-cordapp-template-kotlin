@@ -123,7 +123,6 @@ class MyFirstFlowResponder: ResponderFlow {
         // Useful logging to follow what's happening in the console or logs
         log.info("MFF: MyFirstResponderFlow.call() called")
 
-
         // Receive the payload and deserialize it into a Message class
         val receivedMessage = session.receive(Message::class.java)
 
