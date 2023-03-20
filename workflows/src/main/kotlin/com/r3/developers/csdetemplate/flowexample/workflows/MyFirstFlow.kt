@@ -87,9 +87,8 @@ class MyFirstFlow: ClientStartableFlow {
         // Receive a response from the Responder flow
         val response = session.receive(Message::class.java)
 
-        // The return value of a RPCStartableFlow must always be a String, this string will be passed
-        // back as the REST RPC response when the status of the flow is queried on Corda, or as the return
-        // value from the flow when testing using the Simulator
+        // The return value of a ClientStartableFlow must always be a String, this string will be passed
+        // back as the REST RPC response when the status of the flow is queried on Corda.
         return response.message
     }
 }
