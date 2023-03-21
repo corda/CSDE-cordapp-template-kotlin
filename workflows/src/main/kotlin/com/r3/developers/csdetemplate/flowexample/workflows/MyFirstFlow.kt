@@ -10,7 +10,7 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import org.slf4j.LoggerFactory
 
-// A class to hold the deserialized arguments required to start the flow
+// A class to hold the deserialized arguments required to start the flow.
 class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
 
 
@@ -50,9 +50,9 @@ class MyFirstFlow: ClientStartableFlow {
 
 
 
-    // When a flow is invoked it's call() method is called.
+    // When a flow is invoked its call() method is called.
     // call() methods must be marked as @Suspendable, this allows Corda to pause mid-execution to wait
-    // for a response from the other flows and services
+    // for a response from the other flows and services.
     @Suspendable
     override fun call(requestBody: ClientRequestBody): String {
 
@@ -87,9 +87,8 @@ class MyFirstFlow: ClientStartableFlow {
         // Receive a response from the Responder flow
         val response = session.receive(Message::class.java)
 
-        // The return value of a RPCStartableFlow must always be a String, this string will be passed
-        // back as the REST RPC response when the status of the flow is queried on Corda, or as the return
-        // value from the flow when testing using the Simulator
+        // The return value of a ClientStartableFlow must always be a String, this String will be passed
+        // back as the REST response when the status of the flow is queried on Corda.
         return response.message
     }
 }
@@ -144,7 +143,7 @@ class MyFirstFlowResponder: ResponderFlow {
     }
 }
 /*
-RequestBody for triggering the flow via http-rpc:
+RequestBody for triggering the flow via REST:
 {
     "clientRequestId": "r1",
     "flowClassName": "com.r3.developers.csdetemplate.flowexample.workflows.MyFirstFlow",
