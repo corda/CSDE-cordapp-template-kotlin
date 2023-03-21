@@ -76,9 +76,9 @@ class UpdateChatFlow: ClientStartableFlow {
                 .addCommand(ChatContract.Update())
                 .addSignatories(newChatState.participants)
 
-            // Convert the transaction builder to a UtxoSignedTransaction and sign with this Vnode's first Ledger key.
-            // Note, toSignedTransaction() is currently a placeholder method, hence being marked as deprecated.
-            @Suppress("DEPRECATION")
+            // Convert the transaction builder to a UTXOSignedTransaction. Verifies the content of the
+            // UtxoTransactionBuilder and signs the transaction with any required signatories that belong to
+            // the current node.
             val signedTransaction = txBuilder.toSignedTransaction()
 
             // Call FinalizeChatSubFlow which will finalise the transaction.
@@ -97,7 +97,7 @@ class UpdateChatFlow: ClientStartableFlow {
 }
 
 /*
-RequestBody for triggering the flow via http-rpc:
+RequestBody for triggering the flow via REST:
 {
     "clientRequestId": "update-2",
     "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.UpdateChatFlow",
