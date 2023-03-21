@@ -100,7 +100,7 @@ class CreateNewChatFlow: ClientStartableFlow {
 
 
 /*
-RequestBody for triggering the flow via http-rpc:
+RequestBody for triggering the flow via REST:
 {
     "clientRequestId": "create-1",
     "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.CreateNewChatFlow",
