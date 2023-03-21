@@ -4,16 +4,9 @@ plugins {
     id 'java'
 }
 
-def constants = new Properties()
-file("$rootDir/../gradle.properties").withInputStream { InputStream input -> constants.load(input) }
-def artifactoryContextUrl = constants.getProperty('artifactoryContextUrl')
-
 repositories {
     mavenCentral()
     mavenLocal()
-    maven {
-        url = "$artifactoryContextUrl/"
-    }
 }
 
 dependencies {
