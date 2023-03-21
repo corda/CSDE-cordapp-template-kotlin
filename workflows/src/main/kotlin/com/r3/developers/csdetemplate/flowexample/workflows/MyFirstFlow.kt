@@ -87,7 +87,7 @@ class MyFirstFlow: ClientStartableFlow {
         // Receive a response from the Responder flow
         val response = session.receive(Message::class.java)
 
-        // The return value of a ClientStartableFlow must always be a String, this string will be passed
+        // The return value of a ClientStartableFlow must always be a String, this String will be passed
         // back as the REST response when the status of the flow is queried on Corda.
         return response.message
     }
