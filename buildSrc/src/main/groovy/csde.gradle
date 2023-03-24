@@ -148,6 +148,18 @@ tasks.register("stopCorda") {
     }
 }
 
+tasks.register("stopAndCleanCorda") {
+    group = cordaGroup
+    dependsOn('clean')
+    doLast {
+        try {
+            cordaLifeCycle.stopCorda()
+        } catch (Exception ignored) {
+        }
+        delete devEnvWorkspace
+    }
+}
+
 tasks.register("getPostgresJDBC") {
     group = supportingGroup
     doLast {
