@@ -215,6 +215,12 @@ public class BuildCPIsHelper {
 //        }
 //        fileWriter.close();
 
+// todo: in the meantime, here is a simple working impl
+
+        //Get CPI packaging errors
+        if (proc.getErrorStream().available() > 0) {
+            proc.getErrorStream().transferTo(pc.out);
+        }
     }
 
     private void createNotaryCPI() throws CsdeException, IOException, InterruptedException {
