@@ -17,16 +17,16 @@ The CSDE is obtained by cloning this CSDE-Cordapp-Template-Kotlin to your local 
 
 - A UTXO example in package com.r3.developers.csdetemplate.utxoexample packages
 
-- Ability to configure the Members of the Local corda Network.
+- Ability to configure the Members of the Local Corda Network.
 
 Note, the CSDE is experimental, we may or may not release it as part of Corda 5.0, in part based on developer feedback using it.
 
-To find out how to use the CSDE please refer to the getting started section in the Corda 5 Beta 1.1 documentation at https://docs.r3.com/
+To find out how to use the CSDE please refer to the getting started section in the Corda 5 Beta 2 documentation at https://docs.r3.com/
 
 
 
 ## Chat app
-We had built a simple one to one chat app to demo some functionalities of the next gen Corda platform.
+We have built a simple one to one chat app to demo some functionalities of the next gen Corda platform.
 
 In this app you can:
 1. Create a new chat with a counterparty. `CreateNewChatFlow`
@@ -37,7 +37,7 @@ In this app you can:
 ### Setting up
 
 1. We will begin our test deployment with clicking the `startCorda`. This task will load up the combined Corda workers in docker.
-   A successful deployment will allow you to open the HTTP RPC at: https://localhost:8888/api/v1/swagger#. You can test out some of the
+   A successful deployment will allow you to open the REST APIs at: https://localhost:8888/api/v1/swagger#. You can test out some of the
    functions to check connectivity. (GET /cpi function call should return an empty list as for now.)
 2. We will now deploy the cordapp with a click of `5-vNodeSetup` task. Upon successful deployment of the CPI, the GET /cpi function call should now return the meta data of the cpi you just upload
 
