@@ -24,7 +24,11 @@ public class CordaLifeCycleHelper {
     }
 
     public void startCorda() throws IOException {
-        PrintStream pidStore = new PrintStream(new FileOutputStream(pc.cordaPidCache));
+        File cordaPIDFile = new File(pc.cordaPidCache);
+        if (cordaPIDFile.exists()) {
+            throw new IOException("Cannot start the Combined worker\nCached process ID file " + cordaPIDFile + " existing.\nWas the combined worker already started?");
+        }
+        PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPIDFile));
         File combinedWorkerJar = pc.project.getConfigurations().getByName("combinedWorker").getSingleFile();
 
         // Manual version of the command to start postgres (for reference):
