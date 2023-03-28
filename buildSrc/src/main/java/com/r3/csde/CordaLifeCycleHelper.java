@@ -23,8 +23,12 @@ public class CordaLifeCycleHelper {
         Unirest.config().verifySsl(false);
     }
 
-    public void startCorda() throws IOException {
-        PrintStream pidStore = new PrintStream(new FileOutputStream(pc.cordaPidCache));
+    public void startCorda() throws IOException, CsdeException {
+        File cordaPIDFile = new File(pc.cordaPidCache);
+        if (cordaPIDFile.exists()) {
+            throw new CsdeException("Cannot start the Combined worker. Cached process ID file " + cordaPIDFile + " existing. Was the combined worker already started?");
+        }
+        PrintStream pidStore = new PrintStream(new FileOutputStream(cordaPIDFile));
         File combinedWorkerJar = pc.project.getConfigurations().getByName("combinedWorker").getSingleFile();
 
         // Manual version of the command to start postgres (for reference):
@@ -87,7 +91,7 @@ public class CordaLifeCycleHelper {
             cordaPIDFile.delete();
         }
         else {
-            throw new CsdeException("Cannot stop the Combined worker\nCached process ID file " + pc.cordaPidCache + " missing.\nWas the combined worker not started?");
+            throw new CsdeException("Cannot stop the Combined worker. Cached process ID file " + pc.cordaPidCache + " missing. Was the combined worker not started?");
         }
     }
 }
