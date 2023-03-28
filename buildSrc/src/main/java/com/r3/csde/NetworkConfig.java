@@ -22,7 +22,7 @@ public class NetworkConfig {
         ObjectMapper mapper = new ObjectMapper();
         try {
             FileInputStream in = new FileInputStream(configFilePath);
-            vNodes = mapper.readValue(in, new TypeReference<List<VNode>>() {
+            vNodes = mapper.readValue(in, new TypeReference<>() {
             });
         } catch (Exception e) {
             throw new CsdeException("Failed to read static network configuration file, with exception: " + e);

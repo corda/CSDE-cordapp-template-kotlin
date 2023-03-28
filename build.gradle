@@ -6,7 +6,8 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.jpa'
     id 'java'
     id 'maven-publish'
-    id 'csde'
+//    id 'csde'
+    id 'net.corda.plugins.csde'
 }
 
 allprojects {
@@ -14,6 +15,17 @@ allprojects {
     version '1.0-SNAPSHOT'
 
     def javaVersion = VERSION_11
+
+    csde {
+        cordaClusterURL = "https://localhost:8888"
+        combinedWorkerVersion = "5.0.0.0-Gecko1.0"
+        cordaNotaryVersion = cordaNotaryPluginsVersion
+        postgresJdbcVersion = "42.4.3"
+        //cordaRpcUser = "admin"
+        //cordaRpcPassword = "admin"
+        //csdeWorkspaceDir = "workspace"
+        //cordaDbContainerName = "CSDEpostgresql"
+    }
 
     // Declare the set of Kotlin compiler options we need to build a CorDapp.
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
@@ -44,6 +56,7 @@ allprojects {
 
     repositories {
         // All dependencies are held in Maven Central
+        mavenLocal()
         mavenCentral()
         maven {
             url = "$artifactoryContextUrl/"
@@ -93,7 +106,7 @@ allprojects {
 //            }
 //        }
 
-//        mavenLocal()
+        mavenLocal()
     }
 
     tasks.withType(Test).configureEach {
