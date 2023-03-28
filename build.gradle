@@ -21,10 +21,6 @@ allprojects {
         combinedWorkerVersion = "5.0.0.0-Gecko1.0"
         cordaNotaryVersion = cordaNotaryPluginsVersion
         postgresJdbcVersion = "42.4.3"
-        //cordaRpcUser = "admin"
-        //cordaRpcPassword = "admin"
-        //csdeWorkspaceDir = "workspace"
-        //cordaDbContainerName = "CSDEpostgresql"
     }
 
     // Declare the set of Kotlin compiler options we need to build a CorDapp.
