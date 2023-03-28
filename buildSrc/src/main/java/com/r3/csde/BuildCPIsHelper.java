@@ -146,6 +146,7 @@ public class BuildCPIsHelper {
 
         ProcessBuilder pb = new ProcessBuilder(cmdArray);
         pb.redirectErrorStream(true);
+        pc.out.println("MB: pb: " + pb.command());
         Process proc = pb.start();
         proc.waitFor();
 
