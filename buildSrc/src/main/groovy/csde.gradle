@@ -155,7 +155,7 @@ tasks.register("stopAndCleanCorda") {
         try {
             cordaLifeCycle.stopCorda()
         } catch (Exception ignore) {
-            println(ignore.toString())
+            println("ignoring exception: ${ignore.toString()}")
         }
         delete devEnvWorkspace
     }
