@@ -56,8 +56,6 @@ dependencies {
             extension = 'cpb'
         }
     }
-
-    implementation "org.codehaus.groovy:groovy-json:3.0.9"
 }
 
 // task groupings
@@ -85,7 +83,7 @@ def workflowBuildDir = rootDir.toString() + "/workflows/build"
 
 
 // todo: Need to read things from cordapp plugin - the cordapp names will be changed by the user
-def appCpiName =  'cpi name'
+def appCpiName =  'cpi name' // !!! this must match with the cpi name in /config/static-network-config.json
 def notaryCpiName =  'CSDE Notary Server CPI'
 
 
@@ -145,6 +143,19 @@ tasks.register("stopCorda") {
     group = cordaGroup
     doLast {
         cordaLifeCycle.stopCorda()
+    }
+}
+
+tasks.register("stopAndCleanCorda") {
+    group = cordaGroup
+    dependsOn('clean')
+    doLast {
+        try {
+            cordaLifeCycle.stopCorda()
+        } catch (Exception ignore) {
+            println("ignoring exception: ${ignore.toString()}")
+        }
+        delete devEnvWorkspace
     }
 }
 
