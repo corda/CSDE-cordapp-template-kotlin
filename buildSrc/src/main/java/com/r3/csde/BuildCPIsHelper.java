@@ -203,20 +203,6 @@ public class BuildCPIsHelper {
         Process proc = pb.start();
         proc.waitFor();
 
-// todo: work out how to capture error code better than the following code
-
-//        BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-//        File tempOutputFile = new File(String.format("%s/tempOutput.txt", pc.devEnvWorkspace));
-//        tempOutputFile.delete();
-//        FileWriter fileWriter = new FileWriter(tempOutputFile);
-//        String line;
-//        while (( line = reader.readLine()) != null){
-//            fileWriter.write(line + "\n");
-//        }
-//        fileWriter.close();
-
-// todo: in the meantime, here is a simple working impl
-
         //Get CPI packaging errors
         if (proc.getErrorStream().available() > 0) {
             proc.getErrorStream().transferTo(pc.out);
