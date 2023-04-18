@@ -45,7 +45,7 @@ class FinalizeChatSubFlow(private val signedTransaction: UtxoSignedTransaction, 
                     listOf(session)
                 )
                 // Returns the transaction id converted to a string.
-                finalizedSignedTransaction.id.toString().also {
+                finalizedSignedTransaction.transaction.id.toString().also {
                     log.info("Success! Response: $it")
                 }
             }
@@ -93,7 +93,7 @@ class FinalizeChatResponderFlow: ResponderFlow {
 
                 log.info("Verified the transaction- ${ledgerTransaction.id}")
             }
-            log.info("Finished responder flow - ${finalizedSignedTransaction.id}")
+            log.info("Finished responder flow - ${finalizedSignedTransaction.transaction.id}")
         }
         // Soft fails the flow and log the exception.
         catch (e: Exception) {
