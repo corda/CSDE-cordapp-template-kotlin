@@ -9,7 +9,6 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.ledger.common.NotaryLookup
-import net.corda.v5.ledger.common.Party
 import net.corda.v5.ledger.utxo.Command
 import net.corda.v5.ledger.utxo.StateRef
 import net.corda.v5.ledger.utxo.UtxoLedgerService
@@ -63,10 +62,6 @@ class TestContractFlow: ClientStartableFlow  {
 
             // Obtain the Notary name and public key.
             val notary = notaryLookup.notaryServices.first()
-            val notaryKey = memberLookup.lookup().first {
-                it.memberProvidedContext["corda.notary.service.name"] == notary.name.toString()
-            }.ledgerKeys.first()
-
 
             // Create a well formed transaction with an output State which can be referenced
             // as an input StateRef in the tests
@@ -83,8 +78,8 @@ class TestContractFlow: ClientStartableFlow  {
 
                 chatId = chatState.id
 
-                val txBuilder = ledgerService.getTransactionBuilder()
-                    .setNotary(Party(notary.name, notaryKey))
+                val txBuilder = ledgerService.createTransactionBuilder()
+                    .setNotary(notary.name)
                     .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Create())
@@ -114,8 +109,8 @@ class TestContractFlow: ClientStartableFlow  {
                     participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
                 )
 
-                val txBuilder = ledgerService.getTransactionBuilder()
-                    .setNotary(Party(notary.name, notaryKey))
+                val txBuilder = ledgerService.createTransactionBuilder()
+                    .setNotary(notary.name)
                     .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Create())
@@ -147,8 +142,8 @@ class TestContractFlow: ClientStartableFlow  {
                     participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first(), otherMember.ledgerKeys.first())
                 )
 
-                val txBuilder = ledgerService.getTransactionBuilder()
-                    .setNotary(Party(notary.name, notaryKey))
+                val txBuilder = ledgerService.createTransactionBuilder()
+                    .setNotary(notary.name)
                     .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Create())
@@ -178,8 +173,8 @@ class TestContractFlow: ClientStartableFlow  {
                     participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
                 )
 
-                val txBuilder = ledgerService.getTransactionBuilder()
-                    .setNotary(Party(notary.name, notaryKey))
+                val txBuilder = ledgerService.createTransactionBuilder()
+                    .setNotary(notary.name)
                     .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addInputState(inputStateRef)
                     .addOutputState(chatState)
@@ -215,8 +210,8 @@ class TestContractFlow: ClientStartableFlow  {
                     participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
                 )
 
-                val txBuilder = ledgerService.getTransactionBuilder()
-                    .setNotary(Party(notary.name, notaryKey))
+                val txBuilder = ledgerService.createTransactionBuilder()
+                    .setNotary(notary.name)
                     .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addOutputState(chatState)
                     .addOutputState(chatState)
@@ -248,8 +243,8 @@ class TestContractFlow: ClientStartableFlow  {
                     participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
                 )
 
-                val txBuilder = ledgerService.getTransactionBuilder()
-                    .setNotary(Party(notary.name, notaryKey))
+                val txBuilder = ledgerService.createTransactionBuilder()
+                    .setNotary(notary.name)
                     .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addOutputState(chatState)
                     .addCommand(ChatContract.Update())
@@ -282,8 +277,8 @@ class TestContractFlow: ClientStartableFlow  {
                     participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
                 )
 
-                val txBuilder = ledgerService.getTransactionBuilder()
-                    .setNotary(Party(notary.name, notaryKey))
+                val txBuilder = ledgerService.createTransactionBuilder()
+                    .setNotary(notary.name)
                     .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addInputState(inputStateRef)
                     .addInputState(inputStateRef)
@@ -322,8 +317,8 @@ class TestContractFlow: ClientStartableFlow  {
                     participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
                 )
 
-                val txBuilder = ledgerService.getTransactionBuilder()
-                    .setNotary(Party(notary.name, notaryKey))
+                val txBuilder = ledgerService.createTransactionBuilder()
+                    .setNotary(notary.name)
                     .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addInputState(inputStateRef)
                     .addOutputState(chatState)
@@ -355,8 +350,8 @@ class TestContractFlow: ClientStartableFlow  {
                     participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
                 )
 
-                val txBuilder = ledgerService.getTransactionBuilder()
-                    .setNotary(Party(notary.name, notaryKey))
+                val txBuilder = ledgerService.createTransactionBuilder()
+                    .setNotary(notary.name)
                     .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addInputState(inputStateRef)
                     .addOutputState(chatState)
@@ -387,8 +382,8 @@ class TestContractFlow: ClientStartableFlow  {
                     participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
                 )
 
-                val txBuilder = ledgerService.getTransactionBuilder()
-                    .setNotary(Party(notary.name, notaryKey))
+                val txBuilder = ledgerService.createTransactionBuilder()
+                    .setNotary(notary.name)
                     .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addInputState(inputStateRef)
                     .addOutputState(chatState)
@@ -419,8 +414,8 @@ class TestContractFlow: ClientStartableFlow  {
                     participants = listOf(myInfo.ledgerKeys.first(), myInfo.ledgerKeys.first())
                 )
 
-                val txBuilder = ledgerService.getTransactionBuilder()
-                    .setNotary(Party(notary.name, notaryKey))
+                val txBuilder = ledgerService.createTransactionBuilder()
+                    .setNotary(notary.name)
                     .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addInputState(inputStateRef)
                     .addOutputState(chatState)
@@ -452,8 +447,8 @@ class TestContractFlow: ClientStartableFlow  {
 
 
                 // Use UTXOTransactionBuilder to build up the draft transaction.
-                val txBuilder = ledgerService.getTransactionBuilder()
-                    .setNotary(Party(notary.name, notaryKey))
+                val txBuilder = ledgerService.createTransactionBuilder()
+                    .setNotary(notary.name)
                     .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                     .addOutputState(chatState)
                     .addCommand(FakeCommand())

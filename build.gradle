@@ -19,13 +19,14 @@ allprojects {
     csde {
         cordaClusterURL = "https://localhost:8888"
         networkConfigFile = "config/static-network-config.json"
+        r3RootCertFile = "config/beta-ca-root.pem"
         corDappCpiName = "MyCorDapp"
         notaryCpiName = "NotaryServer"
         cordaRpcUser = "admin"
         cordaRpcPasswd ="admin"
         csdeWorkspaceDir = "workspace"
         notaryVersion = cordaNotaryPluginsVersion
-        combinedWorkerVersion = "5.0.0.0-Gecko1.0"
+        combinedWorkerVersion = combinedWorkerJarVersion
         postgresJdbcVersion = "42.4.3"
         cordaDbContainerName = "CSDEpostgresql"
         cordaBinDir = "${System.getProperty("user.home")}/.corda/corda5"
