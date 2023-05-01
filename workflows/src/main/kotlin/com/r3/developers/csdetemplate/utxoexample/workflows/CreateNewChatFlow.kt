@@ -9,7 +9,6 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.ledger.common.NotaryLookup
-import net.corda.v5.ledger.common.Party
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -71,8 +70,8 @@ class CreateNewChatFlow: ClientStartableFlow {
             val notary = notaryLookup.notaryServices.single()
 
             // Use UTXOTransactionBuilder to build up the draft transaction.
-            val txBuilder= ledgerService.getTransactionBuilder()
-                .setNotary(Party(notary.name, notary.publicKey))
+            val txBuilder= ledgerService.createTransactionBuilder()
+                .setNotary(notary.name)
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                 .addOutputState(chatState)
                 .addCommand(ChatContract.Create())

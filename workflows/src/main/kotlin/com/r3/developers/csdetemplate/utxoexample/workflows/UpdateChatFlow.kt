@@ -68,8 +68,8 @@ class UpdateChatFlow: ClientStartableFlow {
             val newChatState = state.updateMessage(myInfo.name, flowArgs.message)
 
             // Use UTXOTransactionBuilder to build up the draft transaction.
-            val txBuilder= ledgerService.getTransactionBuilder()
-                .setNotary(stateAndRef.state.notary)
+            val txBuilder= ledgerService.createTransactionBuilder()
+                .setNotary(stateAndRef.state.notaryName)
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                 .addOutputState(newChatState)
                 .addInputState(stateAndRef.ref)
