@@ -22,7 +22,7 @@ class Message(val sender: MemberX500Name, val message: String)
 
 // MyFirstFlow is an initiating flow, it's corresponding responder flow is called MyFirstFlowResponder (defined below)
 // to link the two sides of the flow together they need to have the same protocol.
-@InitiatingFlow(protocol = "my-first-flow")
+@InitiatingFlow(protocol = "my-first-flow", version = [1, 2])
 // MyFirstFlow should inherit from ClientStartableFlow, which tells Corda it can be started via an REST call from a client
 class MyFirstFlow: ClientStartableFlow {
 
@@ -93,9 +93,12 @@ class MyFirstFlow: ClientStartableFlow {
     }
 }
 
+
+//todo how to initiator which version of responder to call
+
 // MyFirstFlowResponder is a responder flow, it's corresponding initiating flow is called MyFirstFlow (defined above)
 // to link the two sides of the flow together they need to have the same protocol.
-@InitiatedBy(protocol = "my-first-flow")
+@InitiatedBy(protocol = "my-first-flow", version = [1])
 // Responder flows must inherit from ResponderFlow
 class MyFirstFlowResponder: ResponderFlow {
 
