@@ -19,7 +19,7 @@ allprojects {
     csde {
         cordaClusterURL = "https://localhost:8888"
         networkConfigFile = "config/static-network-config.json"
-        r3RootCertFile = "config/beta-ca-root.pem"
+        r3RootCertFile = "config/r3-ca-key.pem"
         corDappCpiName = "MyCorDapp"
         notaryCpiName = "NotaryServer"
         cordaRpcUser = "admin"
