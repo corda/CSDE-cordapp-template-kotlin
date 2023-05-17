@@ -58,8 +58,9 @@ class RedeemApplesFlow : ClientStartableFlow {
             ?: throw IllegalArgumentException("No apple stamp matching the stamp id $stampId")
 
         val basketOfApplesStampStateAndRef = utxoLedgerService.findUnconsumedStatesByType(BasketOfApples::class.java)
-            .firstOrNull()
-            ?: throw IllegalArgumentException("There are no baskets of apples")
+            .firstOrNull { basketStateAndRef -> basketStateAndRef.state.contractState.owner ==
+                    appleStampStateAndRef.state.contractState.issuer }
+            ?: throw IllegalArgumentException("There are no eligible baskets of apples")
 
         val originalBasketOfApples = basketOfApplesStampStateAndRef.state.contractState
 
