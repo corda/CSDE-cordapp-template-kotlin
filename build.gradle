@@ -24,6 +24,7 @@ allprojects {
         notaryCpiName = "NotaryServer"
         cordaRpcUser = "admin"
         cordaRpcPasswd ="admin"
+        workflowsModuleName = workflowsModule
         csdeWorkspaceDir = "workspace"
         notaryVersion = cordaNotaryPluginsVersion
         combinedWorkerVersion = combinedWorkerJarVersion
