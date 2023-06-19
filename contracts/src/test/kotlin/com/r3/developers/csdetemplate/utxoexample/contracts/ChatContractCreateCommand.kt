@@ -14,11 +14,13 @@ import java.util.*
 
 class ChatContractCreateCommand : ContractTest() {
 
-    private val outputChatState = ChatState(
+    private val outputChatStateChatName = "aliceChatName"
+    private val outputChatStateChatMessage = "aliceChatMessage"
+    internal val outputChatState = ChatState(
         UUID.randomUUID(),
-        "myChatName",
+        outputChatStateChatName,
         aliceName,
-        "myChatMessage",
+        outputChatStateChatMessage,
         listOf(aliceKey, bobKey)
     )
 
@@ -28,7 +30,6 @@ class ChatContractCreateCommand : ContractTest() {
             addOutputState(outputChatState)
             addCommand(ChatContract.Create())
         }
-
         assertVerifies(transaction)
     }
 
@@ -37,7 +38,6 @@ class ChatContractCreateCommand : ContractTest() {
         val transaction = buildTransaction {
             addOutputState(outputChatState)
         }
-
         assertFailsWith(transaction, REQUIRE_SINGLE_COMMAND)
     }
 
@@ -66,7 +66,6 @@ class ChatContractCreateCommand : ContractTest() {
             addOutputState(state)
             addCommand(ChatContract.Create())
         }
-
         assertFailsWith(transaction, "Failed requirement: $OUTPUT_STATE_SHOULD_ONLY_HAVE_TWO_PARTICIPANTS")
     }
 
@@ -83,7 +82,6 @@ class ChatContractCreateCommand : ContractTest() {
             addOutputState(state)
             addCommand(ChatContract.Create())
         }
-
         assertFailsWith(transaction, "Failed requirement: $OUTPUT_STATE_SHOULD_ONLY_HAVE_TWO_PARTICIPANTS")
     }
 
@@ -100,21 +98,18 @@ class ChatContractCreateCommand : ContractTest() {
             addOutputState(state)
             addCommand(ChatContract.Create())
         }
-
         assertFailsWith(transaction, "Failed requirement: $OUTPUT_STATE_SHOULD_ONLY_HAVE_TWO_PARTICIPANTS")
     }
 
     @Test
     fun shouldNotIncludeInputState() {
-        happyPath()
-        val existingState = ledgerService.findUnconsumedStatesByType(ChatState::class.java).first()
-
+        happyPath() // generate an existing state to search for
+        val existingState = ledgerService.findUnconsumedStatesByType(ChatState::class.java).first() // doesn't matter which as this will fail validation
         val transaction = buildTransaction {
             addInputState(existingState.ref)
             addOutputState(outputChatState)
             addCommand(ChatContract.Create())
         }
-
         assertFailsWith(transaction, "Failed requirement: $CREATE_COMMAND_SHOULD_HAVE_NO_INPUT_STATES")
     }
 
@@ -125,7 +120,6 @@ class ChatContractCreateCommand : ContractTest() {
             addOutputState(outputChatState)
             addCommand(ChatContract.Create())
         }
-
         assertFailsWith(transaction, "Failed requirement: $CREATE_COMMAND_SHOULD_HAVE_ONLY_ONE_OUTPUT_STATE")
     }
 }
