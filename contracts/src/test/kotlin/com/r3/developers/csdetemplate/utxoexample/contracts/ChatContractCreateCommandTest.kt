@@ -12,7 +12,7 @@ import net.corda.v5.ledger.utxo.Command
 import org.junit.jupiter.api.Test
 import java.util.*
 
-class ChatContractCreateCommand : ContractTest() {
+class ChatContractCreateCommandTest : ContractTest() {
 
     private val outputChatStateChatName = "aliceChatName"
     private val outputChatStateChatMessage = "aliceChatMessage"

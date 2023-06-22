@@ -12,11 +12,11 @@ import net.corda.v5.ledger.utxo.StateAndRef
 import org.junit.jupiter.api.Test
 import java.util.*
 
-class ChatContractUpdateCommand : ContractTest() {
+class ChatContractUpdateCommandTest : ContractTest() {
 
     private fun createInitialChatState(): StateAndRef<ChatState> {
         val transaction = buildTransaction {
-            addOutputState(ChatContractCreateCommand().outputChatState)
+            addOutputState(ChatContractCreateCommandTest().outputChatState)
             addCommand(ChatContract.Create())
         }
         transaction.toLedgerTransaction()
