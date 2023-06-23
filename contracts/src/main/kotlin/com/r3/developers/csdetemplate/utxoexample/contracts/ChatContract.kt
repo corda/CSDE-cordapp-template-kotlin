@@ -8,6 +8,25 @@ import net.corda.v5.ledger.utxo.transaction.UtxoLedgerTransaction
 
 class ChatContract: Contract {
 
+    // Use an internal scoped constant to hold the error messages
+    // This allows the tests to use them, meaning if they are updated you won't need to fix tests just because the wording was updated
+    internal companion object {
+
+        const val REQUIRE_SINGLE_COMMAND = "Requires a single command."
+        const val UNKNOWN_COMMAND = "Command not allowed."
+        const val OUTPUT_STATE_SHOULD_ONLY_HAVE_TWO_PARTICIPANTS = "The output state should have two and only two participants."
+        const val TRANSACTION_SHOULD_BE_SIGNED_BY_ALL_PARTICIPANTS = "The transaction should have been signed by both participants."
+
+        const val CREATE_COMMAND_SHOULD_HAVE_NO_INPUT_STATES = "When command is Create there should be no input states."
+        const val CREATE_COMMAND_SHOULD_HAVE_ONLY_ONE_OUTPUT_STATE =  "When command is Create there should be one and only one output state."
+
+        const val UPDATE_COMMAND_SHOULD_HAVE_ONLY_ONE_INPUT_STATE = "When command is Update there should be one and only one input state."
+        const val UPDATE_COMMAND_SHOULD_HAVE_ONLY_ONE_OUTPUT_STATE = "When command is Update there should be one and only one output state."
+        const val UPDATE_COMMAND_ID_SHOULD_NOT_CHANGE = "When command is Update id must not change."
+        const val UPDATE_COMMAND_CHATNAME_SHOULD_NOT_CHANGE = "When command is Update chatName must not change."
+        const val UPDATE_COMMAND_PARTICIPANTS_SHOULD_NOT_CHANGE = "When command is Update participants must not change."
+    }
+
     // Command Class used to indicate that the transaction should start a new chat.
     class Create: Command
     // Command Class used to indicate that the transaction should append a new ChatState to an existing chat.
@@ -17,34 +36,40 @@ class ChatContract: Contract {
     override fun verify(transaction: UtxoLedgerTransaction) {
 
         // Ensures that there is only one command in the transaction
-        val command = transaction.commands.singleOrNull() ?: throw CordaRuntimeException("Requires a single command.")
+        val command = transaction.commands.singleOrNull() ?: throw CordaRuntimeException(REQUIRE_SINGLE_COMMAND)
 
         // Applies a universal constraint (applies to all transactions irrespective of command)
-        "The output state should have two and only two participants." using {
+        OUTPUT_STATE_SHOULD_ONLY_HAVE_TWO_PARTICIPANTS using {
             val output = transaction.outputContractStates.first() as ChatState
             output.participants.size== 2
         }
+
+        TRANSACTION_SHOULD_BE_SIGNED_BY_ALL_PARTICIPANTS using {
+            val output = transaction.outputContractStates.first() as ChatState
+            transaction.signatories.containsAll(output.participants)
+        }
+
         // Switches case based on the command
         when(command) {
             // Rules applied only to transactions with the Create Command.
             is Create -> {
-                "When command is Create there should be no input states." using (transaction.inputContractStates.isEmpty())
-                "When command is Create there should be one and only one output state." using (transaction.outputContractStates.size == 1)
+                CREATE_COMMAND_SHOULD_HAVE_NO_INPUT_STATES using (transaction.inputContractStates.isEmpty())
+                CREATE_COMMAND_SHOULD_HAVE_ONLY_ONE_OUTPUT_STATE using (transaction.outputContractStates.size == 1)
             }
             // Rules applied only to transactions with the Update Command.
             is Update -> {
-                "When command is Update there should be one and only one input state." using (transaction.inputContractStates.size == 1)
-                "When command is Update there should be one and only one output state." using (transaction.outputContractStates.size == 1)
+                UPDATE_COMMAND_SHOULD_HAVE_ONLY_ONE_INPUT_STATE using (transaction.inputContractStates.size == 1)
+                UPDATE_COMMAND_SHOULD_HAVE_ONLY_ONE_OUTPUT_STATE using (transaction.outputContractStates.size == 1)
 
                 val input = transaction.inputContractStates.single() as ChatState
                 val output = transaction.outputContractStates.single() as ChatState
-                "When command is Update id must not change." using (input.id == output.id)
-                "When command is Update chatName must not change." using (input.chatName == output.chatName)
-                "When command is Update participants must not change." using (
+                UPDATE_COMMAND_ID_SHOULD_NOT_CHANGE using (input.id == output.id)
+                UPDATE_COMMAND_CHATNAME_SHOULD_NOT_CHANGE using (input.chatName == output.chatName)
+                UPDATE_COMMAND_PARTICIPANTS_SHOULD_NOT_CHANGE using (
                         input.participants.toSet().intersect(output.participants.toSet()).size == 2)
             }
             else -> {
-                throw CordaRuntimeException("Command not allowed.")
+                throw CordaRuntimeException(UNKNOWN_COMMAND)
             }
         }
     }
