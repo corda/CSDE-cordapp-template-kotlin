@@ -15,6 +15,7 @@ class ChatContract: Contract {
         const val REQUIRE_SINGLE_COMMAND = "Requires a single command."
         const val UNKNOWN_COMMAND = "Command not allowed."
         const val OUTPUT_STATE_SHOULD_ONLY_HAVE_TWO_PARTICIPANTS = "The output state should have two and only two participants."
+        const val TRANSACTION_SHOULD_BE_SIGNED_BY_ALL_PARTICIPANTS = "The transaction should have been signed by both participants."
 
         const val CREATE_COMMAND_SHOULD_HAVE_NO_INPUT_STATES = "When command is Create there should be no input states."
         const val CREATE_COMMAND_SHOULD_HAVE_ONLY_ONE_OUTPUT_STATE =  "When command is Create there should be one and only one output state."
@@ -42,6 +43,12 @@ class ChatContract: Contract {
             val output = transaction.outputContractStates.first() as ChatState
             output.participants.size== 2
         }
+
+        TRANSACTION_SHOULD_BE_SIGNED_BY_ALL_PARTICIPANTS using {
+            val output = transaction.outputContractStates.first() as ChatState
+            transaction.signatories.containsAll(output.participants)
+        }
+
         // Switches case based on the command
         when(command) {
             // Rules applied only to transactions with the Create Command.

@@ -15,9 +15,11 @@ import java.util.*
 class ChatContractUpdateCommandTest : ContractTest() {
 
     private fun createInitialChatState(): StateAndRef<ChatState> {
+        val outputState = ChatContractCreateCommandTest().outputChatState
         val transaction = buildTransaction {
-            addOutputState(ChatContractCreateCommandTest().outputChatState)
+            addOutputState(outputState)
             addCommand(ChatContract.Create())
+            addSignatories(outputState.participants)
         }
         transaction.toLedgerTransaction()
         return transaction.outputStateAndRefs.first() as StateAndRef<ChatState>
@@ -31,6 +33,7 @@ class ChatContractUpdateCommandTest : ContractTest() {
             addInputState(existingState.ref)
             addOutputState(updatedOutputChatState)
             addCommand(ChatContract.Update())
+            addSignatories(updatedOutputChatState.participants)
         }
         assertVerifies(transaction)
     }
@@ -42,6 +45,7 @@ class ChatContractUpdateCommandTest : ContractTest() {
         val transaction = buildTransaction {
             addOutputState(updatedOutputChatState)
             addCommand(ChatContract.Update())
+            addSignatories(updatedOutputChatState.participants)
         }
         assertFailsWith(transaction, "Failed requirement: $UPDATE_COMMAND_SHOULD_HAVE_ONLY_ONE_INPUT_STATE")
     }
@@ -55,6 +59,7 @@ class ChatContractUpdateCommandTest : ContractTest() {
             addInputState(existingState.ref)
             addOutputState(updatedOutputChatState)
             addCommand(ChatContract.Update())
+            addSignatories(updatedOutputChatState.participants)
         }
         assertFailsWith(transaction, "Failed requirement: $UPDATE_COMMAND_SHOULD_HAVE_ONLY_ONE_INPUT_STATE")
     }
@@ -68,6 +73,7 @@ class ChatContractUpdateCommandTest : ContractTest() {
             addOutputState(updatedOutputChatState)
             addOutputState(updatedOutputChatState)
             addCommand(ChatContract.Update())
+            addSignatories(updatedOutputChatState.participants)
         }
         assertFailsWith(transaction, "Failed requirement: $UPDATE_COMMAND_SHOULD_HAVE_ONLY_ONE_OUTPUT_STATE")
     }
@@ -82,6 +88,7 @@ class ChatContractUpdateCommandTest : ContractTest() {
             addInputState(existingState.ref)
             addOutputState(updatedOutputChatState)
             addCommand(ChatContract.Update())
+            addSignatories(updatedOutputChatState.participants)
         }
         assertFailsWith(transaction, "Failed requirement: $UPDATE_COMMAND_ID_SHOULD_NOT_CHANGE")
     }
@@ -96,6 +103,7 @@ class ChatContractUpdateCommandTest : ContractTest() {
             addInputState(existingState.ref)
             addOutputState(updatedOutputChatState)
             addCommand(ChatContract.Update())
+            addSignatories(updatedOutputChatState.participants)
         }
         assertFailsWith(transaction, "Failed requirement: $UPDATE_COMMAND_CHATNAME_SHOULD_NOT_CHANGE")
     }
@@ -110,6 +118,7 @@ class ChatContractUpdateCommandTest : ContractTest() {
             addInputState(existingState.ref)
             addOutputState(updatedOutputChatState)
             addCommand(ChatContract.Update())
+            addSignatories(updatedOutputChatState.participants)
         }
         assertFailsWith(transaction, "Failed requirement: $UPDATE_COMMAND_PARTICIPANTS_SHOULD_NOT_CHANGE")
     }
