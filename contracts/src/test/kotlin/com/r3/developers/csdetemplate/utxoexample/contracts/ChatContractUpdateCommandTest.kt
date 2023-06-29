@@ -2,6 +2,7 @@ package com.r3.developers.csdetemplate.utxoexample.contracts
 
 import com.r3.corda.ledger.utxo.testing.ContractTest
 import com.r3.corda.ledger.utxo.testing.buildTransaction
+import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.TRANSACTION_SHOULD_BE_SIGNED_BY_ALL_PARTICIPANTS
 import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_CHATNAME_SHOULD_NOT_CHANGE
 import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_ID_SHOULD_NOT_CHANGE
 import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_PARTICIPANTS_SHOULD_NOT_CHANGE
@@ -14,6 +15,7 @@ import java.util.*
 
 class ChatContractUpdateCommandTest : ContractTest() {
 
+    @Suppress("UNCHECKED_CAST")
     private fun createInitialChatState(): StateAndRef<ChatState> {
         val outputState = ChatContractCreateCommandTest().outputChatState
         val transaction = buildTransaction {
@@ -121,5 +123,30 @@ class ChatContractUpdateCommandTest : ContractTest() {
             addSignatories(updatedOutputChatState.participants)
         }
         assertFailsWith(transaction, "Failed requirement: $UPDATE_COMMAND_PARTICIPANTS_SHOULD_NOT_CHANGE")
+    }
+
+    @Test
+    fun outputStateMustBeSigned() {
+        val existingState = createInitialChatState()
+        val updatedOutputChatState = existingState.state.contractState.updateMessage(bobName, "bobResponse")
+        val transaction = buildTransaction {
+            addInputState(existingState.ref)
+            addOutputState(updatedOutputChatState)
+            addCommand(ChatContract.Update())
+        }
+        assertFailsWith(transaction, "Failed requirement: $TRANSACTION_SHOULD_BE_SIGNED_BY_ALL_PARTICIPANTS")
+    }
+
+    @Test
+    fun outputStateCannotBeSignedByOnlyOneParticipant() {
+        val existingState = createInitialChatState()
+        val updatedOutputChatState = existingState.state.contractState.updateMessage(bobName, "bobResponse")
+        val transaction = buildTransaction {
+            addInputState(existingState.ref)
+            addOutputState(updatedOutputChatState)
+            addCommand(ChatContract.Update())
+            addSignatories(updatedOutputChatState.participants[0])
+        }
+        assertFailsWith(transaction, "Failed requirement: $TRANSACTION_SHOULD_BE_SIGNED_BY_ALL_PARTICIPANTS")
     }
 }
