@@ -12,11 +12,11 @@ class BasketOfApples(
     val owner: PublicKey,
     val weight: Int,
     private val participants: List<PublicKey>
-): ContractState {
+) : ContractState {
     override fun getParticipants(): List<PublicKey> = participants
 
     fun changeOwner(buyer: PublicKey): BasketOfApples {
-        val participants = listOf(farm,buyer)
-        return BasketOfApples(description,farm,buyer,weight,participants)
+        val participants = listOf(farm, buyer)
+        return BasketOfApples(description, farm, buyer, weight, participants)
     }
 }

@@ -4,7 +4,7 @@ import com.r3.developers.apples.states.AppleStamp
 import net.corda.v5.ledger.utxo.Contract
 import net.corda.v5.ledger.utxo.transaction.UtxoLedgerTransaction
 
-class AppleStampContract: Contract {
+class AppleStampContract : Contract {
     override fun verify(transaction: UtxoLedgerTransaction) {
         // Extract the command from the transaction
         // Verify the transaction according to the intention of the transaction
@@ -19,13 +19,7 @@ class AppleStampContract: Contract {
                 }
             }
             is AppleCommands.Redeem -> {
-                val inputs = transaction.getInputStates(AppleStamp::class.java)
-                require(inputs.size == 1) {
-                    "This transaction should only have one AppleStamp state as input"
-                }
-                require(transaction.signatories.contains(inputs.first().holder)) {
-                    "The holder of the input AppleStamp state must be a signatory to the transaction"
-                }
+                // Transaction verification will happen in BasketOfApplesContract
             }
             else -> {
                 // Unrecognised Command type
