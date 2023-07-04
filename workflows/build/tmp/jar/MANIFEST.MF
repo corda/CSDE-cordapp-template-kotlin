@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-SymbolicName: com.r3.developers.csdetemplate.workflows
+Corda-CPK-Cordapp-Name: com.r3.developers.csdetemplate.workflows
+Corda-CPK-Format: 2.0
+Bundle-Name: WorkflowsModuleNameHere
+Bundle-Vendor: VendorNameHere
+Bundle-License: Unknown
+Cordapp-Workflow-Name: WorkflowsModuleNameHere
+Cordapp-Workflow-Version: 1
+Cordapp-Workflow-Vendor: VendorNameHere
+Cordapp-Workflow-Licence: Unknown
+Corda-CPK-Cordapp-Vendor: VendorNameHere
+Corda-CPK-Cordapp-Licence: Unknown
+Target-Platform-Version: 999
+Min-Platform-Version: 999
+Sealed: true
+

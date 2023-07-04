@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Corda-CPB-Format: 2.0
+Corda-CPB-Name: workflows
+Corda-CPB-Version: 1.0-SNAPSHOT
+

@@ -1,0 +1,626 @@
+2023-06-27 10:41:56.902 [main] WARN  net.corda.securitymanager.internal.SecurityManagerServiceImpl {} - Security Manager disabled
+2023-06-27 10:42:00.796 [main] INFO  net.corda.securitymanager.internal.SecurityConfigHandlerImpl {} - SecurityConfigHandler started
+2023-06-27 10:42:04.488 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - Combined worker starting.
+2023-06-27 10:42:04.508 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - LocalWorkerPlatformVersion 999
+2023-06-27 10:42:04.508 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - LocalWorkerSoftwareVersion 5.0.0.0-Iguana10
+2023-06-27 10:42:04.513 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - PID: 14944
+2023-06-27 10:42:04.513 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - Command: /Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home/bin/java
+2023-06-27 10:42:04.517 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 0, -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+2023-06-27 10:42:04.517 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 1, -DsecurityMangerEnabled=false
+2023-06-27 10:42:04.517 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 2, -Dlog4j.configurationFile=/Users/pranushan.nimalan/Documents/airline-cordapp/config/log4j2.xml
+2023-06-27 10:42:04.517 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 3, -Dco.paralleluniverse.fibers.verifyInstrumentation=true
+2023-06-27 10:42:04.517 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 4, -jar
+2023-06-27 10:42:04.517 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 5, /Users/pranushan.nimalan/.corda/corda5/combinedWorker/corda-combined-worker-5.0.0.0-Iguana1.0.jar
+2023-06-27 10:42:04.517 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 6, --instance-id=0
+2023-06-27 10:42:04.517 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 7, -mbus.busType=DATABASE
+2023-06-27 10:42:04.517 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 8, -spassphrase=[REDACTED]
+2023-06-27 10:42:04.518 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 9, -ssalt=salt
+2023-06-27 10:42:04.518 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 10, -ddatabase.user=user
+2023-06-27 10:42:04.518 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 11, -ddatabase.pass=[REDACTED]
+2023-06-27 10:42:04.518 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 12, -ddatabase.jdbc.url=jdbc:postgresql://localhost:5432/cordacluster
+2023-06-27 10:42:04.518 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - argument 13, -ddatabase.jdbc.directory=/Users/pranushan.nimalan/.corda/corda5/jdbcDrivers
+2023-06-27 10:42:04.518 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - User: pranushan.nimalan
+2023-06-27 10:42:04.519 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - StartInstant: 2023-06-27T09:41:49.295Z
+2023-06-27 10:42:04.519 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - TotalCpuDuration: PT50.836102S
+2023-06-27 10:42:04.519 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - classpath: /Users/pranushan.nimalan/.corda/corda5/combinedWorker/corda-combined-worker-5.0.0.0-Iguana1.0.jar
+2023-06-27 10:42:04.526 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - VM OpenJDK 64-Bit Server VM Azul Systems, Inc. 11.0.19+7-LTS
+2023-06-27 10:42:04.532 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - Quasar's instrumentation verification is enabled
+2023-06-27 10:42:05.122 [main] INFO  net.corda.application.dbsetup.PostgresDbSetup {} - Initialising DB.
+2023-06-27 10:42:05.132 [main] INFO  net.corda.application.dbsetup.PostgresDbSetup {} - Create user user in cordacluster in jdbc:postgresql://localhost:5432/cordacluster?user=postgres&password=password.
+2023-06-27 10:42:05.189 [main] INFO  net.corda.application.dbsetup.PostgresDbSetup {} - Run DB migrations in jdbc:postgresql://localhost:5432/cordacluster?user=user&password=password.
+2023-06-27 10:42:05.250 [main] INFO  net.corda.application.dbsetup.PostgresDbSetup {} - Create SCHEMA CONFIG.
+2023-06-27 10:42:05.410 [main] INFO  net.corda.db.admin.impl.LiquibaseSchemaMigratorImpl {} - Setting liquibaseSchemaName to CONFIG
+2023-06-27 10:42:05.529 [main] INFO  liquibase.database {} - Set default schema name to config
+2023-06-27 10:42:05.532 [main] INFO  net.corda.db.admin.impl.LiquibaseSchemaMigratorImpl {} - Updating PostgreSQL 15.3 (Debian 15.3-1.pgdg120+1) DB Schema for cordacluster
+2023-06-27 10:42:05.624 [main] INFO  liquibase.lockservice {} - Successfully acquired change log lock
+2023-06-27 10:42:05.643 [main] INFO  liquibase.servicelocator {} - Cannot load service: liquibase.parser.ChangeLogParser: liquibase.parser.core.json.JsonChangeLogParser Unable to get public no-arg constructor
+2023-06-27 10:42:05.649 [main] INFO  liquibase.servicelocator {} - Cannot load service: liquibase.parser.ChangeLogParser: liquibase.parser.core.yaml.YamlChangeLogParser Unable to get public no-arg constructor
+2023-06-27 10:42:05.650 [main] INFO  net.corda.db.admin.impl.StreamResourceAccessor {} - Creating composite master changelog XML file master-changelog-870be9d0-ad2e-4c4b-aa61-686c88751e5b.xml with: [classloader://net.corda.db.schema/net/corda/db/schema/config/db.changelog-master.xml]
+2023-06-27 10:42:05.882 [main] INFO  net.corda.db.admin.impl.ClassloaderChangeLog {} - Classloader changelog resolution FOUND for net/corda/db/schema/config/migration/cpx-creation-v1.0.xml on net.corda.db-schema [269]
+2023-06-27 10:42:06.036 [main] INFO  net.corda.db.admin.impl.ClassloaderChangeLog {} - Classloader changelog resolution FOUND for net/corda/db/schema/config/migration/config-creation-v1.0.xml on net.corda.db-schema [269]
+2023-06-27 10:42:06.078 [main] INFO  net.corda.db.admin.impl.ClassloaderChangeLog {} - Classloader changelog resolution FOUND for net/corda/db/schema/config/migration/chunking-creation-v1.0.xml on net.corda.db-schema [269]
+2023-06-27 10:42:06.095 [main] INFO  net.corda.db.admin.impl.ClassloaderChangeLog {} - Classloader changelog resolution FOUND for net/corda/db/schema/config/migration/static-network-creation-v1.0.xml on net.corda.db-schema [269]
+2023-06-27 10:42:06.134 [main] INFO  liquibase.changelog {} - Creating database history table with name: CONFIG.databasechangelog
+2023-06-27 10:42:06.144 [main] INFO  liquibase.changelog {} - Reading from CONFIG.databasechangelog
+2023-06-27 10:42:06.369 [main] INFO  liquibase.servicelocator {} - Cannot load service: liquibase.hub.HubService: Provider liquibase.hub.core.StandardHubService could not be instantiated
+2023-06-27 10:42:06.382 [main] INFO  liquibase.changelog {} - Table cpi created
+2023-06-27 10:42:06.387 [main] INFO  liquibase.changelog {} - Primary key added to cpi (name, version, signer_summary_hash)
+2023-06-27 10:42:06.392 [main] INFO  liquibase.changelog {} - Unique constraint added to cpi(file_checksum)
+2023-06-27 10:42:06.396 [main] INFO  liquibase.changelog {} - Table cpk_metadata created
+2023-06-27 10:42:06.400 [main] INFO  liquibase.changelog {} - Primary key added to cpk_metadata (file_checksum)
+2023-06-27 10:42:06.403 [main] INFO  liquibase.changelog {} - Table cpk_file created
+2023-06-27 10:42:06.407 [main] INFO  liquibase.changelog {} - Primary key added to cpk_file (file_checksum)
+2023-06-27 10:42:06.412 [main] INFO  liquibase.changelog {} - Foreign key constraint added to cpk_file (file_checksum)
+2023-06-27 10:42:06.416 [main] INFO  liquibase.changelog {} - Table cpk_db_change_log created
+2023-06-27 10:42:06.421 [main] INFO  liquibase.changelog {} - Primary key added to cpk_db_change_log (cpk_file_checksum, file_path)
+2023-06-27 10:42:06.424 [main] INFO  liquibase.changelog {} - Foreign key constraint added to cpk_db_change_log (cpk_file_checksum)
+2023-06-27 10:42:06.429 [main] INFO  liquibase.changelog {} - Table cpk_db_change_log_audit created
+2023-06-27 10:42:06.433 [main] INFO  liquibase.changelog {} - Primary key added to cpk_db_change_log_audit (id)
+2023-06-27 10:42:06.438 [main] INFO  liquibase.changelog {} - Table cpi_cpk created
+2023-06-27 10:42:06.443 [main] INFO  liquibase.changelog {} - Primary key added to cpi_cpk (cpi_name, cpi_version, cpi_signer_summary_hash, cpk_file_checksum)
+2023-06-27 10:42:06.446 [main] INFO  liquibase.changelog {} - Foreign key constraint added to cpi_cpk (cpi_name, cpi_version, cpi_signer_summary_hash)
+2023-06-27 10:42:06.449 [main] INFO  liquibase.changelog {} - Foreign key constraint added to cpi_cpk (cpk_file_checksum)
+2023-06-27 10:42:06.451 [main] INFO  liquibase.changelog {} - ChangeSet net/corda/db/schema/config/migration/cpx-creation-v1.0.xml::cpx-creation-v1.0::R3.Corda ran successfully in 78ms
+2023-06-27 10:42:06.467 [main] INFO  liquibase.changelog {} - Table config created
+2023-06-27 10:42:06.471 [main] INFO  liquibase.changelog {} - Primary key added to config (section)
+2023-06-27 10:42:06.474 [main] INFO  liquibase.changelog {} - New row inserted into config
+2023-06-27 10:42:06.476 [main] INFO  liquibase.changelog {} - New row inserted into config
+2023-06-27 10:42:06.478 [main] INFO  liquibase.changelog {} - New row inserted into config
+2023-06-27 10:42:06.481 [main] INFO  liquibase.changelog {} - New row inserted into config
+2023-06-27 10:42:06.483 [main] INFO  liquibase.changelog {} - New row inserted into config
+2023-06-27 10:42:06.485 [main] INFO  liquibase.changelog {} - New row inserted into config
+2023-06-27 10:42:06.487 [main] INFO  liquibase.changelog {} - New row inserted into config
+2023-06-27 10:42:06.490 [main] INFO  liquibase.changelog {} - New row inserted into config
+2023-06-27 10:42:06.492 [main] INFO  liquibase.changelog {} - New row inserted into config
+2023-06-27 10:42:06.497 [main] INFO  liquibase.changelog {} - Table config_audit created
+2023-06-27 10:42:06.501 [main] INFO  liquibase.changelog {} - Primary key added to config_audit (change_number)
+2023-06-27 10:42:06.503 [main] INFO  liquibase.changelog {} - Sequence config_audit_id_seq created
+2023-06-27 10:42:06.507 [main] INFO  liquibase.changelog {} - Table db_connection created
+2023-06-27 10:42:06.511 [main] INFO  liquibase.changelog {} - Primary key added to db_connection (connection_id)
+2023-06-27 10:42:06.515 [main] INFO  liquibase.changelog {} - Unique constraint added to db_connection(connection_name, privilege)
+2023-06-27 10:42:06.520 [main] INFO  liquibase.changelog {} - Table db_connection_audit created
+2023-06-27 10:42:06.523 [main] INFO  liquibase.changelog {} - Primary key added to db_connection_audit (change_number)
+2023-06-27 10:42:06.526 [main] INFO  liquibase.changelog {} - Sequence db_connection_audit_id_seq created
+2023-06-27 10:42:06.530 [main] INFO  liquibase.changelog {} - Table holding_identity created
+2023-06-27 10:42:06.534 [main] INFO  liquibase.changelog {} - Primary key added to holding_identity (holding_identity_id)
+2023-06-27 10:42:06.539 [main] INFO  liquibase.changelog {} - Table virtual_node_operation created
+2023-06-27 10:42:06.543 [main] INFO  liquibase.changelog {} - Primary key added to virtual_node_operation (id)
+2023-06-27 10:42:06.548 [main] INFO  liquibase.changelog {} - Index virtual_node_operation_request_id created
+2023-06-27 10:42:06.553 [main] INFO  liquibase.changelog {} - Table virtual_node created
+2023-06-27 10:42:06.558 [main] INFO  liquibase.changelog {} - Primary key added to virtual_node (holding_identity_id)
+2023-06-27 10:42:06.561 [main] INFO  liquibase.changelog {} - Foreign key constraint added to virtual_node (cpi_name, cpi_version, cpi_signer_summary_hash)
+2023-06-27 10:42:06.564 [main] INFO  liquibase.changelog {} - Foreign key constraint added to virtual_node (vault_ddl_connection_id)
+2023-06-27 10:42:06.567 [main] INFO  liquibase.changelog {} - Foreign key constraint added to virtual_node (vault_dml_connection_id)
+2023-06-27 10:42:06.570 [main] INFO  liquibase.changelog {} - Foreign key constraint added to virtual_node (crypto_ddl_connection_id)
+2023-06-27 10:42:06.573 [main] INFO  liquibase.changelog {} - Foreign key constraint added to virtual_node (crypto_dml_connection_id)
+2023-06-27 10:42:06.576 [main] INFO  liquibase.changelog {} - Foreign key constraint added to virtual_node (uniqueness_ddl_connection_id)
+2023-06-27 10:42:06.579 [main] INFO  liquibase.changelog {} - Foreign key constraint added to virtual_node (uniqueness_dml_connection_id)
+2023-06-27 10:42:06.582 [main] INFO  liquibase.changelog {} - Foreign key constraint added to virtual_node (operation_in_progress)
+2023-06-27 10:42:06.586 [main] INFO  liquibase.changelog {} - Table cluster_certificate created
+2023-06-27 10:42:06.590 [main] INFO  liquibase.changelog {} - Primary key added to cluster_certificate (alias)
+2023-06-27 10:42:06.594 [main] INFO  liquibase.changelog {} - Index cluster_certificate_usage created
+2023-06-27 10:42:06.596 [main] INFO  liquibase.changelog {} - ChangeSet net/corda/db/schema/config/migration/config-creation-v1.0.xml::config-creation-v1.0::R3.Corda ran successfully in 136ms
+2023-06-27 10:42:06.607 [main] INFO  liquibase.changelog {} - Table file_upload created
+2023-06-27 10:42:06.611 [main] INFO  liquibase.changelog {} - Primary key added to file_upload (request_id, part_nr)
+2023-06-27 10:42:06.618 [main] INFO  liquibase.changelog {} - Table file_upload_props created
+2023-06-27 10:42:06.623 [main] INFO  liquibase.changelog {} - Primary key added to file_upload_props (request_id, key)
+2023-06-27 10:42:06.627 [main] INFO  liquibase.changelog {} - Index file_upload_props_reqId__idx created
+2023-06-27 10:42:06.630 [main] INFO  liquibase.changelog {} - ChangeSet net/corda/db/schema/config/migration/chunking-creation-v1.0.xml::chunks-creation-v1.0::R3.Corda ran successfully in 28ms
+2023-06-27 10:42:06.644 [main] INFO  liquibase.changelog {} - Table static_network_info created
+2023-06-27 10:42:06.646 [main] INFO  liquibase.changelog {} - ChangeSet net/corda/db/schema/config/migration/static-network-creation-v1.0.xml::static-network-creation-v1.0::R3.Corda ran successfully in 11ms
+2023-06-27 10:42:06.656 [main] INFO  liquibase.lockservice {} - Successfully released change log lock
+2023-06-27 10:42:06.658 [main] INFO  net.corda.db.admin.impl.LiquibaseSchemaMigratorImpl {} - cordacluster DB schema update complete
+2023-06-27 10:42:06.658 [main] INFO  net.corda.application.dbsetup.PostgresDbSetup {} - Create SCHEMA MESSAGEBUS.
+2023-06-27 10:42:06.698 [main] INFO  net.corda.db.admin.impl.LiquibaseSchemaMigratorImpl {} - Setting liquibaseSchemaName to MESSAGEBUS
+2023-06-27 10:42:06.700 [main] INFO  liquibase.database {} - Set default schema name to messagebus
+2023-06-27 10:42:06.701 [main] INFO  net.corda.db.admin.impl.LiquibaseSchemaMigratorImpl {} - Updating PostgreSQL 15.3 (Debian 15.3-1.pgdg120+1) DB Schema for cordacluster
+2023-06-27 10:42:06.742 [main] INFO  liquibase.lockservice {} - Successfully acquired change log lock
+2023-06-27 10:42:06.749 [main] INFO  net.corda.db.admin.impl.StreamResourceAccessor {} - Creating composite master changelog XML file master-changelog-21eb2fe9-50f7-4032-9d10-d43c89e3ceb8.xml with: [classloader://net.corda.db.schema/net/corda/db/schema/messagebus/db.changelog-master.xml]
+2023-06-27 10:42:06.768 [main] INFO  net.corda.db.admin.impl.ClassloaderChangeLog {} - Classloader changelog resolution FOUND for net/corda/db/schema/messagebus/migration/db-message-bus-tables-v1.0.xml on net.corda.db-schema [269]
+2023-06-27 10:42:06.787 [main] INFO  liquibase.changelog {} - Creating database history table with name: MESSAGEBUS.databasechangelog
+2023-06-27 10:42:06.799 [main] INFO  liquibase.changelog {} - Reading from MESSAGEBUS.databasechangelog
+2023-06-27 10:42:06.820 [main] INFO  liquibase.changelog {} - Table topic_record created
+2023-06-27 10:42:06.825 [main] INFO  liquibase.changelog {} - Primary key added to topic_record (topic, partition, record_offset)
+2023-06-27 10:42:06.827 [main] INFO  liquibase.changelog {} - Table transaction_record created
+2023-06-27 10:42:06.831 [main] INFO  liquibase.changelog {} - Primary key added to transaction_record (transaction_id)
+2023-06-27 10:42:06.833 [main] INFO  liquibase.changelog {} - New row inserted into transaction_record
+2023-06-27 10:42:06.838 [main] INFO  liquibase.changelog {} - Table topic_consumer_offset created
+2023-06-27 10:42:06.842 [main] INFO  liquibase.changelog {} - Primary key added to topic_consumer_offset (topic, consumer_group, partition, record_offset)
+2023-06-27 10:42:06.844 [main] INFO  liquibase.changelog {} - Table topic created
+2023-06-27 10:42:06.848 [main] INFO  liquibase.changelog {} - Primary key added to topic (topic)
+2023-06-27 10:42:06.850 [main] INFO  liquibase.changelog {} - ChangeSet net/corda/db/schema/messagebus/migration/db-message-bus-tables-v1.0.xml::db-message-bus-tables::R3.Corda ran successfully in 38ms
+2023-06-27 10:42:06.860 [main] INFO  liquibase.lockservice {} - Successfully released change log lock
+2023-06-27 10:42:06.861 [main] INFO  net.corda.db.admin.impl.LiquibaseSchemaMigratorImpl {} - cordacluster DB schema update complete
+2023-06-27 10:42:06.861 [main] INFO  net.corda.application.dbsetup.PostgresDbSetup {} - Create SCHEMA RBAC.
+2023-06-27 10:42:06.889 [main] INFO  net.corda.db.admin.impl.LiquibaseSchemaMigratorImpl {} - Setting liquibaseSchemaName to RBAC
+2023-06-27 10:42:06.890 [main] INFO  liquibase.database {} - Set default schema name to rbac
+2023-06-27 10:42:06.891 [main] INFO  net.corda.db.admin.impl.LiquibaseSchemaMigratorImpl {} - Updating PostgreSQL 15.3 (Debian 15.3-1.pgdg120+1) DB Schema for cordacluster
+2023-06-27 10:42:06.919 [main] INFO  liquibase.lockservice {} - Successfully acquired change log lock
+2023-06-27 10:42:06.924 [main] INFO  net.corda.db.admin.impl.StreamResourceAccessor {} - Creating composite master changelog XML file master-changelog-3c1eae44-3fa8-4618-be08-cabe5cb9849e.xml with: [classloader://net.corda.db.schema/net/corda/db/schema/rbac/db.changelog-master.xml]
+2023-06-27 10:42:06.941 [main] INFO  net.corda.db.admin.impl.ClassloaderChangeLog {} - Classloader changelog resolution FOUND for net/corda/db/schema/rbac/migration/rbac-creation-v1.0.xml on net.corda.db-schema [269]
+2023-06-27 10:42:06.969 [main] INFO  liquibase.changelog {} - Creating database history table with name: RBAC.databasechangelog
+2023-06-27 10:42:06.980 [main] INFO  liquibase.changelog {} - Reading from RBAC.databasechangelog
+2023-06-27 10:42:07.013 [main] INFO  liquibase.changelog {} - Table rbac_user created
+2023-06-27 10:42:07.017 [main] INFO  liquibase.changelog {} - Primary key added to rbac_user (id)
+2023-06-27 10:42:07.020 [main] INFO  liquibase.changelog {} - Unique constraint added to rbac_user(login_name)
+2023-06-27 10:42:07.026 [main] INFO  liquibase.changelog {} - Table rbac_user_props created
+2023-06-27 10:42:07.029 [main] INFO  liquibase.changelog {} - Primary key added to rbac_user_props (id)
+2023-06-27 10:42:07.033 [main] INFO  liquibase.changelog {} - Unique constraint added to rbac_user_props(user_ref, key)
+2023-06-27 10:42:07.036 [main] INFO  liquibase.changelog {} - Foreign key constraint added to rbac_user_props (user_ref)
+2023-06-27 10:42:07.038 [main] INFO  liquibase.changelog {} - Table rbac_group created
+2023-06-27 10:42:07.041 [main] INFO  liquibase.changelog {} - Primary key added to rbac_group (id)
+2023-06-27 10:42:07.045 [main] INFO  liquibase.changelog {} - Unique constraint added to rbac_group(name, parent_group)
+2023-06-27 10:42:07.048 [main] INFO  liquibase.changelog {} - Foreign key constraint added to rbac_group (parent_group)
+2023-06-27 10:42:07.050 [main] INFO  liquibase.changelog {} - Foreign key constraint added to rbac_user (parent_group)
+2023-06-27 10:42:07.056 [main] INFO  liquibase.changelog {} - Table rbac_group_props created
+2023-06-27 10:42:07.060 [main] INFO  liquibase.changelog {} - Primary key added to rbac_group_props (id)
+2023-06-27 10:42:07.063 [main] INFO  liquibase.changelog {} - Unique constraint added to rbac_group_props(group_ref, key)
+2023-06-27 10:42:07.066 [main] INFO  liquibase.changelog {} - Foreign key constraint added to rbac_group_props (group_ref)
+2023-06-27 10:42:07.070 [main] INFO  liquibase.changelog {} - Table rbac_change_audit created
+2023-06-27 10:42:07.074 [main] INFO  liquibase.changelog {} - Primary key added to rbac_change_audit (id)
+2023-06-27 10:42:07.079 [main] INFO  liquibase.changelog {} - Table rbac_role created
+2023-06-27 10:42:07.082 [main] INFO  liquibase.changelog {} - Primary key added to rbac_role (id)
+2023-06-27 10:42:07.085 [main] INFO  liquibase.changelog {} - Unique constraint added to rbac_role(name, group_vis)
+2023-06-27 10:42:07.088 [main] INFO  liquibase.changelog {} - Index rbac_role__group_vis__idx created
+2023-06-27 10:42:07.091 [main] INFO  liquibase.changelog {} - Foreign key constraint added to rbac_role (group_vis)
+2023-06-27 10:42:07.094 [main] INFO  liquibase.changelog {} - Table rbac_role_user_rel created
+2023-06-27 10:42:07.097 [main] INFO  liquibase.changelog {} - Primary key added to rbac_role_user_rel (id)
+2023-06-27 10:42:07.101 [main] INFO  liquibase.changelog {} - Unique constraint added to rbac_role_user_rel(user_id, role_id)
+2023-06-27 10:42:07.103 [main] INFO  liquibase.changelog {} - Foreign key constraint added to rbac_role_user_rel (user_id)
+2023-06-27 10:42:07.106 [main] INFO  liquibase.changelog {} - Foreign key constraint added to rbac_role_user_rel (role_id)
+2023-06-27 10:42:07.110 [main] INFO  liquibase.changelog {} - Table rbac_role_group_rel created
+2023-06-27 10:42:07.113 [main] INFO  liquibase.changelog {} - Primary key added to rbac_role_group_rel (id)
+2023-06-27 10:42:07.117 [main] INFO  liquibase.changelog {} - Unique constraint added to rbac_role_group_rel(group_id, role_id)
+2023-06-27 10:42:07.119 [main] INFO  liquibase.changelog {} - Foreign key constraint added to rbac_role_group_rel (group_id)
+2023-06-27 10:42:07.121 [main] INFO  liquibase.changelog {} - Foreign key constraint added to rbac_role_group_rel (role_id)
+2023-06-27 10:42:07.127 [main] INFO  liquibase.changelog {} - Table rbac_perm created
+2023-06-27 10:42:07.130 [main] INFO  liquibase.changelog {} - Primary key added to rbac_perm (id)
+2023-06-27 10:42:07.133 [main] INFO  liquibase.changelog {} - Index rbac_perm__group_vis__idx created
+2023-06-27 10:42:07.136 [main] INFO  liquibase.changelog {} - Foreign key constraint added to rbac_perm (group_vis)
+2023-06-27 10:42:07.139 [main] INFO  liquibase.changelog {} - Table rbac_role_perm_rel created
+2023-06-27 10:42:07.142 [main] INFO  liquibase.changelog {} - Primary key added to rbac_role_perm_rel (id)
+2023-06-27 10:42:07.145 [main] INFO  liquibase.changelog {} - Unique constraint added to rbac_role_perm_rel(role_id, perm_id)
+2023-06-27 10:42:07.147 [main] INFO  liquibase.changelog {} - Foreign key constraint added to rbac_role_perm_rel (role_id)
+2023-06-27 10:42:07.149 [main] INFO  liquibase.changelog {} - Foreign key constraint added to rbac_role_perm_rel (perm_id)
+2023-06-27 10:42:07.152 [main] INFO  liquibase.changelog {} - ChangeSet net/corda/db/schema/rbac/migration/rbac-creation-v1.0.xml::rbac-creation-v1.0::R3.Corda ran successfully in 146ms
+2023-06-27 10:42:07.162 [main] INFO  liquibase.lockservice {} - Successfully released change log lock
+2023-06-27 10:42:07.163 [main] INFO  net.corda.db.admin.impl.LiquibaseSchemaMigratorImpl {} - cordacluster DB schema update complete
+2023-06-27 10:42:07.164 [main] INFO  net.corda.application.dbsetup.PostgresDbSetup {} - Create SCHEMA CRYPTO.
+2023-06-27 10:42:07.194 [main] INFO  net.corda.db.admin.impl.LiquibaseSchemaMigratorImpl {} - Setting liquibaseSchemaName to CRYPTO
+2023-06-27 10:42:07.196 [main] INFO  liquibase.database {} - Set default schema name to crypto
+2023-06-27 10:42:07.196 [main] INFO  net.corda.db.admin.impl.LiquibaseSchemaMigratorImpl {} - Updating PostgreSQL 15.3 (Debian 15.3-1.pgdg120+1) DB Schema for cordacluster
+2023-06-27 10:42:07.231 [main] INFO  liquibase.lockservice {} - Successfully acquired change log lock
+2023-06-27 10:42:07.238 [main] INFO  net.corda.db.admin.impl.StreamResourceAccessor {} - Creating composite master changelog XML file master-changelog-54f0940b-8102-45be-b001-aa4224edd506.xml with: [classloader://net.corda.db.schema/net/corda/db/schema/crypto/db.changelog-master.xml]
+2023-06-27 10:42:07.253 [main] INFO  net.corda.db.admin.impl.ClassloaderChangeLog {} - Classloader changelog resolution FOUND for net/corda/db/schema/crypto/migration/crypto-creation-v1.0.xml on net.corda.db-schema [269]
+2023-06-27 10:42:07.287 [main] INFO  liquibase.changelog {} - Creating database history table with name: CRYPTO.databasechangelog
+2023-06-27 10:42:07.297 [main] INFO  liquibase.changelog {} - Reading from CRYPTO.databasechangelog
+2023-06-27 10:42:07.323 [main] INFO  liquibase.changelog {} - Table crypto_wrapping_key created
+2023-06-27 10:42:07.327 [main] INFO  liquibase.changelog {} - Primary key added to crypto_wrapping_key (id)
+2023-06-27 10:42:07.331 [main] INFO  liquibase.changelog {} - Unique constraint added to crypto_wrapping_key(alias, generation)
+2023-06-27 10:42:07.333 [main] INFO  liquibase.changelog {} - Table crypto_hsm_association created
+2023-06-27 10:42:07.336 [main] INFO  liquibase.changelog {} - Primary key added to crypto_hsm_association (id)
+2023-06-27 10:42:07.340 [main] INFO  liquibase.changelog {} - Unique constraint added to crypto_hsm_association(tenant_id, hsm_id)
+2023-06-27 10:42:07.342 [main] INFO  liquibase.changelog {} - Table crypto_hsm_category_association created
+2023-06-27 10:42:07.346 [main] INFO  liquibase.changelog {} - Primary key added to crypto_hsm_category_association (id)
+2023-06-27 10:42:07.350 [main] INFO  liquibase.changelog {} - Unique constraint added to crypto_hsm_category_association(tenant_id, category, deprecated_at)
+2023-06-27 10:42:07.353 [main] INFO  liquibase.changelog {} - Foreign key constraint added to crypto_hsm_category_association (hsm_association_id)
+2023-06-27 10:42:07.357 [main] INFO  liquibase.changelog {} - Table crypto_signing_key created
+2023-06-27 10:42:07.361 [main] INFO  liquibase.changelog {} - Primary key added to crypto_signing_key (id)
+2023-06-27 10:42:07.364 [main] INFO  liquibase.changelog {} - Unique constraint added to crypto_signing_key(tenant_id, key_id)
+2023-06-27 10:42:07.368 [main] INFO  liquibase.changelog {} - Index crypto_signing_key_full_key_idx created
+2023-06-27 10:42:07.371 [main] INFO  liquibase.changelog {} - Index crypto_signing_key_tenant_idx created
+2023-06-27 10:42:07.375 [main] INFO  liquibase.changelog {} - Index crypto_signing_key_tenant_category_idx created
+2023-06-27 10:42:07.379 [main] INFO  liquibase.changelog {} - Index crypto_signing_key_tenant_alias_idx created
+2023-06-27 10:42:07.383 [main] INFO  liquibase.changelog {} - Table crypto_signing_key_material created
+2023-06-27 10:42:07.387 [main] INFO  liquibase.changelog {} - Primary key added to crypto_signing_key_material (signing_key_id, wrapping_key_id)
+2023-06-27 10:42:07.389 [main] INFO  liquibase.changelog {} - ChangeSet net/corda/db/schema/crypto/migration/crypto-creation-v1.0.xml::crypto-creation-v1.0::R3.Corda ran successfully in 74ms
+2023-06-27 10:42:07.399 [main] INFO  liquibase.lockservice {} - Successfully released change log lock
+2023-06-27 10:42:07.400 [main] INFO  net.corda.db.admin.impl.LiquibaseSchemaMigratorImpl {} - cordacluster DB schema update complete
+2023-06-27 10:42:07.418 [main] INFO  net.corda.application.dbsetup.ConfigEntityFactory {} - Initialise configuration for corda-rbac (jdbc:postgresql://localhost:5432/cordacluster?currentSchema=RBAC).
+2023-06-27 10:42:07.688 [main] INFO  net.corda.application.dbsetup.ConfigEntityFactory {} - Initialise configuration for corda-crypto (jdbc:postgresql://localhost:5432/cordacluster?currentSchema=CRYPTO).
+2023-06-27 10:42:07.692 [main] INFO  net.corda.application.dbsetup.ConfigEntityFactory {} - Initialise configuration for corda-virtual-nodes (jdbc:postgresql://localhost:5432/cordacluster).
+2023-06-27 10:42:07.708 [main] INFO  net.corda.application.dbsetup.PostgresDbSetup {} - Create user config for admin
+2023-06-27 10:42:07.913 [main] INFO  net.corda.applications.workers.workercommon.internal.WorkerMonitorImpl {} - Creating Prometheus metric registry
+2023-06-27 10:42:08.334 [main] INFO  net.corda.applications.workers.combined.CombinedWorker {} - CONFIG = net.corda.libs.configuration.SmartConfigImpl@791da454
+2023-06-27 10:42:08.334 [main] INFO  net.corda.processors.crypto.internal.CryptoProcessorImpl {} - Crypto processor starting.
+2023-06-27 10:42:08.335 [main] INFO  net.corda.processors.db.internal.DBProcessorImpl {} - DB processor starting.
+2023-06-27 10:42:08.335 [main] INFO  net.corda.processors.uniqueness.internal.UniquenessProcessorImpl {} - Uniqueness processor starting.
+2023-06-27 10:42:08.335 [main] INFO  net.corda.processors.flow.internal.FlowProcessorImpl {} - Flow processor starting.
+2023-06-27 10:42:08.336 [lifecycle-coordinator-4] INFO  net.corda.uniqueness.checker.impl.BatchedUniquenessCheckerImpl {} - Uniqueness checker starting
+2023-06-27 10:42:08.337 [main] INFO  net.corda.processors.verification.internal.VerificationProcessorImpl {} - Verification processor starting.
+2023-06-27 10:42:08.337 [lifecycle-coordinator-4] INFO  net.corda.processors.uniqueness.internal.UniquenessProcessorImpl {} - Uniqueness processor received event net.corda.lifecycle.StartEvent@5205a909.
+2023-06-27 10:42:08.337 [main] INFO  net.corda.processors.member.internal.MemberProcessorImpl {} - Member processor starting.
+2023-06-27 10:42:08.337 [lifecycle-coordinator-7] INFO  net.corda.uniqueness.checker.impl.BatchedUniquenessCheckerImpl {} - Uniqueness checker received event net.corda.lifecycle.StartEvent@a362a9b
+2023-06-27 10:42:08.342 [lifecycle-coordinator-16] INFO  net.corda.membership.impl.registration.RegistrationProxyImpl {} - Registration proxy starting.
+2023-06-27 10:42:08.342 [lifecycle-coordinator-1] INFO  net.corda.membership.impl.read.reader.GroupParametersReaderServiceImpl {} - GroupParametersReaderService started.
+2023-06-27 10:42:08.342 [lifecycle-coordinator-7] INFO  net.corda.uniqueness.backingstore.impl.JPABackingStoreImpl {} - Backing store starting
+2023-06-27 10:42:08.343 [lifecycle-coordinator-34] INFO  net.corda.membership.impl.read.reader.GroupParametersReaderServiceImpl {} - Received event net.corda.lifecycle.StartEvent@12ab3b7f.
+2023-06-27 10:42:08.343 [lifecycle-coordinator-34] INFO  net.corda.membership.impl.read.reader.GroupParametersReaderServiceImpl {} - Handling start event.
+2023-06-27 10:42:08.343 [lifecycle-coordinator-2] INFO  net.corda.processors.crypto.internal.CryptoProcessorImpl {} - Crypto processor received event net.corda.lifecycle.StartEvent@6366e840.
+2023-06-27 10:42:08.344 [lifecycle-coordinator-1] INFO  net.corda.processors.crypto.internal.CryptoProcessorImpl {} - Crypto processor received event BootConfigEvent(config=net.corda.libs.configuration.SmartConfigImpl@791da454).
+2023-06-27 10:42:08.344 [main] INFO  net.corda.processors.rest.internal.RestProcessorImpl {} - REST processor starting.
+2023-06-27 10:42:08.344 [lifecycle-coordinator-41] INFO  net.corda.uniqueness.backingstore.impl.JPABackingStoreImpl {} - Backing store received event net.corda.lifecycle.StartEvent@32c9d3c5
+2023-06-27 10:42:08.344 [lifecycle-coordinator-5] INFO  net.corda.membership.impl.persistence.service.MembershipPersistenceServiceImpl {} - Starting component.
+2023-06-27 10:42:08.344 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Received start event, following dependencies for status updates.
+2023-06-27 10:42:08.345 [lifecycle-coordinator-5] INFO  net.corda.membership.groupparams.writer.service.impl.GroupParametersWriterServiceImpl {} - GroupParametersWriterService started.
+2023-06-27 10:42:08.345 [lifecycle-coordinator-3] INFO  net.corda.membership.impl.read.reader.GroupParametersReaderServiceImpl {} - GroupParametersReaderService started.
+2023-06-27 10:42:08.345 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting permission service and RBAC security manager.
+2023-06-27 10:42:08.345 [lifecycle-coordinator-5] INFO  net.corda.membership.impl.read.reader.GroupParametersReaderServiceImpl {} - GroupParametersReaderService started.
+2023-06-27 10:42:08.346 [lifecycle-coordinator-16] INFO  net.corda.membership.service.impl.MemberOpsServiceImpl {} - Starting...
+2023-06-27 10:42:08.347 [lifecycle-coordinator-38] INFO  net.corda.components.rbac.RBACSecurityManagerService {} - Starting lifecycle coordinator
+2023-06-27 10:42:08.347 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Subscribe to configuration updates.
+2023-06-27 10:42:08.347 [lifecycle-coordinator-37] INFO  net.corda.membership.impl.persistence.service.MembershipPersistenceServiceImpl {} - Received event net.corda.lifecycle.StartEvent@4c0dec02.
+2023-06-27 10:42:08.347 [lifecycle-coordinator-37] INFO  net.corda.membership.impl.persistence.service.MembershipPersistenceServiceImpl {} - Handling start event.
+2023-06-27 10:42:08.347 [lifecycle-coordinator-14] INFO  net.corda.membership.groupparams.writer.service.impl.GroupParametersWriterServiceImpl {} - Received event net.corda.lifecycle.StartEvent@73eb94e0.
+2023-06-27 10:42:08.347 [lifecycle-coordinator-28] INFO  net.corda.components.rbac.RBACSecurityManagerService {} - Received start event, following PermissionServiceComponent for status updates.
+2023-06-27 10:42:08.347 [lifecycle-coordinator-14] INFO  net.corda.membership.groupparams.writer.service.impl.GroupParametersWriterServiceImpl {} - Handling start event.
+2023-06-27 10:42:08.348 [lifecycle-coordinator-9] INFO  net.corda.permissions.validation.PermissionValidationService {} - Received start event, following validation cache service for status updates.
+2023-06-27 10:42:08.347 [lifecycle-coordinator-25] INFO  net.corda.permissions.management.cache.PermissionManagementCacheService {} - Received start event, waiting for UP event from ConfigurationReadService.
+2023-06-27 10:42:08.347 [lifecycle-coordinator-16] INFO  net.corda.membership.impl.registration.dynamic.RegistrationManagementServiceImpl {} - Starting component.
+2023-06-27 10:42:08.349 [lifecycle-coordinator-16] INFO  net.corda.membership.impl.synchronisation.SynchronisationProxyImpl {} - Synchronisation proxy starting.
+2023-06-27 10:42:08.350 [lifecycle-coordinator-16] INFO  net.corda.membership.groupparams.writer.service.impl.GroupParametersWriterServiceImpl {} - GroupParametersWriterService started.
+2023-06-27 10:42:08.349 [lifecycle-coordinator-29] INFO  net.corda.permissions.validation.cache.PermissionValidationCacheService {} - Received start event, following configuration read service for status updates.
+2023-06-27 10:42:08.350 [lifecycle-coordinator-16] INFO  net.corda.membership.impl.read.reader.GroupParametersReaderServiceImpl {} - GroupParametersReaderService started.
+2023-06-27 10:42:08.350 [main] INFO  net.corda.processors.p2p.linkmanager.internal.LinkManagerProcessorImpl {} - Link manager processor starting.
+2023-06-27 10:42:08.350 [lifecycle-coordinator-1] INFO  net.corda.processors.crypto.internal.CryptoProcessorImpl {} - Bootstrapping ConfigurationReadServiceImpl
+2023-06-27 10:42:08.350 [lifecycle-coordinator-16] INFO  net.corda.processors.member.internal.lifecycle.MemberProcessorLifecycleHandler {} - Starting Member processor.
+2023-06-27 10:42:08.351 [lifecycle-coordinator-42] INFO  net.corda.membership.impl.synchronisation.SynchronisationProxyImpl {} - Received event net.corda.lifecycle.StartEvent@6630e292
+2023-06-27 10:42:08.351 [lifecycle-coordinator-42] INFO  net.corda.membership.impl.synchronisation.SynchronisationProxyImpl {} - Processing start event.
+2023-06-27 10:42:08.351 [lifecycle-coordinator-12] INFO  net.corda.membership.service.impl.MemberOpsServiceImpl {} - Received event net.corda.lifecycle.StartEvent@6a2e6d4c
+2023-06-27 10:42:08.351 [lifecycle-coordinator-12] INFO  net.corda.membership.service.impl.MemberOpsServiceImpl {} - Received start event, waiting for dependencies.
+2023-06-27 10:42:08.351 [lifecycle-coordinator-39] INFO  net.corda.membership.impl.registration.dynamic.RegistrationManagementServiceImpl {} - Received event net.corda.lifecycle.StartEvent@5dabcd48
+2023-06-27 10:42:08.351 [lifecycle-coordinator-22] INFO  net.corda.processors.member.internal.lifecycle.MemberProcessorLifecycleHandler {} - Member processor received boot configuration.
+2023-06-27 10:42:08.351 [main] INFO  net.corda.processors.p2p.gateway.internal.GatewayProcessorImpl {} - Gateway processor starting.
+2023-06-27 10:42:08.351 [lifecycle-coordinator-39] INFO  net.corda.membership.impl.registration.dynamic.RegistrationManagementServiceImpl {} - Processing start event.
+2023-06-27 10:42:08.359 [lifecycle-coordinator-26] INFO  net.corda.membership.impl.registration.RegistrationProxyImpl {} - Loaded registration services: [net.corda.membership.impl.registration.dynamic.member.DynamicMemberRegistrationService, net.corda.membership.impl.registration.dynamic.mgm.MGMRegistrationService, net.corda.membership.impl.registration.staticnetwork.StaticMemberRegistrationService]
+2023-06-27 10:42:08.365 [lifecycle-coordinator-24] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.ledger.utxo.token.cache.services.TokenCacheSubscriptionHandler from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:08.368 [lifecycle-coordinator-1] INFO  net.corda.processors.crypto.internal.CryptoProcessorImpl {} - Bootstrapping DbConnectionManagerImpl
+2023-06-27 10:42:08.368 [lifecycle-coordinator-23] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.flow.service.FlowExecutor from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:08.369 [lifecycle-coordinator-6] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.flow.rest.FlowStatusCacheService from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:08.370 [lifecycle-coordinator-42] INFO  net.corda.membership.impl.synchronisation.SynchronisationProxyImpl {} - Loaded synchronisation services: [net.corda.membership.impl.synchronisation.MemberSynchronisationServiceImpl, net.corda.membership.impl.synchronisation.MgmSynchronisationServiceImpl]
+2023-06-27 10:42:08.370 [lifecycle-coordinator-1] INFO  net.corda.processors.crypto.internal.CryptoProcessorImpl {} - Bootstrapping CryptoServiceFactoryImpl
+2023-06-27 10:42:08.415 [lifecycle-coordinator-42] WARN  com.zaxxer.hikari.HikariConfig {} - HikariPool-1 - idleTimeout has been set but has no effect because the pool is operating as a fixed size pool.
+2023-06-27 10:42:08.431 [lifecycle-coordinator-13] WARN  [quasar] {} - Method not found in class - assuming suspendable: org/LatencyUtils/IntervalEstimator#getEstimatedInterval(J)J (at AbstractTimer.java:io/micrometer/core/instrument/AbstractTimer#lambda$initPauseDetector$1)
+2023-06-27 10:42:08.433 [lifecycle-coordinator-12] INFO  Gateway-1 {} - Starting child CommonComponents-1
+2023-06-27 10:42:08.433 [lifecycle-coordinator-12] INFO  Gateway-1 {} - Starting child InboundMessageHandler-1
+2023-06-27 10:42:08.433 [lifecycle-coordinator-12] INFO  Gateway-1 {} - Starting child OutboundMessageHandler-1
+2023-06-27 10:42:08.433 [lifecycle-coordinator-12] INFO  Gateway-1 {} - Starting child GatewayRevocationChecker-GatewayRevocationChecker-subscription-tile-1
+2023-06-27 10:42:08.433 [lifecycle-coordinator-33] INFO  CommonComponents-1 {} - Starting child DynamicKeyStore-1
+2023-06-27 10:42:08.433 [lifecycle-coordinator-0] INFO  OutboundMessageHandler-1 {} - Starting child outbound-message-handler-link.out-subscription-tile-6
+2023-06-27 10:42:08.433 [lifecycle-coordinator-33] INFO  CommonComponents-1 {} - Starting child TrustStoresMap-1
+2023-06-27 10:42:08.433 [lifecycle-coordinator-17] INFO  InboundMessageHandler-1 {} - Starting child SessionPartitionMapperImpl-1
+2023-06-27 10:42:08.433 [lifecycle-coordinator-17] INFO  InboundMessageHandler-1 {} - Starting child Publisher-1
+2023-06-27 10:42:08.433 [lifecycle-coordinator-12] INFO  DynamicKeyStore-1 {} - Starting child gateway_certificates_truststores_reader-gateway.tls.certs-subscription-tile-2
+2023-06-27 10:42:08.434 [lifecycle-coordinator-17] INFO  InboundMessageHandler-1 {} - Starting child ReconfigurableHttpServer-1
+2023-06-27 10:42:08.435 [lifecycle-coordinator-0] INFO  TrustStoresMap-1 {} - Starting child gateway_tls_truststores_reader-gateway.tls.truststores-subscription-tile-3
+2023-06-27 10:42:08.435 [lifecycle-coordinator-33] INFO  SessionPartitionMapperImpl-1 {} - Starting child session_partitions_mapper-session.out.partitions-subscription-tile-4
+2023-06-27 10:42:08.435 [lifecycle-coordinator-17] INFO  InboundMessageHandler-1 {} - Starting child gateway_certificates_allowed_client_subjects_reader-gateway.allowed.client.certificate.subjects-subscription-tile-5
+2023-06-27 10:42:08.435 [lifecycle-coordinator-0] INFO  TrustStoresMap-1 {} - Starting child TrustStoresMapBlocking-3
+2023-06-27 10:42:08.435 [lifecycle-coordinator-21] INFO  ReconfigurableConnectionManager-1 {} - Registering for Config updates.
+2023-06-27 10:42:08.435 [lifecycle-coordinator-6] INFO  GatewayConfigReader-1 {} - Registering for Config updates.
+2023-06-27 10:42:08.436 [lifecycle-coordinator-12] INFO  DynamicKeyStore-1 {} - Starting child net.corda.crypto.client.CryptoOpsClient
+2023-06-27 10:42:08.437 [lifecycle-coordinator-12] INFO  DynamicKeyStore-1 {} - Starting child DynamicKeyStoreBlocking-1
+2023-06-27 10:42:08.437 [lifecycle-coordinator-33] INFO  SessionPartitionMapperImpl-1 {} - Starting child SessionPartitionMapperImplBlocking-4
+2023-06-27 10:42:08.470 [lifecycle-coordinator-33] INFO  net.corda.processors.db.internal.DBProcessorImpl {} - Bootstrapping DB connection Manager
+2023-06-27 10:42:08.471 [lifecycle-coordinator-33] INFO  net.corda.processors.db.internal.DBProcessorImpl {} - Bootstrapping config publish service
+2023-06-27 10:42:08.471 [lifecycle-coordinator-1] INFO  LinkManager-1 {} - Starting child CommonComponents-2
+2023-06-27 10:42:08.472 [lifecycle-coordinator-1] INFO  LinkManager-1 {} - Starting child outbound_message_processor_group-p2p.out-subscription-tile-11
+2023-06-27 10:42:08.472 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child LinkManagerHostingMapImpl-1
+2023-06-27 10:42:08.472 [lifecycle-coordinator-1] INFO  LinkManager-1 {} - Starting child inbound_message_processor_group-link.in-subscription-tile-12
+2023-06-27 10:42:08.472 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child Publisher-0
+2023-06-27 10:42:08.472 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child SessionManagerImpl-1
+2023-06-27 10:42:08.472 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child TrustStoresPublisher-1
+2023-06-27 10:42:08.472 [lifecycle-coordinator-12] INFO  LinkManagerHostingMapImpl-1 {} - Starting child linkmanager_stub_hosting_map-p2p.hosted.identities-subscription-tile-1
+2023-06-27 10:42:08.472 [lifecycle-coordinator-12] INFO  LinkManagerHostingMapImpl-1 {} - Starting child LinkManagerHostingMapImplBlocking-2
+2023-06-27 10:42:08.472 [lifecycle-coordinator-8] INFO  DeliveryTracker-1 {} - Starting child message-tracker-group-p2p.out.markers-subscription-tile-1
+2023-06-27 10:42:08.472 [lifecycle-coordinator-0] INFO  TrustStoresPublisher-1 {} - Starting child Publisher-6
+2023-06-27 10:42:08.472 [lifecycle-coordinator-33] INFO  net.corda.processors.db.internal.DBProcessorImpl {} - Bootstrapping config write service with instance id: 0
+2023-06-27 10:42:08.472 [lifecycle-coordinator-6] INFO  SessionManagerImpl-1 {} - Starting child HeartbeatManager-1
+2023-06-27 10:42:08.472 [lifecycle-coordinator-0] INFO  TrustStoresPublisher-1 {} - Starting child linkmanager_truststore_reader-gateway.tls.truststores-subscription-tile-7
+2023-06-27 10:42:08.472 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child TlsCertificatesPublisher-1
+2023-06-27 10:42:08.473 [lifecycle-coordinator-0] INFO  TrustStoresPublisher-1 {} - Starting child TrustStoresPublisherBlocking-5
+2023-06-27 10:42:08.474 [lifecycle-coordinator-22] INFO  TlsCertificatesPublisher-1 {} - Starting child Publisher-7
+2023-06-27 10:42:08.474 [lifecycle-coordinator-22] INFO  TlsCertificatesPublisher-1 {} - Starting child linkmanager_tlscertificates_reader-gateway.tls.certs-subscription-tile-8
+2023-06-27 10:42:08.473 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child ClientCertificatePublisher-1
+2023-06-27 10:42:08.474 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child net.corda.virtualnode.read.VirtualNodeInfoReadService
+2023-06-27 10:42:08.474 [lifecycle-coordinator-22] INFO  TlsCertificatesPublisher-1 {} - Starting child TlsCertificatesPublisherBlocking-6
+2023-06-27 10:42:08.475 [lifecycle-coordinator-34] INFO  ReplayScheduler-2 {} - Registering for Config updates.
+2023-06-27 10:42:08.475 [lifecycle-coordinator-33] INFO  net.corda.processors.db.internal.DBProcessorImpl {} - Bootstrapping config read service
+2023-06-27 10:42:08.474 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child net.corda.cpiinfo.read.CpiInfoReadService
+2023-06-27 10:42:08.474 [lifecycle-coordinator-6] INFO  SessionManagerImpl-1 {} - Starting child InMemorySessionReplayer-1
+2023-06-27 10:42:08.480 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child net.corda.membership.persistence.client.MembershipQueryClient
+2023-06-27 10:42:08.480 [lifecycle-coordinator-6] INFO  SessionManagerImpl-1 {} - Starting child Publisher-4
+2023-06-27 10:42:08.480 [lifecycle-coordinator-6] INFO  SessionManagerImpl-1 {} - Starting child Publisher-5
+2023-06-27 10:42:08.479 [lifecycle-coordinator-39] INFO  ClientCertificatePublisher-1 {} - Starting child GroupPolicyListener-1
+2023-06-27 10:42:08.480 [lifecycle-coordinator-39] INFO  ClientCertificatePublisher-1 {} - Starting child certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject-p2p.mtls.member.client.certificate.subject-subscription-tile-9
+2023-06-27 10:42:08.481 [lifecycle-coordinator-39] INFO  ClientCertificatePublisher-1 {} - Starting child certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject-p2p.mgm.allowed.client.certificate.subjects-subscription-tile-10
+2023-06-27 10:42:08.481 [lifecycle-coordinator-34] INFO  InMemorySessionReplayer-1 {} - Starting child ReplayScheduler-1
+2023-06-27 10:42:08.481 [lifecycle-coordinator-34] INFO  InMemorySessionReplayer-1 {} - Starting child Publisher-2
+2023-06-27 10:42:08.485 [lifecycle-coordinator-6] INFO  GroupPolicyListener-1 {} - Starting child Publisher-8
+2023-06-27 10:42:08.485 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child net.corda.membership.read.GroupParametersReaderService
+2023-06-27 10:42:08.485 [lifecycle-coordinator-5] INFO  net.corda.membership.impl.read.reader.GroupParametersReaderServiceImpl {} - GroupParametersReaderService started.
+2023-06-27 10:42:08.485 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child net.corda.membership.grouppolicy.GroupPolicyProvider
+2023-06-27 10:42:08.486 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child net.corda.membership.read.MembershipGroupReaderProvider
+2023-06-27 10:42:08.486 [lifecycle-coordinator-5] INFO  CommonComponents-2 {} - Starting child net.corda.crypto.client.CryptoOpsClient
+2023-06-27 10:42:08.486 [lifecycle-coordinator-39] INFO  ReplayScheduler-1 {} - Registering for Config updates.
+2023-06-27 10:42:08.475 [lifecycle-coordinator-30] INFO  HeartbeatManager-1 {} - Starting child Publisher-3
+2023-06-27 10:42:08.508 [lifecycle-coordinator-42] INFO  net.corda.orm.impl.EntityManagerFactoryFactoryImpl {} - Creating for corda-cluster
+2023-06-27 10:42:08.515 [lifecycle-coordinator-18] INFO  net.corda.orm.impl.EntityManagerFactoryFactoryImpl {} - Creating for DB Message Bus for jdbc:postgresql://localhost:5432/cordacluster?currentSchema=MESSAGEBUS
+2023-06-27 10:42:08.579 [lifecycle-coordinator-29] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator Publisher-5 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:08.580 [lifecycle-coordinator-29] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator SessionManagerImpl-1 received RegistrationStatusChangeEvent UP due to Publisher-5 changing to state UP
+2023-06-27 10:42:08.705 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: ConfigRestResourceImpl
+2023-06-27 10:42:08.706 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: CpiUploadRestResourceImpl
+2023-06-27 10:42:08.706 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: VirtualNodeRestResourceImpl
+2023-06-27 10:42:08.706 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: MemberLookupRestResourceImpl
+2023-06-27 10:42:08.707 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: FlowClassRestResourceImpl
+2023-06-27 10:42:08.708 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: KeysRestResourceImpl
+2023-06-27 10:42:08.708 [lifecycle-coordinator-9] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.libs.virtualnode.endpoints.v1.VirtualNodeRestResource from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:08.708 [lifecycle-coordinator-17] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.virtualnode.rest.impl.status.VirtualNodeStatusCacheService from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:08.708 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: CertificatesRestResourceImpl
+2023-06-27 10:42:08.709 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: NetworkRestResourceImpl
+2023-06-27 10:42:08.709 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: MemberRegistrationRestResourceImpl
+2023-06-27 10:42:08.709 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: HsmRestResourceImpl
+2023-06-27 10:42:08.709 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: MGMRestResourceImpl
+2023-06-27 10:42:08.709 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: VirtualNodeMaintenanceRestResourceImpl
+2023-06-27 10:42:08.709 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: PermissionEndpointImpl
+2023-06-27 10:42:08.709 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: RoleEndpointImpl
+2023-06-27 10:42:08.713 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: UserEndpointImpl
+2023-06-27 10:42:08.713 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Starting: FlowRestResourceImpl
+2023-06-27 10:42:08.713 [lifecycle-coordinator-9] INFO  net.corda.libs.permissions.endpoints.common.PermissionEndpointEventHandler {} - UserEndpoint: Received start event, following PermissionServiceComponent for status updates.
+2023-06-27 10:42:08.713 [lifecycle-coordinator-11] INFO  net.corda.libs.permissions.endpoints.common.PermissionEndpointEventHandler {} - RoleEndpoint: Received start event, following PermissionServiceComponent for status updates.
+2023-06-27 10:42:08.714 [lifecycle-coordinator-17] INFO  net.corda.libs.permissions.endpoints.common.PermissionEndpointEventHandler {} - PermissionEndpoint: Received start event, following PermissionServiceComponent for status updates.
+2023-06-27 10:42:08.715 [lifecycle-coordinator-38] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Started 16 REST resources that have lifecycle.
+2023-06-27 10:42:08.725 [lifecycle-coordinator-38] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.libs.configuration.endpoints.v1.ConfigRestResource from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:08.727 [lifecycle-coordinator-38] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.libs.virtualnode.maintenance.endpoints.v1.VirtualNodeMaintenanceRestResource from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.857 [lifecycle-coordinator-42] INFO  net.corda.orm.impl.EntityManagerFactoryFactoryImpl {} - Creating for corda-cluster
+2023-06-27 10:42:09.869 [lifecycle-coordinator-38] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator Publisher-0 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.869 [lifecycle-coordinator-38] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator CommonComponents-2 received RegistrationStatusChangeEvent UP due to Publisher-0 changing to state UP
+2023-06-27 10:42:09.870 [lifecycle-coordinator-38] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator SessionManagerImpl-1 received RegistrationStatusChangeEvent UP due to Publisher-0 changing to state UP
+2023-06-27 10:42:09.870 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator Publisher-4 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.870 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator SessionManagerImpl-1 received RegistrationStatusChangeEvent UP due to Publisher-4 changing to state UP
+2023-06-27 10:42:09.870 [lifecycle-coordinator-33] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator Publisher-3 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.870 [lifecycle-coordinator-33] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator HeartbeatManager-1 received RegistrationStatusChangeEvent UP due to Publisher-3 changing to state UP
+2023-06-27 10:42:09.870 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator Publisher-2 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.870 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator InMemorySessionReplayer-1 received RegistrationStatusChangeEvent UP due to Publisher-2 changing to state UP
+2023-06-27 10:42:09.870 [lifecycle-coordinator-33] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator Publisher-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.871 [lifecycle-coordinator-33] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator InboundMessageHandler-1 received RegistrationStatusChangeEvent UP due to Publisher-1 changing to state UP
+2023-06-27 10:42:09.871 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator Publisher-7 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.871 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator TlsCertificatesPublisher-1 received RegistrationStatusChangeEvent UP due to Publisher-7 changing to state UP
+2023-06-27 10:42:09.871 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator Publisher-8 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.871 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator GroupPolicyListener-1 received RegistrationStatusChangeEvent UP due to Publisher-8 changing to state UP
+2023-06-27 10:42:09.871 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator Publisher-9 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.872 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator message-tracker-group-p2p.out.markers-subscription-tile-1 received RegistrationStatusChangeEvent UP due to Publisher-9 changing to state UP
+2023-06-27 10:42:09.872 [lifecycle-coordinator-0] INFO  GroupPolicyListener-1 {} - Starting resources, since all children are now up.
+2023-06-27 10:42:09.872 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator Publisher-6 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.872 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator TrustStoresPublisher-1 received RegistrationStatusChangeEvent UP due to Publisher-6 changing to state UP
+2023-06-27 10:42:09.872 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.configuration.write.publish.ConfigPublishService from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.873 [lifecycle-coordinator-8] INFO  message-tracker-group-p2p.out.markers-subscription-tile-1 {} - The status of Publisher-9 had started. Waiting for [ReplayScheduler-2, net.corda.membership.grouppolicy.GroupPolicyProvider, net.corda.membership.read.MembershipGroupReaderProvider, net.corda.crypto.client.CryptoOpsClient, SessionManagerImpl-1].
+2023-06-27 10:42:09.873 [lifecycle-coordinator-0] INFO  GroupPolicyListener-1 {} - State updated from Created to Started
+2023-06-27 10:42:09.873 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator GroupPolicyListener-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.874 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator ClientCertificatePublisher-1 received RegistrationStatusChangeEvent UP due to GroupPolicyListener-1 changing to state UP
+2023-06-27 10:42:09.882 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator p2p.mgm.allowed.client.certificate.subjects-DURABLE-certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject-DURABLE-certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject-p2p.mgm.allowed.client.certificate.subjects-10 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.882 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject-p2p.mgm.allowed.client.certificate.subjects-subscription-tile-10 received RegistrationStatusChangeEvent UP due to p2p.mgm.allowed.client.certificate.subjects-DURABLE-certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject-DURABLE-certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject-p2p.mgm.allowed.client.certificate.subjects-10 changing to state UP
+2023-06-27 10:42:09.883 [lifecycle-coordinator-8] INFO  certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject-p2p.mgm.allowed.client.certificate.subjects-subscription-tile-10 {} - State updated from Created to Started
+2023-06-27 10:42:09.884 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject-p2p.mgm.allowed.client.certificate.subjects-subscription-tile-10 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.884 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator ClientCertificatePublisher-1 received RegistrationStatusChangeEvent UP due to certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject-p2p.mgm.allowed.client.certificate.subjects-subscription-tile-10 changing to state UP
+2023-06-27 10:42:09.885 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator p2p.mtls.member.client.certificate.subject-DURABLE-certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject-DURABLE-certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject-p2p.mtls.member.client.certificate.subject-9 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.885 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject-p2p.mtls.member.client.certificate.subject-subscription-tile-9 received RegistrationStatusChangeEvent UP due to p2p.mtls.member.client.certificate.subject-DURABLE-certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject-DURABLE-certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject-p2p.mtls.member.client.certificate.subject-9 changing to state UP
+2023-06-27 10:42:09.885 [lifecycle-coordinator-0] INFO  certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject-p2p.mtls.member.client.certificate.subject-subscription-tile-9 {} - State updated from Created to Started
+2023-06-27 10:42:09.885 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject-p2p.mtls.member.client.certificate.subject-subscription-tile-9 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.885 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator ClientCertificatePublisher-1 received RegistrationStatusChangeEvent UP due to certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject-p2p.mtls.member.client.certificate.subject-subscription-tile-9 changing to state UP
+2023-06-27 10:42:09.885 [lifecycle-coordinator-0] INFO  ClientCertificatePublisher-1 {} - Starting resources, since all children are now up.
+2023-06-27 10:42:09.885 [lifecycle-coordinator-0] INFO  ClientCertificatePublisher-1 {} - State updated from Created to Started
+2023-06-27 10:42:09.885 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator ClientCertificatePublisher-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.886 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator CommonComponents-2 received RegistrationStatusChangeEvent UP due to ClientCertificatePublisher-1 changing to state UP
+2023-06-27 10:42:09.922 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator gateway.revocation.request-RPC_RESPONDER-GatewayRevocationChecker-RPC_RESPONDER-GatewayRevocationChecker-gateway.revocation.request-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.923 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator GatewayRevocationChecker-GatewayRevocationChecker-subscription-tile-1 received RegistrationStatusChangeEvent UP due to gateway.revocation.request-RPC_RESPONDER-GatewayRevocationChecker-RPC_RESPONDER-GatewayRevocationChecker-gateway.revocation.request-1 changing to state UP
+2023-06-27 10:42:09.923 [lifecycle-coordinator-8] INFO  GatewayRevocationChecker-GatewayRevocationChecker-subscription-tile-1 {} - State updated from Created to Started
+2023-06-27 10:42:09.923 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator GatewayRevocationChecker-GatewayRevocationChecker-subscription-tile-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:09.923 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator Gateway-1 received RegistrationStatusChangeEvent UP due to GatewayRevocationChecker-GatewayRevocationChecker-subscription-tile-1 changing to state UP
+2023-06-27 10:42:10.002 [durable processing thread certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject-p2p.mtls.member.client.certificate.subject] INFO  net.corda.messaging.subscription.consumer.listener.LoggingConsumerRebalanceListener-p2p.mtls.member.client.certificate.subject-certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject {} - Consumer (DURABLE-certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject-p2p.mtls.member.client.certificate.subject-9) group name certificate-subject-forwarding-subscription-MemberAllowedCertificateSubject for topic p2p.mtls.member.client.certificate.subject partition assigned: 2,1,0.
+2023-06-27 10:42:10.002 [durable processing thread certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject-p2p.mgm.allowed.client.certificate.subjects] INFO  net.corda.messaging.subscription.consumer.listener.LoggingConsumerRebalanceListener-p2p.mgm.allowed.client.certificate.subjects-certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject {} - Consumer (DURABLE-certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject-p2p.mgm.allowed.client.certificate.subjects-10) group name certificate-subject-forwarding-subscription-MgmAllowedCertificateSubject for topic p2p.mgm.allowed.client.certificate.subjects partition assigned: 0,1,2.
+2023-06-27 10:42:10.025 [rpc response subscription thread GatewayRevocationChecker-gateway.revocation.request] INFO  net.corda.messaging.subscription.consumer.listener.RPCConsumerRebalanceListener-gateway.revocation.request.resp-RPC Response listener {} - Consumer () group name RPC Response listener for topic gateway.revocation.request.resp partition assigned: 0,1,2.
+2023-06-27 10:42:10.026 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator gateway.revocation.request-RPC_SENDER-GatewayRevocationChecker-RPC_SENDER-GatewayRevocationChecker-gateway.revocation.request-0 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.111 [lifecycle-coordinator-42] INFO  net.corda.db.connection.manager.impl.DbConnectionManagerImpl {} - Connection to Cluster DB is successful.
+2023-06-27 10:42:10.113 [lifecycle-coordinator-8] INFO  net.corda.db.connection.manager.impl.DbConnectionManagerEventHandler {} - New bootstrap configuration received: net.corda.libs.configuration.SmartConfigImpl@ff75e424, Old configuration: net.corda.libs.configuration.SmartConfigImpl@ff75e424
+2023-06-27 10:42:10.114 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.db.connection.manager.DbConnectionManager from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.114 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.processors.db.internal.DBProcessorImpl received RegistrationStatusChangeEvent UP due to net.corda.db.connection.manager.DbConnectionManager changing to state UP
+2023-06-27 10:42:10.114 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.processors.db.internal.reconcile.db.DbReconcilerReader<java.lang.String, net.corda.data.config.Configuration> received RegistrationStatusChangeEvent UP due to net.corda.db.connection.manager.DbConnectionManager changing to state UP
+2023-06-27 10:42:10.114 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.uniqueness.backingstore.BackingStore received RegistrationStatusChangeEvent UP due to net.corda.db.connection.manager.DbConnectionManager changing to state UP
+2023-06-27 10:42:10.115 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.configuration.write.ConfigWriteService received RegistrationStatusChangeEvent UP due to net.corda.db.connection.manager.DbConnectionManager changing to state UP
+2023-06-27 10:42:10.115 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.processors.db.internal.reconcile.db.DbReconcilerReader<java.lang.String, net.corda.data.config.Configuration> from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.115 [lifecycle-coordinator-16] INFO  net.corda.uniqueness.backingstore.impl.JPABackingStoreImpl {} - Backing store received event RegistrationStatusChangeEvent(registration=Registration(registeringCoordinator=net.corda.uniqueness.backingstore.BackingStore,coordinators=net.corda.db.connection.manager.DbConnectionManager), status=UP)
+2023-06-27 10:42:10.115 [lifecycle-coordinator-42] INFO  net.corda.processors.db.internal.DBProcessorImpl {} - DB processor is UP
+2023-06-27 10:42:10.120 [lifecycle-coordinator-16] INFO  net.corda.uniqueness.backingstore.impl.JPABackingStoreImpl {} - Backing store is UP
+2023-06-27 10:42:10.120 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.uniqueness.backingstore.BackingStore from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.121 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.uniqueness.checker.UniquenessChecker received RegistrationStatusChangeEvent UP due to net.corda.uniqueness.backingstore.BackingStore changing to state UP
+2023-06-27 10:42:10.121 [lifecycle-coordinator-16] INFO  net.corda.uniqueness.checker.impl.BatchedUniquenessCheckerImpl {} - Uniqueness checker received event RegistrationStatusChangeEvent(registration=Registration(registeringCoordinator=net.corda.uniqueness.checker.UniquenessChecker,coordinators=net.corda.uniqueness.backingstore.BackingStore), status=UP)
+2023-06-27 10:42:10.121 [lifecycle-coordinator-16] INFO  net.corda.uniqueness.checker.impl.BatchedUniquenessCheckerImpl {} - Uniqueness checker is UP
+2023-06-27 10:42:10.123 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.configuration.write.ConfigWriteService from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.125 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.processors.db.internal.DBProcessorImpl from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.129 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.uniqueness.checker.UniquenessChecker from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.130 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.processors.uniqueness.internal.UniquenessProcessorImpl received RegistrationStatusChangeEvent UP due to net.corda.uniqueness.checker.UniquenessChecker changing to state UP
+2023-06-27 10:42:10.130 [lifecycle-coordinator-0] INFO  net.corda.processors.uniqueness.internal.UniquenessProcessorImpl {} - Uniqueness processor received event RegistrationStatusChangeEvent(registration=Registration(registeringCoordinator=net.corda.processors.uniqueness.internal.UniquenessProcessorImpl,coordinators=net.corda.uniqueness.checker.UniquenessChecker), status=UP).
+2023-06-27 10:42:10.130 [lifecycle-coordinator-0] INFO  net.corda.processors.uniqueness.internal.UniquenessProcessorImpl {} - Uniqueness processor is UP
+2023-06-27 10:42:10.130 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.processors.uniqueness.internal.UniquenessProcessorImpl from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.137 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator config.management.request-RPC_RESPONDER-config.management-RPC_RESPONDER-config.management-config.management.request-11 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.527 [compacted subscription thread AVRO_READ-avro.schema] INFO  net.corda.configuration.read.impl.AvroSchemaProcessor {} - Received 0 Avro schemas from topic in initial snapshot.
+2023-06-27 10:42:10.527 [compacted subscription thread gateway_certificates_truststores_reader-gateway.tls.certs] INFO  net.corda.p2p.gateway.messaging.DynamicKeyStore {} - Received initial set of TLS certificates for the following identities: [].
+2023-06-27 10:42:10.527 [compacted subscription thread gateway_tls_truststores_reader-gateway.tls.truststores] INFO  net.corda.p2p.gateway.messaging.http.TrustStoresMap {} - Received initial set of trust roots for the following holding x500 names and destination groups: []
+2023-06-27 10:42:10.527 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator TrustStoresPublisherBlocking-5 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.527 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator TrustStoresPublisher-1 received RegistrationStatusChangeEvent UP due to TrustStoresPublisherBlocking-5 changing to state UP
+2023-06-27 10:42:10.527 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator TlsCertificatesPublisherBlocking-6 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.528 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator TlsCertificatesPublisher-1 received RegistrationStatusChangeEvent UP due to TlsCertificatesPublisherBlocking-6 changing to state UP
+2023-06-27 10:42:10.528 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator TrustStoresMapBlocking-3 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.528 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator TrustStoresMap-1 received RegistrationStatusChangeEvent UP due to TrustStoresMapBlocking-3 changing to state UP
+2023-06-27 10:42:10.528 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator DynamicKeyStoreBlocking-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.528 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator DynamicKeyStore-1 received RegistrationStatusChangeEvent UP due to DynamicKeyStoreBlocking-1 changing to state UP
+2023-06-27 10:42:10.530 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator LinkManagerHostingMapImplBlocking-2 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.530 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator LinkManagerHostingMapImpl-1 received RegistrationStatusChangeEvent UP due to LinkManagerHostingMapImplBlocking-2 changing to state UP
+2023-06-27 10:42:10.531 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator SessionPartitionMapperImplBlocking-4 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.531 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator SessionPartitionMapperImpl-1 received RegistrationStatusChangeEvent UP due to SessionPartitionMapperImplBlocking-4 changing to state UP
+2023-06-27 10:42:10.541 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator gateway.tls.truststores-COMPACTED-linkmanager_truststore_reader-COMPACTED-linkmanager_truststore_reader-gateway.tls.truststores-7 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.541 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator gateway.tls.certs-COMPACTED-gateway_certificates_truststores_reader-COMPACTED-gateway_certificates_truststores_reader-gateway.tls.certs-3 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.541 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator linkmanager_truststore_reader-gateway.tls.truststores-subscription-tile-7 received RegistrationStatusChangeEvent UP due to gateway.tls.truststores-COMPACTED-linkmanager_truststore_reader-COMPACTED-linkmanager_truststore_reader-gateway.tls.truststores-7 changing to state UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator gateway_certificates_truststores_reader-gateway.tls.certs-subscription-tile-2 received RegistrationStatusChangeEvent UP due to gateway.tls.certs-COMPACTED-gateway_certificates_truststores_reader-COMPACTED-gateway_certificates_truststores_reader-gateway.tls.certs-3 changing to state UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator gateway.tls.certs-COMPACTED-linkmanager_tlscertificates_reader-COMPACTED-linkmanager_tlscertificates_reader-gateway.tls.certs-8 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator session.out.partitions-COMPACTED-session_partitions_mapper-COMPACTED-session_partitions_mapper-session.out.partitions-2 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-8] INFO  linkmanager_truststore_reader-gateway.tls.truststores-subscription-tile-7 {} - State updated from Created to Started
+2023-06-27 10:42:10.542 [lifecycle-coordinator-42] INFO  gateway_certificates_truststores_reader-gateway.tls.certs-subscription-tile-2 {} - State updated from Created to Started
+2023-06-27 10:42:10.542 [lifecycle-coordinator-23] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator gateway.tls.truststores-COMPACTED-gateway_tls_truststores_reader-COMPACTED-gateway_tls_truststores_reader-gateway.tls.truststores-5 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator gateway.allowed.client.certificate.subjects-COMPACTED-gateway_certificates_allowed_client_subjects_reader-COMPACTED-gateway_certificates_allowed_client_subjects_reader-gateway.allowed.client.certificate.subjects-4 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator gateway_certificates_truststores_reader-gateway.tls.certs-subscription-tile-2 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-33] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator linkmanager_truststore_reader-gateway.tls.truststores-subscription-tile-7 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator DynamicKeyStore-1 received RegistrationStatusChangeEvent UP due to gateway_certificates_truststores_reader-gateway.tls.certs-subscription-tile-2 changing to state UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator p2p.hosted.identities-COMPACTED-linkmanager_stub_hosting_map-COMPACTED-linkmanager_stub_hosting_map-p2p.hosted.identities-6 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator linkmanager_stub_hosting_map-p2p.hosted.identities-subscription-tile-1 received RegistrationStatusChangeEvent UP due to p2p.hosted.identities-COMPACTED-linkmanager_stub_hosting_map-COMPACTED-linkmanager_stub_hosting_map-p2p.hosted.identities-6 changing to state UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator session_partitions_mapper-session.out.partitions-subscription-tile-4 received RegistrationStatusChangeEvent UP due to session.out.partitions-COMPACTED-session_partitions_mapper-COMPACTED-session_partitions_mapper-session.out.partitions-2 changing to state UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator linkmanager_tlscertificates_reader-gateway.tls.certs-subscription-tile-8 received RegistrationStatusChangeEvent UP due to gateway.tls.certs-COMPACTED-linkmanager_tlscertificates_reader-COMPACTED-linkmanager_tlscertificates_reader-gateway.tls.certs-8 changing to state UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-33] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator TrustStoresPublisher-1 received RegistrationStatusChangeEvent UP due to linkmanager_truststore_reader-gateway.tls.truststores-subscription-tile-7 changing to state UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-23] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator gateway_tls_truststores_reader-gateway.tls.truststores-subscription-tile-3 received RegistrationStatusChangeEvent UP due to gateway.tls.truststores-COMPACTED-gateway_tls_truststores_reader-COMPACTED-gateway_tls_truststores_reader-gateway.tls.truststores-5 changing to state UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-0] INFO  TrustStoresPublisher-1 {} - Starting resources, since all children are now up.
+2023-06-27 10:42:10.542 [lifecycle-coordinator-42] INFO  linkmanager_stub_hosting_map-p2p.hosted.identities-subscription-tile-1 {} - State updated from Created to Started
+2023-06-27 10:42:10.542 [lifecycle-coordinator-34] INFO  linkmanager_tlscertificates_reader-gateway.tls.certs-subscription-tile-8 {} - State updated from Created to Started
+2023-06-27 10:42:10.542 [lifecycle-coordinator-8] INFO  gateway_tls_truststores_reader-gateway.tls.truststores-subscription-tile-3 {} - State updated from Created to Started
+2023-06-27 10:42:10.543 [lifecycle-coordinator-42] INFO  session_partitions_mapper-session.out.partitions-subscription-tile-4 {} - State updated from Created to Started
+2023-06-27 10:42:10.542 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator gateway_certificates_allowed_client_subjects_reader-gateway.allowed.client.certificate.subjects-subscription-tile-5 received RegistrationStatusChangeEvent UP due to gateway.allowed.client.certificate.subjects-COMPACTED-gateway_certificates_allowed_client_subjects_reader-COMPACTED-gateway_certificates_allowed_client_subjects_reader-gateway.allowed.client.certificate.subjects-4 changing to state UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator gateway_tls_truststores_reader-gateway.tls.truststores-subscription-tile-3 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator session_partitions_mapper-session.out.partitions-subscription-tile-4 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-0] INFO  TrustStoresPublisher-1 {} - State updated from Created to Started
+2023-06-27 10:42:10.543 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator SessionPartitionMapperImpl-1 received RegistrationStatusChangeEvent UP due to session_partitions_mapper-session.out.partitions-subscription-tile-4 changing to state UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-42] INFO  gateway_certificates_allowed_client_subjects_reader-gateway.allowed.client.certificate.subjects-subscription-tile-5 {} - State updated from Created to Started
+2023-06-27 10:42:10.543 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator TrustStoresMap-1 received RegistrationStatusChangeEvent UP due to gateway_tls_truststores_reader-gateway.tls.truststores-subscription-tile-3 changing to state UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator linkmanager_tlscertificates_reader-gateway.tls.certs-subscription-tile-8 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator TrustStoresPublisher-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.542 [lifecycle-coordinator-23] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator linkmanager_stub_hosting_map-p2p.hosted.identities-subscription-tile-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-23] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator LinkManagerHostingMapImpl-1 received RegistrationStatusChangeEvent UP due to linkmanager_stub_hosting_map-p2p.hosted.identities-subscription-tile-1 changing to state UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-42] INFO  TrustStoresMap-1 {} - Starting resources, since all children are now up.
+2023-06-27 10:42:10.543 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator gateway_certificates_allowed_client_subjects_reader-gateway.allowed.client.certificate.subjects-subscription-tile-5 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator TlsCertificatesPublisher-1 received RegistrationStatusChangeEvent UP due to linkmanager_tlscertificates_reader-gateway.tls.certs-subscription-tile-8 changing to state UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-42] INFO  TrustStoresMap-1 {} - State updated from Created to Started
+2023-06-27 10:42:10.543 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator InboundMessageHandler-1 received RegistrationStatusChangeEvent UP due to gateway_certificates_allowed_client_subjects_reader-gateway.allowed.client.certificate.subjects-subscription-tile-5 changing to state UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-20] INFO  SessionPartitionMapperImpl-1 {} - Starting resources, since all children are now up.
+2023-06-27 10:42:10.543 [lifecycle-coordinator-34] INFO  LinkManagerHostingMapImpl-1 {} - Starting resources, since all children are now up.
+2023-06-27 10:42:10.543 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator TrustStoresMap-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-20] INFO  SessionPartitionMapperImpl-1 {} - State updated from Created to Started
+2023-06-27 10:42:10.543 [lifecycle-coordinator-42] INFO  TlsCertificatesPublisher-1 {} - Starting resources, since all children are now up.
+2023-06-27 10:42:10.543 [lifecycle-coordinator-34] INFO  LinkManagerHostingMapImpl-1 {} - State updated from Created to Started
+2023-06-27 10:42:10.543 [lifecycle-coordinator-8] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator CommonComponents-1 received RegistrationStatusChangeEvent UP due to TrustStoresMap-1 changing to state UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-42] INFO  TlsCertificatesPublisher-1 {} - State updated from Created to Started
+2023-06-27 10:42:10.543 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator SessionPartitionMapperImpl-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.543 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator CommonComponents-2 received RegistrationStatusChangeEvent UP due to TrustStoresPublisher-1 changing to state UP
+2023-06-27 10:42:10.544 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator TlsCertificatesPublisher-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.544 [lifecycle-coordinator-1] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator InboundMessageHandler-1 received RegistrationStatusChangeEvent UP due to SessionPartitionMapperImpl-1 changing to state UP
+2023-06-27 10:42:10.544 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator CommonComponents-2 received RegistrationStatusChangeEvent UP due to TlsCertificatesPublisher-1 changing to state UP
+2023-06-27 10:42:10.544 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator LinkManagerHostingMapImpl-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.544 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator CommonComponents-2 received RegistrationStatusChangeEvent UP due to LinkManagerHostingMapImpl-1 changing to state UP
+2023-06-27 10:42:10.544 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator SessionManagerImpl-1 received RegistrationStatusChangeEvent UP due to LinkManagerHostingMapImpl-1 changing to state UP
+2023-06-27 10:42:10.566 [compacted subscription thread AVRO_READ-avro.schema] INFO  net.corda.configuration.read.impl.AvroSchemaProcessor {} - Queued 361 Avro schemas to write to topic.
+2023-06-27 10:42:10.567 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator avro.schema-COMPACTED-AVRO_READ-COMPACTED-AVRO_READ-avro.schema-0 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:10.567 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.configuration.read.ConfigurationReadService received RegistrationStatusChangeEvent UP due to avro.schema-COMPACTED-AVRO_READ-COMPACTED-AVRO_READ-avro.schema-0 changing to state UP
+2023-06-27 10:42:11.145 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator config.topic-COMPACTED-CONFIGURATION_READ-COMPACTED-CONFIGURATION_READ-config.topic-12 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:11.146 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.configuration.read.ConfigurationReadService received RegistrationStatusChangeEvent UP due to config.topic-COMPACTED-CONFIGURATION_READ-COMPACTED-CONFIGURATION_READ-config.topic-12 changing to state UP
+2023-06-27 10:42:11.146 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.configuration.read.ConfigurationReadService from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:11.147 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.virtualnode.read.VirtualNodeInfoReadService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.147 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.crypto.client.CryptoOpsClient received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.147 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.virtualnode.write.db.VirtualNodeInfoWriteService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.147 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.permissions.management.cache.PermissionManagementCacheService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.147 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.membership.persistence.client.MembershipPersistenceClient received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.147 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.cpi.upload.endpoints.service.CpiUploadService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.147 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.reconciliation.impl.ReconcilerImpl<java.lang.String, net.corda.data.config.Configuration> received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.147 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.libs.configuration.endpoints.v1.ConfigRestResource received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.147 [lifecycle-coordinator-1] INFO  net.corda.cpi.upload.endpoints.service.impl.CpiUploadServiceHandler {} - Registering to ConfigurationReadService
+2023-06-27 10:42:11.147 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.virtualnode.write.db.VirtualNodeWriteService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.147 [lifecycle-coordinator-8] INFO  net.corda.reconciliation.impl.ReconcilerEventHandler<java.lang.String, net.corda.data.config.Configuration> {} - Starting reconciliations
+2023-06-27 10:42:11.147 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.session.mapper.service.FlowMapperService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.147 [lifecycle-coordinator-42] INFO  net.corda.permissions.management.cache.PermissionManagementCacheService {} - Registration status change received: UP.
+2023-06-27 10:42:11.148 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.cpiinfo.read.CpiInfoReadService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.148 [lifecycle-coordinator-42] INFO  net.corda.permissions.management.cache.PermissionManagementCacheService {} - Registering for configuration updates.
+2023-06-27 10:42:11.147 [lifecycle-coordinator-8] INFO  net.corda.reconciliation.impl.ReconcilerEventHandler<java.lang.String, net.corda.data.config.Configuration> {} - Initiating reconciliation
+2023-06-27 10:42:11.148 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.flow.p2p.filter.FlowP2PFilterService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.148 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.crypto.client.hsm.HSMRegistrationClient received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.148 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.cpk.write.CpkWriteService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.148 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.membership.read.MembershipGroupReaderProvider received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.148 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.membership.read.GroupParametersReaderService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.148 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.membership.group.policy.validation.MembershipGroupPolicyValidator received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.148 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.libs.virtualnode.maintenance.endpoints.v1.VirtualNodeMaintenanceRestResource received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.148 [lifecycle-coordinator-33] INFO  net.corda.membership.impl.read.reader.GroupParametersReaderServiceImpl {} - Received event RegistrationStatusChangeEvent(registration=Registration(registeringCoordinator=net.corda.membership.read.GroupParametersReaderService,coordinators=net.corda.configuration.read.ConfigurationReadService), status=UP).
+2023-06-27 10:42:11.148 [lifecycle-coordinator-18] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.membership.group.policy.validation.MembershipGroupPolicyValidator from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:11.148 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.crypto.service.CryptoOpsBusService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.148 [lifecycle-coordinator-33] INFO  net.corda.membership.impl.read.reader.GroupParametersReaderServiceImpl {} - Handling registration changed event.
+2023-06-27 10:42:11.148 [lifecycle-coordinator-1] INFO  net.corda.membership.impl.read.lifecycle.MembershipGroupReadLifecycleHandler$Impl {} - MembershipGroupReaderProvider handling registration changed event.
+2023-06-27 10:42:11.148 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.membership.certificate.service.CertificatesService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.149 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.membership.mtls.allowed.list.service.AllowedCertificatesReaderWriterService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.149 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.membership.client.MemberResourceClient received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.149 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.membership.locally.hosted.identities.LocallyHostedIdentitiesService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.149 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.ledger.utxo.token.cache.services.TokenCacheComponent received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.149 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.securitymanager.SecurityConfigHandler received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.149 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.cpk.read.CpkReadService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.149 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.membership.certificate.publisher.MembersClientCertificatePublisher received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.149 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.cpiinfo.write.CpiInfoWriteService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.149 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.membership.persistence.client.MembershipQueryClient received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.149 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.membership.groupparams.writer.service.GroupParametersWriterService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.149 [lifecycle-coordinator-20] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.permissions.validation.cache.PermissionValidationCacheService received RegistrationStatusChangeEvent UP due to net.corda.configuration.read.ConfigurationReadService changing to state UP
+2023-06-27 10:42:11.150 [lifecycle-coordinator-31] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.securitymanager.SecurityConfigHandler from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:11.150 [lifecycle-coordinator-18] INFO  net.corda.membership.groupparams.writer.service.impl.GroupParametersWriterServiceImpl {} - Received event RegistrationStatusChangeEvent(registration=Registration(registeringCoordinator=net.corda.membership.groupparams.writer.service.GroupParametersWriterService,coordinators=net.corda.configuration.read.ConfigurationReadService), status=UP).
+2023-06-27 10:42:11.150 [lifecycle-coordinator-18] INFO  net.corda.membership.groupparams.writer.service.impl.GroupParametersWriterServiceImpl {} - Handling registration changed event.
+2023-06-27 10:42:11.150 [lifecycle-coordinator-26] INFO  net.corda.permissions.validation.cache.PermissionValidationCacheService {} - Registration status change received: UP.
+2023-06-27 10:42:11.150 [lifecycle-coordinator-26] INFO  net.corda.permissions.validation.cache.PermissionValidationCacheService {} - Registering for configuration updates.
+2023-06-27 10:42:11.173 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.cpk.write.CpkWriteService from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:11.350 [lifecycle-coordinator-8] WARN  com.networknt.schema.JsonMetaSchema {} - Unknown keyword $defs - you should define your own Meta Schema. If the keyword is irrelevant for validation, just use a NonValidationKeyword
+2023-06-27 10:42:11.484 [lifecycle-coordinator-8] INFO  net.corda.reconciliation.impl.ReconcilerEventHandler<java.lang.String, net.corda.data.config.Configuration> {} - Reconciliation completed in 336 ms
+2023-06-27 10:42:11.503 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.reconciliation.impl.ReconcilerImpl<java.lang.String, net.corda.data.config.Configuration> from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:11.721 [compacted subscription thread CONFIGURATION_READ-config.topic] INFO  net.corda.configuration.read.impl.ConfigProcessor {} - Received new configuration for key corda.reconciliation
+2023-06-27 10:42:11.724 [compacted subscription thread CONFIGURATION_READ-config.topic] INFO  net.corda.configuration.read.impl.ConfigProcessor {} - Received new configuration for key corda.p2p.linkManager
+2023-06-27 10:42:11.726 [compacted subscription thread CONFIGURATION_READ-config.topic] INFO  net.corda.configuration.read.impl.ConfigProcessor {} - Received new configuration for key corda.rest
+2023-06-27 10:42:11.726 [lifecycle-coordinator-26] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Gateway component received configuration update event, changedKeys: [corda.boot, corda.rest]
+2023-06-27 10:42:11.727 [lifecycle-coordinator-26] INFO  net.corda.components.rest.internal.RestGatewayEventHandler {} - Dependencies have not been satisfied yet
+2023-06-27 10:42:11.727 [compacted subscription thread CONFIGURATION_READ-config.topic] INFO  net.corda.configuration.read.impl.ConfigProcessor {} - Received new configuration for key corda.flow
+2023-06-27 10:42:11.728 [compacted subscription thread CONFIGURATION_READ-config.topic] INFO  net.corda.configuration.read.impl.ConfigProcessor {} - Received new configuration for key corda.sandbox
+2023-06-27 10:42:11.729 [compacted subscription thread CONFIGURATION_READ-config.topic] INFO  net.corda.configuration.read.impl.ConfigProcessor {} - Received new configuration for key corda.crypto
+2023-06-27 10:42:11.732 [lifecycle-coordinator-34] INFO  ReplayScheduler-2 {} - Got new configuration
+2023-06-27 10:42:11.732 [lifecycle-coordinator-42] INFO  ReplayScheduler-1 {} - Got new configuration
+2023-06-27 10:42:11.732 [lifecycle-coordinator-42] INFO  ReplayScheduler-1 {} - Applying new configuration
+2023-06-27 10:42:11.732 [lifecycle-coordinator-34] INFO  ReplayScheduler-2 {} - Applying new configuration
+2023-06-27 10:42:11.735 [lifecycle-coordinator-26] INFO  ReplayScheduler-2 {} - Received valid config for ReplayScheduler-2.
+2023-06-27 10:42:11.735 [lifecycle-coordinator-16] INFO  ReplayScheduler-1 {} - Received valid config for ReplayScheduler-1.
+2023-06-27 10:42:11.735 [lifecycle-coordinator-26] INFO  ReplayScheduler-2 {} - State updated from Created to Started
+2023-06-27 10:42:11.735 [lifecycle-coordinator-16] INFO  ReplayScheduler-1 {} - State updated from Created to Started
+2023-06-27 10:42:11.735 [lifecycle-coordinator-26] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator ReplayScheduler-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:11.735 [lifecycle-coordinator-42] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator ReplayScheduler-2 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:11.735 [lifecycle-coordinator-42] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator message-tracker-group-p2p.out.markers-subscription-tile-1 received RegistrationStatusChangeEvent UP due to ReplayScheduler-2 changing to state UP
+2023-06-27 10:42:11.735 [lifecycle-coordinator-26] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator InMemorySessionReplayer-1 received RegistrationStatusChangeEvent UP due to ReplayScheduler-1 changing to state UP
+2023-06-27 10:42:11.736 [lifecycle-coordinator-16] INFO  message-tracker-group-p2p.out.markers-subscription-tile-1 {} - The status of ReplayScheduler-2 had started. Waiting for [net.corda.membership.grouppolicy.GroupPolicyProvider, net.corda.membership.read.MembershipGroupReaderProvider, net.corda.crypto.client.CryptoOpsClient, SessionManagerImpl-1].
+2023-06-27 10:42:11.741 [compacted subscription thread CONFIGURATION_READ-config.topic] INFO  net.corda.configuration.read.impl.ConfigProcessor {} - Received new configuration for key corda.externalMessaging
+2023-06-27 10:42:11.754 [lifecycle-coordinator-26] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.processors.db.internal.reconcile.db.DbReconcilerReader<net.corda.libs.packaging.core.CpiIdentifier, net.corda.libs.packaging.core.CpiMetadata> received RegistrationStatusChangeEvent UP due to net.corda.db.connection.manager.DbConnectionManager changing to state UP
+2023-06-27 10:42:11.754 [lifecycle-coordinator-26] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.processors.db.internal.reconcile.db.DbReconcilerReader<net.corda.libs.packaging.core.CpiIdentifier, net.corda.libs.packaging.core.CpiMetadata> from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:11.757 [compacted subscription thread CONFIGURATION_READ-config.topic] INFO  net.corda.configuration.read.impl.ConfigProcessor {} - Received new configuration for key corda.p2p.gateway
+2023-06-27 10:42:11.757 [compacted subscription thread CONFIGURATION_READ-config.topic] INFO  net.corda.configuration.read.impl.ConfigProcessor {} - Received new configuration for key corda.membership
+2023-06-27 10:42:11.759 [compacted subscription thread CONFIGURATION_READ-config.topic] INFO  net.corda.configuration.read.impl.ConfigProcessor {} - Received new configuration for key corda.messaging
+2023-06-27 10:42:11.762 [lifecycle-coordinator-0] INFO  ReconfigurableConnectionManager-1 {} - Got new configuration
+2023-06-27 10:42:11.762 [lifecycle-coordinator-16] INFO  GatewayConfigReader-1 {} - Got new configuration
+2023-06-27 10:42:11.762 [lifecycle-coordinator-0] INFO  ReconfigurableConnectionManager-1 {} - Applying new configuration
+2023-06-27 10:42:11.762 [lifecycle-coordinator-16] INFO  GatewayConfigReader-1 {} - Applying new configuration
+2023-06-27 10:42:11.763 [lifecycle-coordinator-0] INFO  net.corda.p2p.gateway.messaging.ReconfigurableConnectionManager {} - New configuration, clients for ReconfigurableConnectionManager-1 will be reconnected
+2023-06-27 10:42:11.763 [lifecycle-coordinator-26] INFO  net.corda.configuration.read.impl.AvroSchemaProcessor {} - Publishing 361 queued Avro schemas to topic.
+2023-06-27 10:42:11.776 [lifecycle-coordinator-16] INFO  net.corda.p2p.gateway.messaging.internal.GatewayConfigReader {} - New configuration, connection settings updated to ConnectionConfiguration(maxClientConnections=100, acquireTimeout=PT10S, connectionIdleTimeout=PT1M, responseTimeout=PT3S, retryDelay=PT2S, initialReconnectionDelay=PT1S, maxReconnectionDelay=PT16S).
+2023-06-27 10:42:11.777 [lifecycle-coordinator-42] INFO  GatewayConfigReader-1 {} - Received valid config for GatewayConfigReader-1.
+2023-06-27 10:42:11.777 [lifecycle-coordinator-42] INFO  GatewayConfigReader-1 {} - State updated from Created to Started
+2023-06-27 10:42:11.777 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator GatewayConfigReader-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:11.777 [lifecycle-coordinator-16] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator outbound-message-handler-link.out-subscription-tile-6 received RegistrationStatusChangeEvent UP due to GatewayConfigReader-1 changing to state UP
+2023-06-27 10:42:11.777 [lifecycle-coordinator-42] INFO  outbound-message-handler-link.out-subscription-tile-6 {} - The status of GatewayConfigReader-1 had started. Waiting for [ReconfigurableConnectionManager-1].
+2023-06-27 10:42:11.784 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator net.corda.processors.db.internal.reconcile.db.DbReconcilerReader<net.corda.virtualnode.HoldingIdentity, net.corda.virtualnode.VirtualNodeInfo> received RegistrationStatusChangeEvent UP due to net.corda.db.connection.manager.DbConnectionManager changing to state UP
+2023-06-27 10:42:11.784 [lifecycle-coordinator-34] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator net.corda.processors.db.internal.reconcile.db.DbReconcilerReader<net.corda.virtualnode.HoldingIdentity, net.corda.virtualnode.VirtualNodeInfo> from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:11.796 [lifecycle-coordinator-8] INFO  net.corda.processors.db.internal.reconcile.db.ConfigReconciler {} - Updating Config net.corda.reconciliation.Reconciler
+2023-06-27 10:42:11.802 [lifecycle-coordinator-34] INFO  net.corda.reconciliation.impl.ReconcilerEventHandler<java.lang.String, net.corda.data.config.Configuration> {} - Updating interval to 30000 ms
+2023-06-27 10:42:12.022 [lifecycle-coordinator-16] INFO  ReconfigurableConnectionManager-1 {} - Received valid config for ReconfigurableConnectionManager-1.
+2023-06-27 10:42:12.022 [lifecycle-coordinator-16] INFO  ReconfigurableConnectionManager-1 {} - State updated from Created to Started
+2023-06-27 10:42:12.022 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator ReconfigurableConnectionManager-1 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:12.023 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator outbound-message-handler-link.out-subscription-tile-6 received RegistrationStatusChangeEvent UP due to ReconfigurableConnectionManager-1 changing to state UP
+2023-06-27 10:42:12.023 [lifecycle-coordinator-16] INFO  outbound-message-handler-link.out-subscription-tile-6 {} - All dependencies are started now, starting subscription.
+2023-06-27 10:42:12.036 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator link.out-PUB_SUB-outbound-message-handler-PUB_SUB-outbound-message-handler-link.out-13 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:12.036 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator outbound-message-handler-link.out-subscription-tile-6 received RegistrationStatusChangeEvent UP due to link.out-PUB_SUB-outbound-message-handler-PUB_SUB-outbound-message-handler-link.out-13 changing to state UP
+2023-06-27 10:42:12.037 [lifecycle-coordinator-16] INFO  outbound-message-handler-link.out-subscription-tile-6 {} - State updated from Created to Started
+2023-06-27 10:42:12.037 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.LifecycleProcessor {} - Updating coordinator outbound-message-handler-link.out-subscription-tile-6 from status DOWN to UP. Reason: Status has changed to UP
+2023-06-27 10:42:12.037 [lifecycle-coordinator-0] INFO  net.corda.lifecycle.impl.Registration {} - Coordinator OutboundMessageHandler-1 received RegistrationStatusChangeEvent UP due to outbound-message-handler-link.out-subscription-tile-6 changing to state UP
+2023-06-27 10:42:12.066 [pubsub processing thread outbound-message-handler-link.out] INFO  net.corda.messaging.subscription.consumer.listener.PubSubConsumerRebalanceListener-link.out-outbound-message-handler {} - Consumer () group name outbound-message-handler for topic link.out partition assigned: 2,0,1.
