@@ -51,10 +51,12 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
-    // Optional but used by exmaple tests.
+    // Optional but used by example tests.
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
     testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
+    testImplementation "com.r3.corda.ledger.utxo:contract-testing:$contractTestingVersion"
+    testImplementation "com.r3.corda.ledger.utxo:contract-testing-kotlin:$contractTestingVersion"
 }
 
 // The CordApp section.
@@ -73,7 +75,7 @@ cordapp {
     // The cordapp section contains either a workflow or contract subsection depending on the type of component.
     // Declares the type and metadata of the CPK (this CPB has one CPK).
     contract {
-        name "Apples utxo example contract"
+        name "ContractsModuleNameHere"
         versionId 1
         vendor "VendorNameHere"
     }
