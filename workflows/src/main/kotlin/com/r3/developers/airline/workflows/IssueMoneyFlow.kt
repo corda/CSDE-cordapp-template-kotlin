@@ -1,6 +1,6 @@
 package com.r3.developers.airline.workflows
 
-import com.r3.developers.airlines.contracts.TicketCommands
+import com.r3.developers.airlines.contracts.MoneyCommands
 import com.r3.developers.airlines.states.Money
 import net.corda.v5.application.flows.ClientRequestBody
 import net.corda.v5.application.flows.ClientStartableFlow
@@ -18,9 +18,6 @@ import java.util.*
 
 @InitiatingFlow(protocol = "create-money")
 class IssueMoneyFlow : ClientStartableFlow {
-
-    @CordaInject
-    lateinit var flowMessaging: FlowMessaging
 
     @CordaInject
     lateinit var jsonMarshallingService: JsonMarshallingService
@@ -58,7 +55,7 @@ class IssueMoneyFlow : ClientStartableFlow {
         val transaction = utxoLedgerService.createTransactionBuilder()
             .setNotary(notary.name)
             .addOutputState(issuedMoney)
-            .addCommand(TicketCommands.IssueMoney())
+            .addCommand(MoneyCommands.IssueMoney())
             .setTimeWindowUntil(Instant.now().plus(1,ChronoUnit.DAYS))
             .addSignatories(listOf(myKey))
             .toSignedTransaction()

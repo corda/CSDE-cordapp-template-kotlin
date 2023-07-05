@@ -22,11 +22,4 @@ class Money (
         return Money(id,issuer,buyer,value,participants)
     }
 
-    fun checkOwner(user : PublicKey) : Boolean {
-        return (holder == user)
-    }
-
-    fun returnValue():Int{
-        return value
-    }
 }

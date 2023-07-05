@@ -1,5 +1,6 @@
 package com.r3.developers.airline.workflows
 
+import com.r3.developers.airlines.contracts.TicketCommands
 import com.r3.developers.airlines.states.Ticket
 import com.r3.developers.airlines.states.TicketRep
 import net.corda.v5.application.flows.CordaInject
@@ -11,7 +12,6 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import java.lang.IllegalArgumentException
-import java.util.*
 
 @InitiatedBy(protocol = "transact-ticket-1")
 class TransactFlowResponder1 :ResponderFlow{
@@ -44,11 +44,13 @@ class TransactFlowResponder1 :ResponderFlow{
         val buyer = requireNotNull(memberLookup.lookup(session.counterparty)?.ledgerKeys?.first()){
             throw IllegalArgumentException("Buyer doesn't exist in the group")
         }
-        val newTicket = ticket.changeOwner(buyer)
 
+        val newTicket = ticket.changeOwner(buyer)
+        
         transactionBuilder
             .addInputState(unconsumedTickets.ref)
             .addOutputState(newTicket)
+            .addCommand(TicketCommands.Transact())
 
         utxoLedgerService.sendUpdatedTransactionBuilder(transactionBuilder,session)
         utxoLedgerService.receiveFinality(session){

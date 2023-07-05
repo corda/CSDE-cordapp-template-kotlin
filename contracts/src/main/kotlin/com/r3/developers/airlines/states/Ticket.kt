@@ -24,12 +24,4 @@ class Ticket (
         return Ticket(id,issuer,buyer,seat,departureDate,price,participants)
     }
 
-    fun checkOwner(buyer : PublicKey) : Boolean {
-        return (issuer == buyer)
-    }
-
-    fun returnPrice():Int{
-        return price
-    }
-
 }

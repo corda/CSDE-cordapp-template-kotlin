@@ -3,6 +3,8 @@ package com.r3.developers.airlines.contracts
 import com.r3.developers.airlines.states.Money
 import com.r3.developers.airlines.states.Ticket
 import net.corda.v5.ledger.utxo.Contract
+import net.corda.v5.ledger.utxo.ContractState
+import net.corda.v5.ledger.utxo.VisibilityChecker
 import net.corda.v5.ledger.utxo.transaction.UtxoLedgerTransaction
 import java.lang.IllegalArgumentException
 
@@ -36,10 +38,22 @@ class TicketContract : Contract{
                 require(buyingMoney.single().value == buyingTicket.single().price){
                     "The value of the money used in the transaction must be equal to the price of the ticket"
                 }
+                require(buyingTicket.single().issuer != buyingMoney.single().holder){
+                    "An airline cannot buy their own ticket"
+                }
             }
             else -> {
                 throw IllegalArgumentException("Incorrect type of Ticket commands: ${command::class.java.name}")
             }
+        }
+    }
+
+    override fun isVisible(state: ContractState, checker: VisibilityChecker): Boolean {
+        return when(state){
+            is Ticket ->
+                checker.containsMySigningKeys(listOf(state.holder))
+            else ->
+                super.isVisible(state, checker)
         }
     }
 }
