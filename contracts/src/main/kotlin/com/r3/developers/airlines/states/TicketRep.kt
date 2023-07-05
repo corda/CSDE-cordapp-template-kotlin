@@ -7,8 +7,6 @@ import java.security.PublicKey
 
 @BelongsToContract(TicketContract::class)
 class TicketRep (
-    val seat : String,
-    val departureDate : String,
     val price : Int,
     private val participants : List<PublicKey>
 ) : ContractState {

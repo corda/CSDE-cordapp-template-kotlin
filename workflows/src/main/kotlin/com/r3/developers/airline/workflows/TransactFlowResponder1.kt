@@ -33,8 +33,6 @@ class TransactFlowResponder1 :ResponderFlow{
         val ticket = unconsumedTickets.state.contractState
 
         val ticketInfoObject = TicketRep(
-            seat = ticket.seat,
-            departureDate = ticket.departureDate,
             price = ticket.price,
             participants = ticket.participants
         )
