@@ -19,6 +19,12 @@ import java.util.*
 
 @InitiatingFlow(protocol = "create-and-issue-apple-stamp")
 class CreateAndIssueAppleStampFlow : ClientStartableFlow {
+
+    private data class CreateAndIssueAppleStampRequest(
+        val stampDescription: String,
+        val holder: MemberX500Name
+    )
+
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
 
@@ -33,11 +39,6 @@ class CreateAndIssueAppleStampFlow : ClientStartableFlow {
 
     @CordaInject
     lateinit var utxoLedgerService: UtxoLedgerService
-
-    private data class CreateAndIssueAppleStampRequest(
-        val stampDescription: String,
-        val holder: MemberX500Name
-    )
 
     @Suspendable
     override fun call(requestBody: ClientRequestBody): String {

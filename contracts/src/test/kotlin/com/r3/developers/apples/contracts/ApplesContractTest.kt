@@ -6,7 +6,7 @@ import com.r3.developers.apples.states.AppleStamp
 import com.r3.developers.apples.states.BasketOfApples
 import net.corda.v5.ledger.utxo.StateAndRef
 import java.security.PublicKey
-import java.util.*
+import java.util.UUID
 
 @Suppress("UnnecessaryAbstractClass", "UtilityClassWithPublicConstructor")
 abstract class ApplesContractTest : ContractTest() {

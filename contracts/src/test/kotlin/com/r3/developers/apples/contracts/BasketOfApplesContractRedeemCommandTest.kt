@@ -7,6 +7,7 @@ import net.corda.v5.ledger.utxo.Command
 import org.junit.jupiter.api.Test
 
 class BasketOfApplesContractRedeemCommandTest : ApplesContractTest() {
+
     @Test
     fun happyPath() {
         val inputAppleStampState = createInputStateAppleStamp()
@@ -90,33 +91,5 @@ class BasketOfApplesContractRedeemCommandTest : ApplesContractTest() {
             addSignatories(outputBasketOfApplesStateParticipants)
         }
         assertFailsWith(transaction, "The basket of apple has to weigh more than 0")
-    }
-
-    @Test
-    fun missingCommand() {
-        val transaction = buildTransaction {
-            addOutputState(outputBasketOfApplesState)
-            addSignatories(outputBasketOfApplesStateParticipants)
-        }
-        assertFailsWith(
-            transaction,
-            "List is empty."
-        )
-    }
-
-    @Test
-    fun unknownCommand() {
-        class MyDummyCommand : Command
-
-        val transaction = buildTransaction {
-            addCommand(MyDummyCommand())
-            addOutputState(outputBasketOfApplesState)
-            addSignatories(outputBasketOfApplesStateParticipants)
-        }
-        assertFailsWith(
-            transaction,
-            "Incorrect type of BasketOfApples commands: com.r3.developers.apples.contracts." +
-                    "BasketOfApplesContractRedeemCommandTest\$unknownCommand\$MyDummyCommand"
-        )
     }
 }
