@@ -32,7 +32,6 @@ allprojects {
         cordaDbContainerName = "CSDEpostgresql"
         cordaBinDir = "${System.getProperty("user.home")}/.corda/corda5"
         cordaCliBinDir = "${System.getProperty("user.home")}/.corda/cli"
-        cpiUploadTimeout = cpiUploadDefault
     }
 
     // Declare the set of Kotlin compiler options we need to build a CorDapp.
