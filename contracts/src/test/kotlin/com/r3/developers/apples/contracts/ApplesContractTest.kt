@@ -37,25 +37,21 @@ abstract class ApplesContractTest : ContractTest() {
         outputBasketOfApplesStateParticipants
     )
 
-    @Suppress("UNCHECKED_CAST")
     protected fun createInputStateAppleStamp(outputState: AppleStamp = outputAppleStampState): StateAndRef<AppleStamp> {
         val transaction = buildTransaction {
             addOutputState(outputState)
             addCommand(AppleCommands.Issue())
             addSignatories(outputState.participants)
         }
-        transaction.toLedgerTransaction()
-        return transaction.outputStateAndRefs.first() as StateAndRef<AppleStamp>
+        return transaction.toLedgerTransaction().getOutputStateAndRefs(AppleStamp::class.java).single()
     }
 
-    @Suppress("UNCHECKED_CAST")
     protected fun createInputStateBasketOfApples(outputState: BasketOfApples = outputBasketOfApplesState): StateAndRef<BasketOfApples> {
         val transaction = buildTransaction {
             addOutputState(outputState)
             addCommand(AppleCommands.PackBasket())
             addSignatories(outputState.participants)
         }
-        transaction.toLedgerTransaction()
-        return transaction.outputStateAndRefs.first() as StateAndRef<BasketOfApples>
+        return transaction.toLedgerTransaction().getOutputStateAndRefs(BasketOfApples::class.java).single()
     }
 }
