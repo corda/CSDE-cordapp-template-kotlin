@@ -32,7 +32,6 @@ allprojects {
         cordaDbContainerName = "CSDEpostgresql"
         cordaBinDir = "${System.getProperty("user.home")}/.corda/corda5"
         cordaCliBinDir = "${System.getProperty("user.home")}/.corda/cli"
-        cpiUploadTimeout = cpiUploadDefault
     }
 
     // Declare the set of Kotlin compiler options we need to build a CorDapp.
@@ -66,6 +65,8 @@ allprojects {
         // All dependencies are held in Maven Central
         mavenLocal()
         mavenCentral()
+
+        //todo - ask if the following credentials have any public availability. this is internal and needs to be deleted
 
         // R3 Internal repositories for dev
         // Repository provides Corda 5 binaries that implement Corda-API.

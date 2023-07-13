@@ -4,6 +4,8 @@ pluginManagement {
         gradlePluginPortal()
         mavenCentral()
         mavenLocal()
+
+        //todo - ask if the following credentials have any public availability. this is internal and needs to be deleted
         maven {
             url = "$artifactoryContextUrl/corda-os-maven"
             authentication {

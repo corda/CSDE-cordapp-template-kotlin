@@ -39,12 +39,6 @@ dependencies {
     // The CorDapp uses the slf4j logging framework. Corda-API provides this so we need a 'cordaProvided' declaration.
     cordaProvided 'org.slf4j:slf4j-api'
 
-    // This are shared so should be here.
-    // Dependencies Required By Test Tooling
-    // Todo:  these are commented out as the simulator UTXO work has not been merged into Gecko yet.
-//    testImplementation "net.corda:corda-simulator-api:$simulatorVersion"
-//    testRuntimeOnly "net.corda:corda-simulator-runtime:$simulatorVersion"
-
     // 3rd party libraries
     // Required
     testImplementation "org.slf4j:slf4j-simple:2.0.0"
@@ -55,8 +49,6 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
     testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
-    testImplementation "com.r3.corda.ledger.utxo:contract-testing:$contractTestingVersion"
-    testImplementation "com.r3.corda.ledger.utxo:contract-testing-kotlin:$contractTestingVersion"
 }
 
 // The CordApp section.
