@@ -4,6 +4,8 @@ pluginManagement {
         gradlePluginPortal()
         mavenCentral()
         mavenLocal()
+
+        //todo remove for actual GA
         maven {
             url = "$artifactoryContextUrl/corda-os-maven"
             authentication {
