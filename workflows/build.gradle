@@ -71,7 +71,8 @@ cordapp {
     workflow {
         name "WorkflowsModuleNameHere"
         versionId 1
-        vendor "VendorNameHere"
+        licence cordappLicense
+        vendor cordappVendorName
     }
 }
 
