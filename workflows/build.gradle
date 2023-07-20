@@ -76,7 +76,7 @@ cordapp {
     }
 }
 
-// Use the name of the workflow module as the name generated of the CPK and CPB.
+// Use the name of the workflow module as the name of the generated CPK and CPB.
 archivesBaseName = cordapp.workflow.name.isPresent() ? cordapp.workflow.name.get() : workflowsModule
 
 publishing {
