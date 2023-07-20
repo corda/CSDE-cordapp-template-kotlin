@@ -76,9 +76,8 @@ cordapp {
     }
 }
 
-// Use the name of the CorDapp as the name of the JAR file.
-// Set to the project directory name if the CorDapp name is not specified.
-archivesBaseName = cordapp.workflow.name.isPresent() ? cordapp.workflow.name.get() : projectDir.name
+// Use the name of the workflow module as the name generated of the CPK and CPB.
+archivesBaseName = cordapp.workflow.name.isPresent() ? cordapp.workflow.name.get() : workflowsModule
 
 publishing {
     publications {
