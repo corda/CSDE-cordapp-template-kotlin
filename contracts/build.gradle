@@ -69,11 +69,15 @@ cordapp {
     // The cordapp section contains either a workflow or contract subsection depending on the type of component.
     // Declares the type and metadata of the CPK (this CPB has one CPK).
     contract {
-        name "ContractsModuleNameHere"
+        name contractsModule
         versionId 1
-        vendor "VendorNameHere"
+        licence cordappLicense
+        vendor cordappVendorName
     }
 }
+
+// Use the name of the contract module as the name of the generated CPK and CPB.
+archivesBaseName = cordapp.contract.name.isPresent() ? cordapp.contract.name.get() : contractsModule
 
 publishing {
     publications {
