@@ -69,7 +69,7 @@ cordapp {
     // The cordapp section contains either a workflow or contract subsection depending on the type of component.
     // Declares the type and metadata of the CPK (this CPB has one CPK).
     workflow {
-        name "WorkflowsModuleNameHere"
+        name workflowsModule
         versionId 1
         licence cordappLicense
         vendor cordappVendorName

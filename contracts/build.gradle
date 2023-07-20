@@ -78,7 +78,7 @@ cordapp {
 
 // Use the name of the CorDapp as the name of the JAR file.
 // Set to the project directory name if the CorDapp name is not specified.
-archivesBaseName = cordapp.workflow.name.isPresent() ? cordapp.workflow.name.get() : projectDir.name
+archivesBaseName = cordapp.contract.name.isPresent() ? cordapp.contract.name.get() : projectDir.name
 
 publishing {
     publications {
