@@ -3,7 +3,7 @@
 
 To help make the process of prototyping CorDapps on Corda 5 release more straight forward we have developed the Cordapp Standard Development Environment (CSDE).
 
-The CSDE is obtained by cloning this CSDE-Cordapp-Template-Kotlin to your local machine. The CSDE provides:
+The CSDE is obtained by cloning this CSDE-Cordapp-Template-Kotlin repository to your local machine. The CSDE provides:
 
 - A pre-setup Cordapp Project which you can use as a starting point to develop your own prototypes.
 
@@ -19,10 +19,7 @@ The CSDE is obtained by cloning this CSDE-Cordapp-Template-Kotlin to your local 
 
 - Ability to configure the Members of the Local Corda Network.
 
-Note, the CSDE is experimental, we may or may not release it as part of Corda 5.0, in part based on developer feedback using it.
-
-To find out how to use the CSDE please refer to the getting started section in the Corda 5 Beta 2 documentation at https://docs.r3.com/
-
+To find out how to use the CSDE, please refer to the *Getting Started Using the CSDE* sub-section within the *Developing Applications* section in the latest Corda 5 documentation at https://docs.r3.com/
 
 
 ## Chat app
