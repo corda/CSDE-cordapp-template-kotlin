@@ -19,7 +19,7 @@ The CSDE is obtained by cloning this CSDE-Cordapp-Template-Kotlin repository to 
 
 - Ability to configure the Members of the Local Corda Network.
 
-To find out how to use the CSDE, please refer to the *Getting Started Using the CSDE* sub-section within the *Developing Applications* section in the latest Corda 5 documentation at https://docs.r3.com/
+To find out how to use the CSDE, please refer to the *Getting Started Using the CSDE* subsection within the *Developing Applications* section in the latest Corda 5 documentation at https://docs.r3.com/
 
 
 ## Chat app
