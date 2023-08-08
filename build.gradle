@@ -1,4 +1,4 @@
-import static org.gradle.api.JavaVersion.VERSION_11
+import static org.gradle.api.JavaVersion.VERSION_17
 
 plugins {
     id 'org.jetbrains.kotlin.jvm'
@@ -13,7 +13,7 @@ allprojects {
     group 'com.r3.developers.csdetemplate'
     version '1.0-SNAPSHOT'
 
-    def javaVersion = VERSION_11
+    def javaVersion = VERSION_17
 
     // Configure the CSDE
     csde {
