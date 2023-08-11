@@ -12,7 +12,8 @@ import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Create
 import com.r3.developers.csdetemplate.utxoexample.states.ChatState
 import net.corda.v5.crypto.SecureHash
 import net.corda.v5.ledger.utxo.Command
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.*
 
@@ -49,10 +50,10 @@ class ChatContractCreateCommandTest : ContractTest() {
                 return null.toString();
             }
         }
-        val exception: Exception = Assertions.assertThrows(
+        val exception: Exception = assertThrows(
             UnsupportedOperationException::class.java
         ) {
-            val transaction = ledgerService
+            ledgerService
                 .createTransactionBuilder()
                 .addAttachment(secureHash)
                 .addOutputState(outputChatState)
@@ -62,7 +63,7 @@ class ChatContractCreateCommandTest : ContractTest() {
         }
         val expectedMessage = "This method is not implemented for the mock ledger"
         val actualMessage = exception.message
-        Assertions.assertTrue(actualMessage!!.contains(expectedMessage))
+        assertTrue(actualMessage!!.contains(expectedMessage))
     }
 
 
