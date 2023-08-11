@@ -8,8 +8,11 @@ import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Compani
 import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.REQUIRE_SINGLE_COMMAND
 import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.TRANSACTION_SHOULD_BE_SIGNED_BY_ALL_PARTICIPANTS
 import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.UNKNOWN_COMMAND
+import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Create
 import com.r3.developers.csdetemplate.utxoexample.states.ChatState
+import net.corda.v5.crypto.SecureHash
 import net.corda.v5.ledger.utxo.Command
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.util.*
 
@@ -34,6 +37,34 @@ class ChatContractCreateCommandTest : ContractTest() {
         }
         assertVerifies(transaction)
     }
+
+    @Test
+    fun addAttachmentsNotSupported() {
+        val secureHash: SecureHash = object : SecureHash {
+            override fun getAlgorithm(): String {
+                return null.toString()
+            }
+
+            override fun toHexString(): String {
+                return null.toString();
+            }
+        }
+        val exception: Exception = Assertions.assertThrows(
+            UnsupportedOperationException::class.java
+        ) {
+            val transaction = ledgerService
+                .createTransactionBuilder()
+                .addAttachment(secureHash)
+                .addOutputState(outputChatState)
+                .addCommand(Create())
+                .addSignatories(outputChatState.participants)
+                .toSignedTransaction()
+        }
+        val expectedMessage = "This method is not implemented for the mock ledger"
+        val actualMessage = exception.message
+        Assertions.assertTrue(actualMessage!!.contains(expectedMessage))
+    }
+
 
     @Test
     fun missingCommand() {
