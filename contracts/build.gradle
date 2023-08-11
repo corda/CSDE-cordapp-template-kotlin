@@ -41,7 +41,7 @@ dependencies {
 
     // 3rd party libraries
     // Required
-    testImplementation "org.slf4j:slf4j-simple:2.0.0"
+    testImplementation "org.slf4j:slf4j-simple:$slf4jVersion"
     testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
