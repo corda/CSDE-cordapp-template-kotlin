@@ -91,7 +91,9 @@ class ApplesFlowDriverTests {
     private fun createAndIssueAppleStamp(description: String, member: MemberX500Name, issuer: MemberX500Name): UUID? {
         val createAndIssueFlowArgs = CreateAndIssueAppleStampFlow.CreateAndIssueAppleStampRequest(description, member)
         val result = driver.let<String> { dsl ->
-            dsl.runFlow<CreateAndIssueAppleStampFlow>(vNodes[issuer] ?: fail(String.format("Missing vNode {}", jsonMapper.writeValueAsString(issuer)))) {
+            dsl.runFlow<CreateAndIssueAppleStampFlow>(
+                vNodes[issuer] ?: fail(String.format("Missing vNode {}", jsonMapper.writeValueAsString(issuer)))
+            ) {
                 jsonMapper.writeValueAsString(createAndIssueFlowArgs)
             }
         }
