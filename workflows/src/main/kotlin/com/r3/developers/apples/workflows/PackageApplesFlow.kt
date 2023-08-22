@@ -15,7 +15,7 @@ import java.time.temporal.ChronoUnit
 
 class PackageApplesFlow : ClientStartableFlow {
 
-    private data class PackApplesRequest(val appleDescription: String, val weight: Int)
+    internal data class PackApplesRequest(val appleDescription: String, val weight: Int)
 
     @CordaInject
     lateinit var jsonMarshallingService: JsonMarshallingService
