@@ -74,6 +74,7 @@ class ChatFlowDriverTest {
                 .filter { it.cpiIdentifier.name == "workflows" }
                 .associateByTo(vNodes) { it.holdingIdentity.x500Name }
         }
+        if (vNodes.isEmpty()) fail<Any>("Failed to populate vNodes")
     }
 
     /**
@@ -84,13 +85,13 @@ class ChatFlowDriverTest {
 
     @Test
     fun `test that CreateNewChatFlow returns correct message`() {
-        val chartFlowArgs = CreateNewChatFlowArgs("myChatName", "Hello Bob, from Alice", bob.toString())
+        val chatFlowArgs = CreateNewChatFlowArgs("myChatName", "Hello Bob, from Alice", bob.toString())
 
         val result = driver.let { dsl ->
             // Run the flow, using the initiating flow class, from Alice to Bob
             dsl.runFlow<CreateNewChatFlow>(vNodes[alice] ?: fail(missingAliceVNode)) {
                 // serialise request body as JSON in a string
-                jsonMapper.writeValueAsString(chartFlowArgs)
+                jsonMapper.writeValueAsString(chatFlowArgs)
             }
         } ?: fail(resultShouldNotBeNull)
 
