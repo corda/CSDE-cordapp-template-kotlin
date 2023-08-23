@@ -84,6 +84,20 @@ allprojects {
                 password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
             }
         }
+        maven {
+            // Quasar & Antlr
+            url = "$artifactoryContextUrl/corda-dependencies-dev"
+            authentication {
+                basic(BasicAuthentication)
+            }
+            credentials {
+                username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
+                password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+            }
+            mavenContent {
+                snapshotsOnly()
+            }
+        }
     }
 
     tasks.withType(Test).configureEach {

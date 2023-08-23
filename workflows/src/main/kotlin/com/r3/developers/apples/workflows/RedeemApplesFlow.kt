@@ -22,7 +22,7 @@ import java.time.temporal.ChronoUnit
 @InitiatingFlow(protocol = "redeem-apples")
 class RedeemApplesFlow : ClientStartableFlow {
 
-    private data class RedeemApplesRequest(val buyer: MemberX500Name, val stampId: UUID)
+    internal data class RedeemApplesRequest(val buyer: MemberX500Name, val stampId: UUID)
 
     @CordaInject
     lateinit var flowMessaging: FlowMessaging

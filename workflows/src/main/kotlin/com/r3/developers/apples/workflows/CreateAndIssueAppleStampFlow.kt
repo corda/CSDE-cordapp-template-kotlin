@@ -20,7 +20,7 @@ import java.util.*
 @InitiatingFlow(protocol = "create-and-issue-apple-stamp")
 class CreateAndIssueAppleStampFlow : ClientStartableFlow {
 
-    private data class CreateAndIssueAppleStampRequest(
+    internal data class CreateAndIssueAppleStampRequest(
         val stampDescription: String,
         val holder: MemberX500Name
     )
