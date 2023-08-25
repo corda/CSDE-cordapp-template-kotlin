@@ -64,10 +64,11 @@ dependencies {
     testImplementation "net.corda:corda-driver:$cordaDriverVersion"
     testRuntimeOnly "net.corda:corda-driver-engine:$cordaDriverVersion"
     testRuntimeOnly files(configurations.archives.artifacts.files)
-    testRuntimeOnly "com.r3.corda.notary.plugin.nonvalidating:notary-plugin-non-validating-server:$cordaNotaryPluginsVersion:package@cpb"
+    testRuntimeOnly fileTree(dir: "${System.getProperty("user.home")}/$cordaBinariesDirectory/notaryServer", include: '*.cpb')
 }
 
 tasks.withType(Test).configureEach {
+    dependsOn('getNotaryServerCPB')
     doFirst {
         jvmArgs '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
                 '--add-opens', 'java.base/java.lang.invoke=ALL-UNNAMED',

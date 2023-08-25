@@ -16,6 +16,7 @@ allprojects {
     def javaVersion = VERSION_17
 
     // Configure the CSDE
+    apply plugin: 'net.corda.plugins.csde'
     csde {
         cordaClusterURL = "https://localhost:8888"
         networkConfigFile = "config/static-network-config.json"
