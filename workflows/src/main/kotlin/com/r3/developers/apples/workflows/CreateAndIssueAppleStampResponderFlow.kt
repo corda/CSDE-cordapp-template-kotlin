@@ -16,7 +16,7 @@ class CreateAndIssueAppleStampResponderFlow : ResponderFlow {
     @Suspendable
     override fun call(session: FlowSession) {
         // Receive, verify, validate, sign and record the transaction sent from the initiator
-        utxoLedgerService.receiveFinality(session) { transaction ->
+        utxoLedgerService.receiveFinality(session) {
             /*
              * [receiveFinality] will automatically verify the transaction and its signatures before signing it.
              * However, just because a transaction is contractually valid doesn't mean we necessarily want to sign.
