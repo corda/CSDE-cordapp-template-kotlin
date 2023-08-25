@@ -14,8 +14,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.extension.RegisterExtension
 
+@TestInstance(PER_CLASS)
 class MyFirstFlowDriverTest {
 
     /**
@@ -26,7 +29,6 @@ class MyFirstFlowDriverTest {
 
     private val alice = MemberX500Name.parse("CN=Alice, OU=Application, O=R3, L=London, C=GB")
     private val bob = MemberX500Name.parse("CN=Bob, OU=Application, O=R3, L=London, C=GB")
-    private val vNodes = mutableMapOf<MemberX500Name, VirtualNodeInfo>()
     private val jsonMapper = ObjectMapper().apply {
         registerModule(KotlinModule.Builder().build())
 
@@ -36,6 +38,8 @@ class MyFirstFlowDriverTest {
         }
         registerModule(module)
     }
+
+    private lateinit var vNodes: Map<MemberX500Name, VirtualNodeInfo>
 
     /**
      * Step 2.
@@ -55,11 +59,11 @@ class MyFirstFlowDriverTest {
 
     @BeforeEach
     fun setup() {
-        driver.run { dsl ->
+        vNodes = driver.let { dsl ->
             dsl.startNodes(setOf(alice, bob))
-                .filter { it.cpiIdentifier.name == "workflows" }
-                .associateByTo(vNodes) { it.holdingIdentity.x500Name }
+            dsl.nodesFor("workflows")
         }
+        assertThat(vNodes).withFailMessage("Failed to populate vNodes").isNotEmpty()
     }
 
     /**

@@ -10,7 +10,6 @@ import net.corda.testing.driver.DriverNodes
 import net.corda.testing.driver.runFlow
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.virtualnode.VirtualNodeInfo
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -18,7 +17,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.api.fail
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.UUID
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ApplesFlowDriverTests {
@@ -27,7 +26,6 @@ class ApplesFlowDriverTests {
     private val alice = MemberX500Name.parse("CN=Alice, OU=Application, O=R3, L=London, C=GB")
     private val bob = MemberX500Name.parse("CN=Bob, OU=Application, O=R3, L=London, C=GB")
     private val notary = MemberX500Name.parse("CN=Notary, OU=Application, O=R3, L=London, C=GB")
-    private val vNodes = mutableMapOf<MemberX500Name, VirtualNodeInfo>()
     private val jsonMapper = ObjectMapper().apply {
         registerModule(KotlinModule.Builder().build())
 
@@ -42,22 +40,22 @@ class ApplesFlowDriverTests {
     @RegisterExtension
     private val driver = DriverNodes(alice, bob).withNotary(notary, 1).forAllTests()
 
+    private lateinit var vNodes: Map<MemberX500Name, VirtualNodeInfo>
+
     @BeforeAll
     fun setup() {
-        driver.run { dsl ->
+        vNodes = driver.let { dsl ->
             dsl.startNodes(setOf(alice, bob))
-                .filter { it.cpiIdentifier.name == "workflows" }
-                .associateByTo(vNodes) { it.holdingIdentity.x500Name }
+            dsl.nodesFor("workflows")
         }
-        if (vNodes.isEmpty()) Assertions.fail<Any>("Failed to populate vNodes")
+        assertThat(vNodes).withFailMessage("Failed to populate vNodes").isNotEmpty()
     }
 
     @Test
     fun `test that CreateAndIssueAppleStampFlow returns correct message`() {
         val stampId = createAndIssueAppleStamp("Stamp # 0001", bob, alice)
         logger.info("result: {}", stampId)
-        assertThat(stampId).isNotNull
-        assertThat(stampId.toString()).hasSize(36) // standard UUID length
+        assertThat(stampId).isInstanceOf(UUID::class.java)
     }
 
     @Test
