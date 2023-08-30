@@ -19,6 +19,8 @@ allprojects {
     csde {
         cordaClusterURL = "https://localhost:8888"
         networkConfigFile = "config/static-network-config.json"
+        kafkaComposeFile = "config/kafka-compose.yaml"
+        kafkaComposeProjectName = "kafka-cluster"
         r3RootCertFile = "config/r3-ca-key.pem"
         corDappCpiName = "MyCorDapp"
         notaryCpiName = "NotaryServer"
@@ -34,7 +36,7 @@ allprojects {
         cordaCliBinDir = "${System.getProperty("user.home")}/.corda/cli"
         cpiUploadTimeout = cpiUploadDefault
         cordaProcessorTimeout = processorTimeout
-        skipTestsDuringBuildCpis = "true"
+        skipTestsDuringBuildCpis = "false"
     }
 
     // Declare the set of Kotlin compiler options we need to build a CorDapp.
