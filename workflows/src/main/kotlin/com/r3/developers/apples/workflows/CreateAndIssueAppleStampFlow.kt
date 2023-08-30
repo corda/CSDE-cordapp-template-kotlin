@@ -51,8 +51,7 @@ class CreateAndIssueAppleStampFlow : ClientStartableFlow {
         val notaryInfo = notaryLookup.notaryServices.single()
 
         val issuer = memberLookup.myInfo().ledgerKeys.first()
-        val holder = memberLookup.lookup(holderName)
-            ?.let { it.ledgerKeys.first() }
+        val holder = memberLookup.lookup(holderName)?.ledgerKeys?.first()
             ?: throw IllegalArgumentException("The holder $holderName does not exist within the network")
 
         // Building the output AppleStamp state

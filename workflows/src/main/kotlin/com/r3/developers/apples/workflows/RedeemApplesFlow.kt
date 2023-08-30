@@ -48,10 +48,9 @@ class RedeemApplesFlow : ClientStartableFlow {
         // Retrieve the notaries public key (this will change)
         val notaryInfo = notaryLookup.notaryServices.single()
 
-        val myKey = memberLookup.myInfo().let { it.ledgerKeys.first() }
+        val myKey = memberLookup.myInfo().ledgerKeys.first()
 
-        val buyer = memberLookup.lookup(buyerName)
-            ?.let { it.ledgerKeys.first() }
+        val buyer = memberLookup.lookup(buyerName)?.ledgerKeys?.first()
             ?: throw IllegalArgumentException("The buyer does not exist within the network")
 
         val appleStampStateAndRef = utxoLedgerService.findUnconsumedStatesByType(AppleStamp::class.java)
