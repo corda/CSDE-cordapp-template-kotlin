@@ -33,7 +33,6 @@ class ChatFlowDriverTest {
     private val alice = MemberX500Name.parse("CN=Alice, OU=Application, O=R3, L=London, C=GB")
     private val bob = MemberX500Name.parse("CN=Bob, OU=Application, O=R3, L=London, C=GB")
     private val notary = MemberX500Name.parse("CN=Notary, OU=Application, O=R3, L=London, C=GB")
-    private val vNodes = mutableMapOf<MemberX500Name, VirtualNodeInfo>()
     private val jsonMapper = ObjectMapper().apply {
         registerModule(KotlinModule.Builder().build())
 
@@ -43,6 +42,8 @@ class ChatFlowDriverTest {
         }
         registerModule(module)
     }
+
+    private lateinit var vNodes: Map<MemberX500Name, VirtualNodeInfo>
 
     // avoid repeating String literals
     private val noBody = ""
@@ -69,12 +70,11 @@ class ChatFlowDriverTest {
 
     @BeforeAll
     fun setup() {
-        driver.run { dsl ->
+        vNodes = driver.let { dsl ->
             dsl.startNodes(setOf(alice, bob))
-                .filter { it.cpiIdentifier.name == "workflows" }
-                .associateByTo(vNodes) { it.holdingIdentity.x500Name }
+            dsl.nodesFor("workflows")
         }
-        if (vNodes.isEmpty()) fail<Any>("Failed to populate vNodes")
+        assertThat(vNodes).withFailMessage("Failed to populate vNodes").isNotEmpty()
     }
 
     /**
