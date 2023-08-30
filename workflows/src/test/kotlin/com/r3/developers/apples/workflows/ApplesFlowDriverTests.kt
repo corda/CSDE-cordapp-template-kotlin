@@ -68,7 +68,7 @@ class ApplesFlowDriverTests {
     fun `test that RedeemApplesFlow is successful`() {
         val stampId = createAndIssueAppleStamp("Stamp # 0002", bob, alice)!!
         packageApples("Basket of apples # 0002", 350, alice)
-        val redeemApplesFlowArgs = RedeemApplesFlow.RedeemApplesRequest(bob, stampId)
+        val redeemApplesFlowArgs = RedeemApplesFlow.RedeemApplesRequest(bob, notary, stampId)
         driver.run { dsl ->
             dsl.runFlow<RedeemApplesFlow>(vNodes[alice] ?: fail("Missing vNode for Alice")) {
                 jsonMapper.writeValueAsString(redeemApplesFlowArgs)
@@ -78,7 +78,7 @@ class ApplesFlowDriverTests {
     }
 
     private fun packageApples(description: String, weight: Int, packer: MemberX500Name) {
-        val packageApplesFlowArgs = PackageApplesFlow.PackApplesRequest(description, weight)
+        val packageApplesFlowArgs = PackageApplesFlow.PackApplesRequest(description, weight, notary)
         driver.run { dsl: DriverDSL ->
             dsl.runFlow<PackageApplesFlow>(vNodes[packer] ?: fail(String.format("Missing vNode {}", jsonMapper.writeValueAsString(packer)))) {
                 jsonMapper.writeValueAsString(packageApplesFlowArgs)
@@ -87,7 +87,7 @@ class ApplesFlowDriverTests {
     }
 
     private fun createAndIssueAppleStamp(description: String, member: MemberX500Name, issuer: MemberX500Name): UUID? {
-        val createAndIssueFlowArgs = CreateAndIssueAppleStampFlow.CreateAndIssueAppleStampRequest(description, member)
+        val createAndIssueFlowArgs = CreateAndIssueAppleStampFlow.CreateAndIssueAppleStampRequest(description, member, notary)
         val result = driver.let<String> { dsl ->
             dsl.runFlow<CreateAndIssueAppleStampFlow>(
                 vNodes[issuer] ?: fail(String.format("Missing vNode {}", jsonMapper.writeValueAsString(issuer)))

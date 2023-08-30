@@ -8,6 +8,7 @@ import net.corda.v5.application.flows.ClientStartableFlow
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.ledger.common.NotaryLookup
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import java.time.Instant
@@ -15,7 +16,7 @@ import java.time.temporal.ChronoUnit
 
 class PackageApplesFlow : ClientStartableFlow {
 
-    internal data class PackApplesRequest(val appleDescription: String, val weight: Int)
+    internal data class PackApplesRequest(val appleDescription: String, val weight: Int, val notary: MemberX500Name)
 
     @CordaInject
     lateinit var jsonMarshallingService: JsonMarshallingService
@@ -34,7 +35,8 @@ class PackageApplesFlow : ClientStartableFlow {
         val request = requestBody.getRequestBodyAs(jsonMarshallingService, PackApplesRequest::class.java)
         val appleDescription = request.appleDescription
         val weight = request.weight
-        val notary = notaryLookup.notaryServices.single()
+        val notary = notaryLookup.lookup(request.notary)
+            ?: throw IllegalArgumentException("Notary ${request.notary} not found")
         val myKey = memberLookup.myInfo().ledgerKeys.first()
 
         // Building the output BasketOfApples state

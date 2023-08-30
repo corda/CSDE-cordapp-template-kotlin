@@ -4,8 +4,6 @@ import com.r3.developers.apples.contracts.AppleCommands
 import com.r3.developers.apples.states.AppleStamp
 import com.r3.developers.apples.states.BasketOfApples
 import net.corda.v5.base.types.MemberX500Name
-import java.util.*
-
 import net.corda.v5.application.flows.CordaInject
 import net.corda.v5.application.flows.InitiatingFlow
 import net.corda.v5.application.flows.ClientRequestBody
@@ -18,11 +16,12 @@ import net.corda.v5.ledger.common.NotaryLookup
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.UUID
 
 @InitiatingFlow(protocol = "redeem-apples")
 class RedeemApplesFlow : ClientStartableFlow {
 
-    internal data class RedeemApplesRequest(val buyer: MemberX500Name, val stampId: UUID)
+    internal data class RedeemApplesRequest(val buyer: MemberX500Name, val notary: MemberX500Name, val stampId: UUID)
 
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
@@ -45,8 +44,9 @@ class RedeemApplesFlow : ClientStartableFlow {
         val buyerName = request.buyer
         val stampId = request.stampId
 
-        // Retrieve the notaries public key (this will change)
-        val notaryInfo = notaryLookup.notaryServices.single()
+        // Retrieve the notary's public key (this will change)
+        val notaryInfo = notaryLookup.lookup(request.notary)
+            ?: throw IllegalArgumentException("Notary ${request.notary} not found")
 
         val myKey = memberLookup.myInfo().ledgerKeys.first()
 
