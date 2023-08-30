@@ -20,7 +20,6 @@ allprojects {
         cordaClusterURL = "https://localhost:8888"
         networkConfigFile = "config/static-network-config.json"
         kafkaComposeFile = "config/kafka-compose.yaml"
-        kafkaComposeProjectName = "kafka-cluster"
         r3RootCertFile = "config/r3-ca-key.pem"
         corDappCpiName = "MyCorDapp"
         notaryCpiName = "NotaryServer"
