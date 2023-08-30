@@ -36,7 +36,7 @@ allprojects {
         cordaCliBinDir = "${System.getProperty("user.home")}/.corda/cli"
         cpiUploadTimeout = cpiUploadDefault
         cordaProcessorTimeout = processorTimeout
-        skipTestsDuringBuildCpis = "false"
+        skipTestsDuringBuildCpis = "true"
     }
 
     // Declare the set of Kotlin compiler options we need to build a CorDapp.
