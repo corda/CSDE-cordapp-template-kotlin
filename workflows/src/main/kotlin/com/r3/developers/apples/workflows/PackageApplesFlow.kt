@@ -60,7 +60,7 @@ class PackageApplesFlow : ClientStartableFlow {
         return try {
             // Record the transaction, no sessions are passed in as the transaction is only being
             // recorded locally
-            utxoLedgerService.finalize(transaction, emptyList()).toString()
+            utxoLedgerService.finalize(transaction, emptyList()).transaction.id.toString()
         } catch (e: Exception) {
             "Flow failed, message: ${e.message}"
         }

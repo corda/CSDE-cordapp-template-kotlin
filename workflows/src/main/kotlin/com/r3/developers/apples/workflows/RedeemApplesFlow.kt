@@ -82,7 +82,7 @@ class RedeemApplesFlow : ClientStartableFlow {
         return try {
             // Send the transaction and state to the counterparty and let them sign it
             // Then notarise and record the transaction in both parties' vaults.
-            utxoLedgerService.finalize(transaction, listOf(session)).toString()
+            utxoLedgerService.finalize(transaction, listOf(session)).transaction.id.toString()
         } catch (e: Exception) {
             "Flow failed, message: ${e.message}"
         }

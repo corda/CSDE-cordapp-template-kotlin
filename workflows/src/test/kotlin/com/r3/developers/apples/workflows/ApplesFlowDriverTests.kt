@@ -55,13 +55,12 @@ class ApplesFlowDriverTests {
     fun `test that CreateAndIssueAppleStampFlow returns correct message`() {
         val stampId = createAndIssueAppleStamp("Stamp # 0001", bob, alice)
         logger.info("result: {}", stampId)
-        assertThat(stampId).isInstanceOf(UUID::class.java)
     }
 
     @Test
     fun `test that PackageApplesFlow is successful`() {
-        packageApples("Basket of apples # 0001", 100, alice)
-        // flow has no return value to assert, if no exceptions are thrown test is successful
+        val txId = packageApples("Basket of apples # 0001", 100, alice)
+        logger.info("PackageApples: {}", txId)
     }
 
     @Test
@@ -69,32 +68,40 @@ class ApplesFlowDriverTests {
         val stampId = createAndIssueAppleStamp("Stamp # 0002", bob, alice)!!
         packageApples("Basket of apples # 0002", 350, alice)
         val redeemApplesFlowArgs = RedeemApplesFlow.RedeemApplesRequest(bob, notary, stampId)
-        driver.run { dsl ->
+        val result = driver.let { dsl ->
             dsl.runFlow<RedeemApplesFlow>(vNodes[alice] ?: fail("Missing vNode for Alice")) {
                 jsonMapper.writeValueAsString(redeemApplesFlowArgs)
             }
         }
-        // flow has no return value to assert, if no exceptions are thrown test is successful
+        logger.info("RedeemApplesRequest returns {}", result)
+        assertThat(result)
+            .withFailMessage { "Not SHA-256 hash: '$result'" }
+            .isNotNull().startsWith("SHA-256D:")
     }
 
-    private fun packageApples(description: String, weight: Int, packer: MemberX500Name) {
+    private fun packageApples(description: String, weight: Int, packer: MemberX500Name): String {
         val packageApplesFlowArgs = PackageApplesFlow.PackApplesRequest(description, weight, notary)
-        driver.run { dsl: DriverDSL ->
+        val result = driver.let { dsl: DriverDSL ->
             dsl.runFlow<PackageApplesFlow>(vNodes[packer] ?: fail(String.format("Missing vNode {}", jsonMapper.writeValueAsString(packer)))) {
                 jsonMapper.writeValueAsString(packageApplesFlowArgs)
             }
-        }
+        } ?: fail("PackageApples returned null")
+        assertThat(result)
+            .withFailMessage { "Not SHA-256 hash: '$result'" }
+            .startsWith("SHA-256D:")
+        return result
     }
 
     private fun createAndIssueAppleStamp(description: String, member: MemberX500Name, issuer: MemberX500Name): UUID? {
         val createAndIssueFlowArgs = CreateAndIssueAppleStampFlow.CreateAndIssueAppleStampRequest(description, member, notary)
-        val result = driver.let<String> { dsl ->
+        val result = driver.let { dsl ->
             dsl.runFlow<CreateAndIssueAppleStampFlow>(
                 vNodes[issuer] ?: fail(String.format("Missing vNode {}", jsonMapper.writeValueAsString(issuer)))
             ) {
                 jsonMapper.writeValueAsString(createAndIssueFlowArgs)
             }
         }
+        assertThat(result).withFailMessage("CreateAndIssueAppleStampFlow returned null").isNotNull()
         return UUID.fromString(result)
     }
 }
