@@ -21,8 +21,8 @@ import java.util.UUID
  *      2. BasketOfApples state, AppleCommand.PackBasket command
  *      3. BasketOfApples state, AppleCommand.Redeem command
  *
- * The variables and methods within this abstract class should to written to enable the re-use of code such that states
- * are set up automatically so that you only need to worry about the logic of your contracts
+ * The variables and methods within this abstract class are written to enable code re-use such that states are set up
+ * automatically so that you only need to worry about the logic of your contracts
  **/
 
 @Suppress("UnnecessaryAbstractClass", "UtilityClassWithPublicConstructor")

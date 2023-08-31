@@ -33,9 +33,8 @@ class BasketOfApplesContractPackBasketCommandTest : ApplesContractTest() {
             addSignatories(outputBasketOfApplesStateParticipants)
         }
         /**
-         *  The assetVerifies function is the general way to test if a contract test passes or fails a transaction.
-         *  Contract test verifications occurs under the hood whenever we build a transaction.
-         *  Therefore, if a transaction is verified, by extension the contract tests pass.
+         *  The assertVerifies function is the general way to test if a contract test passes or fails a transaction.
+         *  If the transaction is verified, then it means that the contract tests pass.
          **/
         assertVerifies(transaction)
     }
@@ -70,8 +69,8 @@ class BasketOfApplesContractPackBasketCommandTest : ApplesContractTest() {
         val transaction = buildTransaction {
             addCommand(AppleCommands.PackBasket())
             addOutputState(
-                // Sometimes the default values defined in AppleContractTest does not cover all scenarios.
-                // Specific setups are recommended to be written individually in tests unless they are repeatable.
+                // Where a specific piece of test data is used only once, it makes sense to create it within the test
+                // rather than at a class/parent class level.
                 BasketOfApples(
                     "",
                     outputBasketOfApplesStateFarm,

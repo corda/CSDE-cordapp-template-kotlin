@@ -40,9 +40,8 @@ class BasketOfApplesContractRedeemCommandTest : ApplesContractTest() {
             addSignatories(outputBasketOfApplesStateParticipants)
         }
         /**
-         *  The assetVerifies function is the general way to test if a contract test passes or fails a transaction.
-         *  Contract test verifications occurs under the hood whenever we build a transaction.
-         *  Therefore, if a transaction is verified, by extension the contract tests pass.
+         *  The assertVerifies function is the general way to test if a contract test passes or fails a transaction.
+         *  If the transaction is verified, then it means that the contract tests pass.
          **/
         assertVerifies(transaction)
     }
