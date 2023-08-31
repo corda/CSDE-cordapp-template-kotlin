@@ -35,6 +35,7 @@ allprojects {
         cpiUploadTimeout = cpiUploadDefault
         cordaProcessorTimeout = processorTimeout
         vnodeRegistrationTimeout = vnodeRegistrationTimeoutDefault
+        skipTestsDuringBuildCpis = this.skipTestsDuringBuildCpis
     }
 
     // Declare the set of Kotlin compiler options we need to build a CorDapp.
