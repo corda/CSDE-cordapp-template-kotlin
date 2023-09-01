@@ -15,14 +15,15 @@ import net.corda.v5.ledger.common.NotaryLookup
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.UUID
 
 @InitiatingFlow(protocol = "create-and-issue-apple-stamp")
 class CreateAndIssueAppleStampFlow : ClientStartableFlow {
 
     internal data class CreateAndIssueAppleStampRequest(
         val stampDescription: String,
-        val holder: MemberX500Name
+        val holder: MemberX500Name,
+        val notary: MemberX500Name
     )
 
     @CordaInject
@@ -48,7 +49,8 @@ class CreateAndIssueAppleStampFlow : ClientStartableFlow {
         val stampDescription = request.stampDescription
         val holderName = request.holder
 
-        val notaryInfo = notaryLookup.notaryServices.single()
+        val notaryInfo = notaryLookup.lookup(request.notary)
+            ?: throw IllegalArgumentException("Notary ${request.notary} not found")
 
         val issuer = memberLookup.myInfo().ledgerKeys.first()
         val holder = memberLookup.lookup(holderName)?.ledgerKeys?.first()

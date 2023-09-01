@@ -34,6 +34,7 @@ allprojects {
         cordaCliBinDir = "${System.getProperty("user.home")}/$cordaCliBinariesDirectory"
         cpiUploadTimeout = cpiUploadDefault
         cordaProcessorTimeout = processorTimeout
+        vnodeRegistrationTimeout = vnodeRegistrationTimeoutDefault
         skipTestsDuringBuildCpis = this.skipTestsDuringBuildCpis
     }
 
