@@ -53,7 +53,7 @@ class AppleStampContractIssueCommandTest : ApplesContractTest() {
          * The assertFailsWith function is the general way to test for unhappy path test cases contract tests.
          *
          * The transaction defined above will fail because the contract expects only one output state. However, we built
-         * a transaction with two output states. So we expect the transaction to fail, and only 'pass' our test if we \
+         * a transaction with two output states. So we expect the transaction to fail, and only 'pass' our test if we
          * can match the error message we expect.
          *
          * NOTE: the assertFailsWith method tests if the exact string of the error message matches the expected message
