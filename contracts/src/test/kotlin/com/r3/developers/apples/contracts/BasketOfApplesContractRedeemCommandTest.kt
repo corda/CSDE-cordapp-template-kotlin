@@ -49,7 +49,7 @@ class BasketOfApplesContractRedeemCommandTest : ApplesContractTest() {
     @Test
     fun inputContractStateSizeNotTwo() {
         // The following test builds a transaction that would fail due to not meeting the expectation that a transaction
-        // in this CorDapp for this state should only contain two input states.
+        // in this CorDapp for this state should consume exactly two input states.
         val inputAppleStampState = createInputStateAppleStamp()
         val transaction = buildTransaction {
             addInputState(inputAppleStampState.ref)
@@ -60,8 +60,8 @@ class BasketOfApplesContractRedeemCommandTest : ApplesContractTest() {
         /**
          * The assertFailsWith function is the general way to test for unhappy path test cases contract tests.
          *
-         * The transaction defined above will fail because the contract expects only one output state. However, we built
-         * a transaction with two output states. So we expect the transaction to fail, and only 'pass' our test if we \
+         * The transaction defined above will fail because the contract expects two input states. However, we built
+         * a transaction with one input states. So we expect the transaction to fail, and only 'pass' our test if we
          * can match the error message we expect.
          *
          * NOTE: the assertFailsWith method tests if the exact string of the error message matches the expected message
