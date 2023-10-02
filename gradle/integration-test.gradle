@@ -1,0 +1,30 @@
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestApi.extendsFrom testApi
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integrationTest/java')
+        }
+        resources.srcDir file('src/integrationTest/resources')
+    }
+}
+
+task integrationTest(type: Test) {
+    description = "Runs integration tests from sources in src/integrationTest. " 
+    group = "verification"
+    useJUnitPlatform()
+
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    testLogging.showStandardStreams = true
+
+    shouldRunAfter(tasks.test)
+}

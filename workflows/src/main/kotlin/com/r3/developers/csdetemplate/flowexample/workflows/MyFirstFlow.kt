@@ -10,6 +10,7 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import org.slf4j.LoggerFactory
 
+
 // A class to hold the deserialized arguments required to start the flow.
 class MyFirstFlowStartArgs(val otherMember: MemberX500Name)
 

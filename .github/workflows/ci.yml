@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ feature-integration-testing ]
+  pull_request:
+    branches: [ feature-integration-testing ]
+
+
+# This allows a subsequently queued workflow run to interrupt previous runs
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: CI
+    strategy:
+      matrix:
+        java-version:
+          - 11
+        os:
+          - ubuntu-latest
+      #    - windows-2019
+      # in case one combination fails, we still want to see results from others
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'zulu'
+      - name: Setup Corda CLI
+        uses: manosbatsis/corda5-cli-action@v1.0.7
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: build integrationTest

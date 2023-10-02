@@ -1,3 +1,14 @@
+# CSDE-Integration-Testing
+
+This is a fork of [CSDE-cordapp-template-kotlin](https://github.com/corda/CSDE-cordapp-template-kotlin), 
+specifically tag `release/corda-5-0`. 
+
+You should be looking at this fork's `feature-integration-testing` branch. IT contains the following changes:
+
+1. Adds the 
+
+The original README content follows bellow.
+
 # CSDE-cordapp-template-kotlin
 
 
