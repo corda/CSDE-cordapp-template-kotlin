@@ -1,0 +1,15 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet author="R3.Corda" id="state-migration-v1.0">
+        <createTable tableName="drafttx">
+            <column name="id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tx" type="VARBINARY(8388608)"/>
+        </createTable>
+        <addPrimaryKey columnNames="id" constraintName="state_id" tableName="drafttx"/>
+    </changeSet>
+</databaseChangeLog>
