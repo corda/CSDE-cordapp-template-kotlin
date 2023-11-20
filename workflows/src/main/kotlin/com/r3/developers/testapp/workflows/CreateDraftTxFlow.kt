@@ -9,6 +9,7 @@ import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.application.persistence.PersistenceService
 import net.corda.v5.application.serialization.SerializationService
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.ledger.common.NotaryLookup
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import org.slf4j.LoggerFactory
@@ -44,7 +45,12 @@ class CreateDraftTxFlow : ClientStartableFlow {
     @Suspendable
     override fun call(requestBody: ClientRequestBody): String {
         logger.info("Starting CreateDraftTxFlow")
+        val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, CreateFlowArgs::class.java)
+        logger.info("Transaction peer is ${flowArgs.receiverX500Name}")
+
         val returnValue = try {
+
+            // 1. We self issue an asset on ledger
             val me = memberLookup.myInfo().ledgerKeys.first()
             val state = GenericState(me, me)
 
@@ -52,13 +58,31 @@ class CreateDraftTxFlow : ClientStartableFlow {
                 .setNotary(notaryLookup.notaryServices.first().name)
                 .addOutputState(state)
                 .addCommand(GenericStateContract.GenericCommands.Issue)
-                .addSignatories(state.participants)
+                .addSignatories(state.issuer)
                 .setTimeWindowUntil(Instant.now().plus(1, ChronoUnit.DAYS))
 
             val stx = txBuilder.toSignedTransaction()
 
-            // store transaction to be finalized later
-            val bytes = serializationService.serialize(stx)
+            val transaction = ledgerService.finalize(stx, emptyList()).transaction
+
+            logger.info("Issued GenericState via transaction with ID ${transaction.id}")
+
+            // 2. Start transaction to change owner
+            val newOwnerKey = memberLookup.lookup(flowArgs.receiverX500Name)!!.ledgerKeys.first()
+
+            val inputState = transaction.outputStateAndRefs.single()
+            val outputState = GenericState((inputState.state.contractState as GenericState).issuer, newOwnerKey)
+            val moveStx = ledgerService.createTransactionBuilder()
+                .setNotary(notaryLookup.notaryServices.first().name)
+                .addInputState(inputState.ref)
+                .addOutputState(outputState)
+                .addCommand(GenericStateContract.GenericCommands.Move)
+                .addSignatories(listOf(me, newOwnerKey))
+                .setTimeWindowUntil(Instant.now().plus(1, ChronoUnit.DAYS))
+                .toSignedTransaction()
+
+            // 3. Store transaction to be finalized later
+            val bytes = serializationService.serialize(moveStx)
             val draftTx = DraftTx(UUID.randomUUID(), bytes.bytes)
             persistenceService.persist(draftTx)
             draftTx.id.toString()
@@ -70,3 +94,5 @@ class CreateDraftTxFlow : ClientStartableFlow {
         return jsonMarshallingService.format(returnValue)
     }
 }
+
+data class CreateFlowArgs(val receiverX500Name: MemberX500Name)

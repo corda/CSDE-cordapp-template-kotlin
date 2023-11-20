@@ -8,6 +8,6 @@ import java.security.PublicKey
 @BelongsToContract(GenericStateContract::class)
 class GenericState(val issuer: PublicKey, val owner: PublicKey) : ContractState {
     override fun getParticipants(): List<PublicKey> {
-        return listOf(issuer)
+        return listOf(issuer, owner)
     }
 }
