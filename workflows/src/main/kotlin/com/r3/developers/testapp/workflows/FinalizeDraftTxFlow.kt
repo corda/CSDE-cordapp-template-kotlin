@@ -51,25 +51,28 @@ class FinalizeDraftTxFlow : ClientStartableFlow {
         val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, MyFlowArgs::class.java)
         logger.info("Draft TX ID is ${flowArgs.draftTxId}")
 
-        val returnValue = try {
-            // read draft tx
-            val draftTx = persistenceService.find(DraftTx::class.java, flowArgs.draftTxId)!!
-            logger.info("Draft TX BYTES ARE: ${draftTx.tx}")
-            val stx = serializationService.deserialize(draftTx.tx!!, UtxoSignedTransaction::class.java)
-            logger.info("DESERIALIZED DRAFT TX IS: $stx")
-            // finalize
-            val peerKey = (stx.signatories - memberLookup.myInfo().ledgerKeys.first()).single()
-            val peer = memberLookup.lookup(peerKey)
-            val sessions = listOf(flowMessaging.initiateFlow(peer!!.name))
-            val transactionId = ledgerService.finalize(stx, sessions).transaction.id.toString()
-            logger.info("Transaction $transactionId finalized")
-            "Transaction with ID $transactionId finalized"
+        // read draft tx
+        val draftTx = persistenceService.find(DraftTx::class.java, flowArgs.draftTxId)!!
+        logger.info("Draft TX BYTES ARE: ${draftTx.tx}")
+        val stx = serializationService.deserialize(draftTx.tx!!, UtxoSignedTransaction::class.java)
+        logger.info("DESERIALIZED DRAFT TX IS: $stx")
+        // finalize
+        val peerKey = (stx.signatories - memberLookup.myInfo().ledgerKeys.first()).single()
+        val peer = memberLookup.lookup(peerKey)
+        val sessions = listOf(flowMessaging.initiateFlow(peer!!.name))
+
+        try {
+            ledgerService.finalize(stx, sessions).transaction.id.toString()
+            logger.info("Transaction ${stx.id} finalized")
         } catch (e: Exception) {
-            logger.error("Something went wrong", e)
-            "Error: ${e.message}"
+            logger.error("Flow finalization failed. ", e)
         }
 
-        return jsonMarshallingService.format(returnValue)
+        logger.info("Receiving status message")
+        val statusMessage = sessions.single().receive(String::class.java)
+        logger.info("Received status message")
+
+        return jsonMarshallingService.format(statusMessage)
     }
 }
 
@@ -86,17 +89,23 @@ class FinalizeDraftTxFlowResponder : ResponderFlow {
     @Suspendable
     override fun call(session: FlowSession) {
         logger.info("Received request to finalize transaction")
+
+        var statusMessage: String? = null
         try {
             ledgerService.receiveFinality(session) {
                 val state = it.getInputStates(GenericState::class.java).single()
+                statusMessage = "Transaction with ID ${it.id} finalized"
                 logger.info("Responder finalizing transaction with id ${it.id}")
                 logger.info("State $state changed owners")
             }
         } catch (e: Exception) {
-            logger.error("Responder flow finished with exception", e)
+            logger.error("Transaction finalization failed", e)
+            statusMessage = e.message
         }
-    }
 
+        logger.info("Sending back status message $statusMessage")
+        session.send(statusMessage!!)
+    }
 }
 
 data class MyFlowArgs(val draftTxId: UUID)
