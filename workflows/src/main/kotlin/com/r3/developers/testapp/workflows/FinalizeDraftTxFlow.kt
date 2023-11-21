@@ -15,6 +15,8 @@ import net.corda.v5.application.messaging.FlowSession
 import net.corda.v5.application.persistence.PersistenceService
 import net.corda.v5.application.serialization.SerializationService
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.exceptions.CordaRuntimeException
+import net.corda.v5.ledger.utxo.ContractState
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import net.corda.v5.ledger.utxo.transaction.UtxoSignedTransaction
 import org.slf4j.LoggerFactory
@@ -70,9 +72,13 @@ class FinalizeDraftTxFlow : ClientStartableFlow {
 
         logger.info("Receiving status message")
         val statusMessage = sessions.single().receive(String::class.java)
-        logger.info("Received status message")
+        logger.info("Received status message $statusMessage")
 
-        return jsonMarshallingService.format(statusMessage)
+        if (!statusMessage.contains("finalized")) {
+            throw (CordaRuntimeException("Received message from receiver: $statusMessage"))
+        }
+
+        return jsonMarshallingService.format("Received message from receiver: $statusMessage")
     }
 }
 
@@ -94,6 +100,7 @@ class FinalizeDraftTxFlowResponder : ResponderFlow {
         try {
             ledgerService.receiveFinality(session) {
                 val state = it.getInputStates(GenericState::class.java).single()
+//                throwError(state)
                 statusMessage = "Transaction with ID ${it.id} finalized"
                 logger.info("Responder finalizing transaction with id ${it.id}")
                 logger.info("State $state changed owners")
@@ -106,6 +113,11 @@ class FinalizeDraftTxFlowResponder : ResponderFlow {
         logger.info("Sending back status message $statusMessage")
         session.send(statusMessage!!)
     }
+
+//    private fun throwError(state: ContractState) {
+//        if (state is GenericState)
+//            throw IllegalArgumentException("Wrong state!!!!")
+//    }
 }
 
 data class MyFlowArgs(val draftTxId: UUID)
