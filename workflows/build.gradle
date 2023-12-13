@@ -61,32 +61,6 @@ dependencies {
     testImplementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
     testImplementation "org.assertj:assertj-core:$assertjVersion"
     testImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
-    testImplementation "net.corda:corda-driver:$cordaDriverVersion"
-    testRuntimeOnly "net.corda:corda-driver-engine:$cordaDriverVersion"
-    testRuntimeOnly files(configurations.archives.artifacts.files)
-    testRuntimeOnly files("${System.getProperty("user.home")}/$cordaBinariesDirectory/notaryServer/notary-plugin-non-validating-server-$cordaNotaryPluginsVersion-package.cpb")
-}
-
-tasks.withType(Test).configureEach {
-    dependsOn(':getNotaryServerCPB')
-    doFirst {
-        jvmArgs '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
-                '--add-opens', 'java.base/java.lang.invoke=ALL-UNNAMED',
-                '--add-opens', 'java.base/java.nio=ALL-UNNAMED',
-                '--add-opens', 'java.base/java.time=ALL-UNNAMED',
-                '--add-opens', 'java.base/java.util=ALL-UNNAMED'
-
-        systemProperty 'co.paralleluniverse.fibers.verifyInstrumentation', true
-        systemProperty 'java.io.tmpdir', buildDir.absolutePath
-
-        systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'info'
-        systemProperty 'org.slf4j.simpleLogger.dateTimeFormat', 'yyyy-MM-dd HH:mm:ss:SSS Z'
-        systemProperty 'org.slf4j.simpleLogger.showDateTime', true
-        systemProperty 'org.slf4j.simpleLogger.showShortLogName', true
-        systemProperty 'org.slf4j.simpleLogger.showThreadName', false
-        systemProperty 'org.slf4j.simpleLogger.logFile', 'System.out'
-        systemProperty 'org.slf4j.simpleLogger.log.org.apache.aries.spifly.BaseActivator', 'OFF'
-    }
 }
 
 // The CordApp section.

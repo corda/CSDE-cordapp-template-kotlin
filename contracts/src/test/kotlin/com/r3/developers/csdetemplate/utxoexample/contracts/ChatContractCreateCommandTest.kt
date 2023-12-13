@@ -61,38 +61,6 @@ class ChatContractCreateCommandTest : ContractTest() {
     }
 
     @Test
-    fun addAttachmentsNotSupported() {
-        // The following transaction will fail due to the fact that we currently do not support the feature for attachments
-        // onto transactions for the mock ledger.
-
-        // Where a specific piece of test data is used only once, it makes sense to create it within the test
-        // rather than at a class/parent class level.
-        val secureHash: SecureHash = object : SecureHash {
-            override fun getAlgorithm(): String {
-                return null.toString()
-            }
-
-            override fun toHexString(): String {
-                return null.toString();
-            }
-        }
-        val exception: Exception = assertThrows(
-            UnsupportedOperationException::class.java
-        ) {
-            ledgerService
-                .createTransactionBuilder()
-                .addAttachment(secureHash)
-                .addOutputState(outputChatState)
-                .addCommand(Create())
-                .addSignatories(outputChatState.participants)
-                .toSignedTransaction()
-        }
-        val expectedMessage = "This method is not implemented for the mock ledger"
-        val actualMessage = exception.message
-        assertTrue(actualMessage!!.contains(expectedMessage))
-    }
-
-    @Test
     fun missingCommand() {
         // The following test builds a transaction that would fail due to not having a command.
         val transaction = buildTransaction {
