@@ -6,8 +6,6 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.jpa'
     id 'java'
     id 'maven-publish'
-//    id 'net.corda.plugins.csde'
-
     id 'net.corda.gradle.plugin'
 }
 
@@ -16,29 +14,6 @@ allprojects {
     version '1.0-SNAPSHOT'
 
     def javaVersion = VERSION_17
-
-    // Configure the CSDE
-//    csde {
-//        cordaClusterURL = "https://localhost:8888"
-//        networkConfigFile = "config/static-network-config.json"
-//        r3RootCertFile = "config/r3-ca-key.pem"
-//        corDappCpiName = "MyCorDapp"
-//        notaryCpiName = "NotaryServer"
-//        cordaRpcUser = "admin"
-//        cordaRpcPasswd ="admin"
-//        workflowsModuleName = workflowsModule
-//        csdeWorkspaceDir = "workspace"
-//        notaryVersion = cordaNotaryPluginsVersion
-//        combinedWorkerVersion = combinedWorkerJarVersion
-//        postgresJdbcVersion = "42.4.3"
-//        cordaDbContainerName = "CSDEpostgresql"
-//        cordaBinDir = "${System.getProperty("user.home")}/$cordaBinariesDirectory"
-//        cordaCliBinDir = "${System.getProperty("user.home")}/$cordaCliBinariesDirectory"
-//        cpiUploadTimeout = cpiUploadDefault
-//        cordaProcessorTimeout = processorTimeout
-//        vnodeRegistrationTimeout = vnodeRegistrationTimeoutDefault
-//        skipTestsDuringBuildCpis = this.skipTestsDuringBuildCpis
-//    }
 
     // New Corda gradle plugin
     cordaRuntimeGradlePlugin {
