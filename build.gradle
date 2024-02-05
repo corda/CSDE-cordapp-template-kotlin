@@ -17,7 +17,8 @@ allprojects {
 
     // New Corda gradle plugin
     cordaRuntimeGradlePlugin {
-//        combinedWorkerVersion = "5.1.0.0"
+        combinedWorkerVersion = "5.0.1.0"
+        notaryVersion = "5.0.1.0"
         postgresJdbcVersion = "42.4.3"
         // Only need to supply these if you want to use an unpublished version
         artifactoryUsername = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
