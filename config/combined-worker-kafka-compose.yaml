@@ -38,13 +38,14 @@ services:
     volumes:
       - ${CORDA_CLI:-~/.corda/cli}:/opt/corda-cli
     working_dir: /opt/corda-cli
-    command: [ "java",
-               "-jar",
-               "corda-cli.jar",
-               "topic",
-               "-b=kafka:29092",
-               "create",
-               "connect"
+    command: [
+      "java",
+      "-jar",
+      "corda-cli.jar",
+      "topic",
+      "-b=kafka:29092",
+      "create",
+      "connect"
     ]
 
   corda:

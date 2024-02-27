@@ -17,17 +17,27 @@ allprojects {
 
     def javaVersion = VERSION_17
 
-    // New Corda gradle plugin
+    // Configure Corda runtime gradle plugin
     cordaRuntimeGradlePlugin {
-        notaryVersion = "5.2.0.0-RC02"
-
-        // Use compose file to start the Combined Worker with Postgres and Kafka
-        // Note: To ensure that the Combined Worker starts correctly, Corda CLI needs to be used to create necessary topics.
-        // Corda CLI version should be aligned with the Combined Worker version
+        cordaClusterURL = "https://localhost:8888"
+        cordaRestUser = "admin"
+        cordaRestPasswd ="admin"
+        cordaRuntimePluginWorkspaceDir = "workspace"
         composeFilePath = "config/combined-worker-kafka-compose.yaml"
-
         // Alternatively, you can use a Database-only combined worker:
         // composeFilePath = "config/combined-worker-compose.yaml"
+        composeNetworkName = "corda-cluster"
+        notaryVersion = cordaNotaryPluginsVersion
+        cordaBinDir = "${System.getProperty("user.home")}/.corda/corda5"
+        cordaCliBinDir = "${System.getProperty("user.home")}/.corda/cli"
+        corDappCpiName = "MyCorDapp"
+        notaryCpiName = "NotaryServer"
+        networkConfigFile = "config/static-network-config.json"
+        r3RootCertFile = "config/r3-ca-key.pem"
+        workflowsModuleName = "workflows"
+        cpiUploadTimeout = "10000"
+        vnodeRegistrationTimeout = "30000"
+        cordaProcessorTimeout = "-1"
 
         // Only need to supply these if you want to use an unpublished version
         artifactoryUsername = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
@@ -81,20 +91,20 @@ allprojects {
                 password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
             }
         }
-        maven {
-            // Quasar & Antlr
-            url = "$artifactoryContextUrl/corda-dependencies-dev"
-            authentication {
-                basic(BasicAuthentication)
-            }
-            credentials {
-                username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
-                password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
-            }
-            mavenContent {
-                snapshotsOnly()
-            }
-        }
+//        maven {
+//             Quasar & Antlr
+//            url = "$artifactoryContextUrl/corda-dependencies-dev"
+//            authentication {
+//                basic(BasicAuthentication)
+//            }
+//            credentials {
+//                username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
+//                password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+//            }
+//            mavenContent {
+//                snapshotsOnly()
+//            }
+//        }
     }
 
     tasks.withType(Test).configureEach {
