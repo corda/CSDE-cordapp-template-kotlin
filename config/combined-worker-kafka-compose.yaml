@@ -53,15 +53,17 @@ services:
       - postgresql
       - kafka
       - kafka-create-topics
-    command: [ "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
-               "-mbus.busType=KAFKA",
-               "-mbootstrap.servers=kafka:29092",
-               "-spassphrase=password",
-               "-ssalt=salt",
-               "-ddatabase.user=user",
-               "-ddatabase.pass=password",
-               "-ddatabase.jdbc.url=jdbc:postgresql://postgresql:5432/cordacluster",
-               "-ddatabase.jdbc.directory=/opt/jdbc-driver/"
+    environment:
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+    command: [
+      "-mbus.busType=KAFKA",
+      "-mbootstrap.servers=kafka:29092",
+      "-spassphrase=password",
+      "-ssalt=salt",
+      "-ddatabase.user=user",
+      "-ddatabase.pass=password",
+      "-ddatabase.jdbc.url=jdbc:postgresql://postgresql:5432/cordacluster",
+      "-ddatabase.jdbc.directory=/opt/jdbc-driver/"
     ]
     ports:
       - 8888:8888
