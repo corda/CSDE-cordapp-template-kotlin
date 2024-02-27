@@ -1,7 +1,6 @@
-@Library('corda-shared-build-pipeline-steps@5.1') _
+@Library('corda-shared-build-pipeline-steps@5.2') _
 
 cordaPipeline(
-    nexusAppId: 'com.corda.CSDE-kotlin.5.0',
     publishRepoPrefix: '',
     slimBuild: true,
     runUnitTests: false,

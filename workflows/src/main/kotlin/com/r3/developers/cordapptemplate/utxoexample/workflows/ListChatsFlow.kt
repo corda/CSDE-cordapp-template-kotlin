@@ -1,6 +1,6 @@
-package com.r3.developers.csdetemplate.utxoexample.workflows
+package com.r3.developers.cordapptemplate.utxoexample.workflows
 
-import com.r3.developers.csdetemplate.utxoexample.states.ChatState
+import com.r3.developers.cordapptemplate.utxoexample.states.ChatState
 import net.corda.v5.application.flows.ClientRequestBody
 import net.corda.v5.application.flows.ClientStartableFlow
 import net.corda.v5.application.flows.CordaInject
@@ -55,7 +55,7 @@ class ListChatsFlow : ClientStartableFlow {
 RequestBody for triggering the flow via REST:
 {
     "clientRequestId": "list-1",
-    "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.ListChatsFlow",
+    "flowClassName": "com.r3.developers.cordapptemplate.utxoexample.workflows.ListChatsFlow",
     "requestBody": {}
 }
 */

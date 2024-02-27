@@ -9,7 +9,7 @@ import java.security.PublicKey
 import java.util.UUID
 
 /**
- * The following is the base implementation of the Contract Tests for the Apples CSDE-template-tutorial.
+ * The following is the base implementation of the Contract Tests for the Apples CorDapp template tutorial.
  *
  * - The AppleContractTest abstract class implements the ContractTest class.
  * - For full contract test coverage, we generally create a class for every command scenario for every state.

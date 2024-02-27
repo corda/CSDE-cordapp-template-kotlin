@@ -1,19 +1,15 @@
-package com.r3.developers.csdetemplate.utxoexample.contracts
+package com.r3.developers.cordapptemplate.utxoexample.contracts
 
 import com.r3.corda.ledger.utxo.testing.ContractTest
 import com.r3.corda.ledger.utxo.testing.buildTransaction
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.CREATE_COMMAND_SHOULD_HAVE_NO_INPUT_STATES
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.CREATE_COMMAND_SHOULD_HAVE_ONLY_ONE_OUTPUT_STATE
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.OUTPUT_STATE_SHOULD_ONLY_HAVE_TWO_PARTICIPANTS
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.REQUIRE_SINGLE_COMMAND
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.TRANSACTION_SHOULD_BE_SIGNED_BY_ALL_PARTICIPANTS
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.UNKNOWN_COMMAND
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Create
-import com.r3.developers.csdetemplate.utxoexample.states.ChatState
-import net.corda.v5.crypto.SecureHash
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract.Companion.CREATE_COMMAND_SHOULD_HAVE_NO_INPUT_STATES
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract.Companion.CREATE_COMMAND_SHOULD_HAVE_ONLY_ONE_OUTPUT_STATE
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract.Companion.OUTPUT_STATE_SHOULD_ONLY_HAVE_TWO_PARTICIPANTS
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract.Companion.REQUIRE_SINGLE_COMMAND
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract.Companion.TRANSACTION_SHOULD_BE_SIGNED_BY_ALL_PARTICIPANTS
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract.Companion.UNKNOWN_COMMAND
+import com.r3.developers.cordapptemplate.utxoexample.states.ChatState
 import net.corda.v5.ledger.utxo.Command
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.*
 

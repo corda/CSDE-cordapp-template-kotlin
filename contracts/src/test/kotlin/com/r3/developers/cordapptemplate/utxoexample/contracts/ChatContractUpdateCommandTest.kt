@@ -1,14 +1,14 @@
-package com.r3.developers.csdetemplate.utxoexample.contracts
+package com.r3.developers.cordapptemplate.utxoexample.contracts
 
 import com.r3.corda.ledger.utxo.testing.ContractTest
 import com.r3.corda.ledger.utxo.testing.buildTransaction
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.TRANSACTION_SHOULD_BE_SIGNED_BY_ALL_PARTICIPANTS
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_CHATNAME_SHOULD_NOT_CHANGE
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_ID_SHOULD_NOT_CHANGE
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_PARTICIPANTS_SHOULD_NOT_CHANGE
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_SHOULD_HAVE_ONLY_ONE_INPUT_STATE
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_SHOULD_HAVE_ONLY_ONE_OUTPUT_STATE
-import com.r3.developers.csdetemplate.utxoexample.states.ChatState
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract.Companion.TRANSACTION_SHOULD_BE_SIGNED_BY_ALL_PARTICIPANTS
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_CHATNAME_SHOULD_NOT_CHANGE
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_ID_SHOULD_NOT_CHANGE
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_PARTICIPANTS_SHOULD_NOT_CHANGE
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_SHOULD_HAVE_ONLY_ONE_INPUT_STATE
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract.Companion.UPDATE_COMMAND_SHOULD_HAVE_ONLY_ONE_OUTPUT_STATE
+import com.r3.developers.cordapptemplate.utxoexample.states.ChatState
 import net.corda.v5.ledger.utxo.StateAndRef
 import org.junit.jupiter.api.Test
 import java.util.*

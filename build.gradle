@@ -12,7 +12,7 @@ plugins {
 }
 
 allprojects {
-    group 'com.r3.developers.csdetemplate'
+    group 'com.r3.developers.cordapptemplate'
     version '1.0-SNAPSHOT'
 
     def javaVersion = VERSION_17
@@ -20,8 +20,14 @@ allprojects {
     // New Corda gradle plugin
     cordaRuntimeGradlePlugin {
         notaryVersion = "5.2.0.0-RC02"
+
+        // Use compose file to start the Combined Worker with Postgres and Kafka
+        // Note: To ensure that the Combined Worker starts correctly, Corda CLI needs to be used to create necessary topics.
+        // Corda CLI version should be aligned with the Combined Worker version
         composeFilePath = "config/combined-worker-kafka-compose.yaml"
-//        composeFilePath = "config/combined-worker-compose.yaml"
+
+        // Alternatively, you can use a Database-only combined worker:
+        // composeFilePath = "config/combined-worker-compose.yaml"
 
         // Only need to supply these if you want to use an unpublished version
         artifactoryUsername = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
@@ -100,7 +106,7 @@ allprojects {
 publishing {
     publications {
             maven(MavenPublication) {
-                artifactId "corda-CSDE-kotlin-sample"
+                artifactId "corda-dev-template-kotlin-sample"
                 groupId project.group
                 artifact jar
          }

@@ -1,6 +1,6 @@
-package com.r3.developers.csdetemplate.utxoexample.states
+package com.r3.developers.cordapptemplate.utxoexample.states
 
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.ledger.utxo.BelongsToContract
 import net.corda.v5.ledger.utxo.ContractState

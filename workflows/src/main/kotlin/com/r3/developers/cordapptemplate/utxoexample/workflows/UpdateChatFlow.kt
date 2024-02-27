@@ -1,24 +1,24 @@
-package com.r3.developers.csdetemplate.utxoexample.workflows
+package com.r3.developers.cordapptemplate.utxoexample.workflows
 
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract
-import com.r3.developers.csdetemplate.utxoexample.states.ChatState
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract
+import com.r3.developers.cordapptemplate.utxoexample.states.ChatState
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.exceptions.CordaRuntimeException
-import net.corda.v5.base.types.MemberX500Name
-import net.corda.v5.ledger.common.NotaryLookup
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
+import java.util.*
 
 // A class to hold the deserialized arguments required to start the flow.
-data class CreateNewChatFlowArgs(val chatName: String, val message: String, val otherMember: String)
+data class UpdateChatFlowArgs(val id: UUID, val message: String)
+
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
-class CreateNewChatFlow: ClientStartableFlow {
+class UpdateChatFlow: ClientStartableFlow {
 
     private companion object {
         val log = LoggerFactory.getLogger(this::class.java.enclosingClass)
@@ -34,9 +34,6 @@ class CreateNewChatFlow: ClientStartableFlow {
     @CordaInject
     lateinit var ledgerService: UtxoLedgerService
 
-    @CordaInject
-    lateinit var notaryLookup: NotaryLookup
-
     // FlowEngine service is required to run SubFlows.
     @CordaInject
     lateinit var flowEngine: FlowEngine
@@ -44,38 +41,40 @@ class CreateNewChatFlow: ClientStartableFlow {
     @Suspendable
     override fun call(requestBody: ClientRequestBody): String {
 
-        log.info("CreateNewChatFlow.call() called")
+        log.info("UpdateNewChatFlow.call() called")
 
         try {
             // Obtain the deserialized input arguments to the flow from the requestBody.
-            val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, CreateNewChatFlowArgs::class.java)
+            val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, UpdateChatFlowArgs::class.java)
+
+            // Look up the latest unconsumed ChatState with the given id.
+            // Note, this code brings all unconsumed states back, then filters them.
+            // This is an inefficient way to perform this operation when there are a large number of chats.
+            // Note, you will get this error if you input an id which has no corresponding ChatState (common error).
+            val stateAndRef = ledgerService.findUnconsumedStatesByType(ChatState::class.java).singleOrNull {
+                it.state.contractState.id == flowArgs.id
+            } ?: throw CordaRuntimeException("Multiple or zero Chat states with id ${flowArgs.id} found.")
 
             // Get MemberInfos for the Vnode running the flow and the otherMember.
-            // Good practice in Kotlin CorDapps is to only throw RuntimeException.
-            // Note, in Java CorDapps only unchecked RuntimeExceptions can be thrown not
-            // declared checked exceptions as this changes the method signature and breaks override.
             val myInfo = memberLookup.myInfo()
-            val otherMember = memberLookup.lookup(MemberX500Name.parse(flowArgs.otherMember)) ?:
-                throw CordaRuntimeException("MemberLookup can't find otherMember specified in flow arguments.")
+            val state = stateAndRef.state.contractState
 
-            // Create the ChatState from the input arguments and member information.
-            val chatState = ChatState(
-                chatName = flowArgs.chatName,
-                messageFrom = myInfo.name,
-                message = flowArgs.message,
-                participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
-            )
+            val members = state.participants.map {
+                memberLookup.lookup(it) ?: throw CordaRuntimeException("Member not found from public key $it.")}
+            val otherMember = (members - myInfo).singleOrNull()
+                ?: throw CordaRuntimeException("Should be only one participant other than the initiator.")
 
-            // Obtain the notary.
-            val notary = notaryLookup.notaryServices.single()
+            // Create a new ChatState using the updateMessage helper function.
+            val newChatState = state.updateMessage(myInfo.name, flowArgs.message)
 
             // Use UTXOTransactionBuilder to build up the draft transaction.
             val txBuilder= ledgerService.createTransactionBuilder()
-                .setNotary(notary.name)
+                .setNotary(stateAndRef.state.notaryName)
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
-                .addOutputState(chatState)
-                .addCommand(ChatContract.Create())
-                .addSignatories(chatState.participants)
+                .addOutputState(newChatState)
+                .addInputState(stateAndRef.ref)
+                .addCommand(ChatContract.Update())
+                .addSignatories(newChatState.participants)
 
             // Convert the transaction builder to a UTXOSignedTransaction. Verifies the content of the
             // UtxoTransactionBuilder and signs the transaction with any required signatories that belong to
@@ -97,16 +96,14 @@ class CreateNewChatFlow: ClientStartableFlow {
     }
 }
 
-
 /*
 RequestBody for triggering the flow via REST:
 {
-    "clientRequestId": "create-1",
-    "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.CreateNewChatFlow",
+    "clientRequestId": "update-2",
+    "flowClassName": "com.r3.developers.cordapptemplate.utxoexample.workflows.UpdateChatFlow",
     "requestBody": {
-        "chatName":"Chat with Bob",
-        "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB",
-        "message": "Hello Bob"
+        "id":"** fill in id **",
+        "message": "How are you today?"
         }
 }
  */

@@ -1,6 +1,6 @@
-package com.r3.developers.csdetemplate.utxoexample.contracts
+package com.r3.developers.cordapptemplate.utxoexample.contracts
 
-import com.r3.developers.csdetemplate.utxoexample.states.ChatState
+import com.r3.developers.cordapptemplate.utxoexample.states.ChatState
 import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.ledger.utxo.Command
 import net.corda.v5.ledger.utxo.Contract

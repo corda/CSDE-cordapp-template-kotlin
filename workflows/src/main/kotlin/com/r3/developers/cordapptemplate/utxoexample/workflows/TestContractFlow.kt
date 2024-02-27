@@ -1,7 +1,7 @@
-package com.r3.developers.csdetemplate.utxoexample.workflows
+package com.r3.developers.cordapptemplate.utxoexample.workflows
 
-import com.r3.developers.csdetemplate.utxoexample.contracts.ChatContract
-import com.r3.developers.csdetemplate.utxoexample.states.ChatState
+import com.r3.developers.cordapptemplate.utxoexample.contracts.ChatContract
+import com.r3.developers.cordapptemplate.utxoexample.states.ChatState
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
@@ -483,7 +483,7 @@ class TestContractFlow: ClientStartableFlow  {
 /*
 {
     "clientRequestId": "dummy-1",
-    "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.TestContractFlow",
+    "flowClassName": "com.r3.developers.cordapptemplate.utxoexample.workflows.TestContractFlow",
     "requestBody": {
         "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB"
     }
