@@ -29,7 +29,8 @@ In this app you can:
 4. Continue chatting within the chat entry with the counterparty. `UpdateChatFlow`
 
 ### Prerequisites
-Corda CLI must be installed. It is used by the Corda runtime gradle plugin internally, as well as by the example Docker compose file to create necessary Kafka topics. The version of Corda CLI should match that of Corda combined worker image used in the compose file.
+- Corda CLI; version should matching that of the Corda combined worker image used
+- Docker
 
 ### Setting up
 
