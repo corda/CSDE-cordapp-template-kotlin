@@ -19,25 +19,26 @@ allprojects {
 
     // Configure Corda runtime gradle plugin
     cordaRuntimeGradlePlugin {
+        notaryVersion = cordaNotaryPluginsVersion
+        notaryCpiName = "NotaryServer"
+        corDappCpiName = "MyCorDapp"
+        cpiUploadTimeout = "30000"
+        vnodeRegistrationTimeout = "60000"
+        cordaProcessorTimeout = "300000"
+        workflowsModuleName = "workflows"
         cordaClusterURL = "https://localhost:8888"
         cordaRestUser = "admin"
         cordaRestPasswd ="admin"
-        cordaRuntimePluginWorkspaceDir = "workspace"
         composeFilePath = "config/combined-worker-kafka-compose.yaml"
-        // Alternatively, you can use a Database-only combined worker:
-        // composeFilePath = "config/combined-worker-compose.yaml"
-        composeNetworkName = "corda-cluster"
-        notaryVersion = cordaNotaryPluginsVersion
-        cordaBinDir = "${System.getProperty("user.home")}/.corda/corda5"
-        cordaCliBinDir = "${System.getProperty("user.home")}/.corda/cli"
-        corDappCpiName = "MyCorDapp"
-        notaryCpiName = "NotaryServer"
         networkConfigFile = "config/static-network-config.json"
         r3RootCertFile = "config/r3-ca-key.pem"
-        workflowsModuleName = "workflows"
-        cpiUploadTimeout = "10000"
-        vnodeRegistrationTimeout = "30000"
-        cordaProcessorTimeout = "-1"
+        skipTestsDuringBuildCpis = "false"
+        cordaRuntimePluginWorkspaceDir = "workspace"
+        cordaBinDir = "${System.getProperty("user.home")}/.corda/corda5"
+        cordaCliBinDir = "${System.getProperty("user.home")}/.corda/cli"
+
+        // Alternatively, you can use a Database-only combined worker:
+        // composeFilePath = "config/combined-worker-compose.yaml"
 
         // Only need to supply these if you want to use an unpublished version
         artifactoryUsername = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
