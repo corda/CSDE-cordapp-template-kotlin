@@ -29,7 +29,7 @@ In this app you can:
 4. Continue chatting within the chat entry with the counterparty. `UpdateChatFlow`
 
 ### Prerequisites
-- Corda CLI; version should matching that of the Corda combined worker image used
+- Corda CLI; version should match that of the Corda combined worker image used
 - Docker
 
 ### Setting up

@@ -29,16 +29,13 @@ allprojects {
         cordaClusterURL = "https://localhost:8888"
         cordaRestUser = "admin"
         cordaRestPasswd ="admin"
-        composeFilePath = "config/combined-worker-kafka-compose.yaml"
+        composeFilePath = "config/combined-worker-compose.yaml"
         networkConfigFile = "config/static-network-config.json"
         r3RootCertFile = "config/r3-ca-key.pem"
         skipTestsDuringBuildCpis = "false"
         cordaRuntimePluginWorkspaceDir = "workspace"
         cordaBinDir = "${System.getProperty("user.home")}/.corda/corda5"
         cordaCliBinDir = "${System.getProperty("user.home")}/.corda/cli"
-
-        // Alternatively, you can use a Database-only combined worker:
-        // composeFilePath = "config/combined-worker-compose.yaml"
 
         // Only need to supply these if you want to use an unpublished version
         artifactoryUsername = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
