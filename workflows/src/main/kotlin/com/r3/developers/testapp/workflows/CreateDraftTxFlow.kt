@@ -82,7 +82,7 @@ class CreateDraftTxFlow : ClientStartableFlow {
         // 3. Store transaction to be finalized later
         val bytes = serializationService.serialize(moveStx)
         val draftTx = DraftTx(UUID.randomUUID(), bytes.bytes)
-        persistenceService.persist(draftTx)
+        persistenceService.persist("persist1", draftTx)
 
         return jsonMarshallingService.format(draftTx.id.toString())
     }
